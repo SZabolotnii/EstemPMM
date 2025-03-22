@@ -1,97 +1,131 @@
-# EstemPMM: Поліноміальна Максимізація для Регресійного Аналізу
+# EstemPMM: Polynomial Maximization Method for Regression Analysis
 
 [![R](https://img.shields.io/badge/R-%3E%3D%204.0.0-blue)](https://cran.r-project.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Огляд
+## Overview
 
-Пакет EstemPMM реалізує метод поліноміальної максимізації (Polynomial Maximization Method, PMM) для оцінювання параметрів лінійної регресії у випадках, коли розподіл похибок відрізняється від нормального, зокрема має асиметричний характер.
+The EstemPMM package implements the Polynomial Maximization Method (PMM) for estimating linear regression parameters in cases where the error distribution differs from normal, particularly when it has an asymmetric character.
 
-Метод PMM дозволяє отримати оцінки параметрів з меншою дисперсією порівняно з класичним методом найменших квадратів (OLS), особливо у випадках, коли розподіл помилок має значну асиметрію.
+PMM allows obtaining parameter estimates with lower variance compared to the classical Ordinary Least Squares (OLS) method, especially when the error distribution has significant asymmetry.
 
-## Теоретичне підґрунтя
+## Theoretical Background
 
-Метод PMM використовує поліноми степеня S для оцінювання параметрів. При S=1 оцінки PMM збігаються з оцінками OLS. При S=2 і наявності асиметрії у розподілі помилок, PMM може забезпечити зменшення дисперсії оцінок.
+PMM uses polynomials of degree S for parameter estimation. When S=1, PMM estimates coincide with OLS estimates. When S=2 and there is asymmetry in the error distribution, PMM can provide reduced variance of estimates.
 
-Теоретичний коефіцієнт зменшення дисперсії для S=2 обчислюється за формулою:
+The theoretical coefficient of variance reduction for S=2 is calculated by the formula:
 
 ```
 g = 1 - c3^2 / (2 + c4)
 ```
 
-де `c3` - коефіцієнт асиметрії, `c4` - коефіцієнт ексцесу.
+where `c3` is the skewness coefficient and `c4` is the kurtosis coefficient.
 
-## Встановлення
+For a detailed theoretical foundation of the method, see the paper:
+[Polynomial Estimation of Linear Regression Parameters for the Asymmetric PDF of Errors](https://link.springer.com/chapter/10.1007/978-3-319-77179-3_75) (Zabolotnii, S., Warsza, Z.L., Tkachenko, O., 2018).
+
+## Installation
 
 ```r
-# Встановлення з GitHub (потребує пакету 'devtools')
+# Install from GitHub (requires 'devtools' package)
 devtools::install_github("SZabolotnii/EstemPMM")
 ```
 
-## Базове використання
+## Basic Usage
 
 ```r
 library(EstemPMM)
 
-# Створення даних з асиметричними похибками
+# Create data with asymmetric errors
 n <- 100
 x <- rnorm(n)
-errors <- rgamma(n, shape = 2, scale = 1) - 2  # Зсув для нульового середнього
+errors <- rgamma(n, shape = 2, scale = 1) - 2  # Shift for zero mean
 y <- 2 + 1.5 * x + errors
 data <- data.frame(x = x, y = y)
 
-# Підгонка моделі методом PMM2
+# Fit the model using PMM2
 fit <- lm_pmm2(y ~ x, data = data)
 
-# Огляд результатів
+# Review results
 summary(fit)
 
-# Порівняння з OLS
+# Compare with OLS
 ols_fit <- lm(y ~ x, data = data)
 compare_with_ols(y ~ x, data)
 ```
 
-## Головні функції
+## Main Functions
 
-- `lm_pmm2()`: Підгонка лінійної регресії методом PMM для S=2
-- `summary()`: Виведення результатів підгонки
-- `predict()`: Прогнозування на основі PMM-моделі
-- `pmm2_inference()`: Статистичний висновок через бутстреп
-- `compare_with_ols()`: Порівняння з OLS-оцінками
-- `plot()`: Діагностичні графіки для PMM-моделі
+- `lm_pmm2()`: Fit linear regression using PMM for S=2
+- `summary()`: Display fitting results
+- `predict()`: Make predictions based on a PMM model
+- `pmm2_inference()`: Statistical inference through bootstrap
+- `compare_with_ols()`: Compare with OLS estimates
+- `plot()`: Diagnostic plots for PMM models
 
-## Демонстраційний скрипт
+## Project Structure
 
-У пакеті міститься детальний демонстраційний скрипт `pmm2_demo.R`, який показує:
+The package consists of several key R files:
+- `pmm_classes.R`: Defines S4 classes for PMM2 fit results
+- `pmm_main.R`: Contains the main function for PMM2 implementation
+- `pmm_utils.R`: Provides utility functions for PMM
+- `pmm_inference.R`: Implements bootstrap inference for PMM2 fits
+- `pmm2_simulation.R`: Contains code for Monte Carlo simulations
+- `pmm2_real_data.R`: Applies PMM2 to real-world data (Auto MPG dataset)
 
-1. Порівняння PMM2 та OLS на даних з різними розподілами помилок
-2. Симуляції Монте-Карло для оцінки ефективності
-3. Застосування до реальних даних (Auto MPG dataset)
-4. Бутстрепний аналіз для оцінки невизначеності
+## Demo Script
 
-Щоб запустити демонстрацію, виконайте:
+The package includes a detailed demonstration script `pmm2_demo_runner.R` that shows:
+
+1. Comparison of PMM2 and OLS on data with different error distributions
+2. Monte Carlo simulations for efficiency evaluation
+3. Application to real data (Auto MPG dataset)
+4. Bootstrap analysis for uncertainty estimation
+
+To run the demonstration, execute:
 
 ```r
-source("pmm2_demo.R")
-all_results <- run_all_simulations()  # Для симуляцій Монте-Карло
-results <- apply_to_mpg_data()  # Для аналізу реальних даних
+source("pmm2_demo_runner.R")
+all_results <- run_all_simulations()  # For Monte Carlo simulations
+results <- apply_to_mpg_data()  # For real data analysis
 ```
 
-## Результати та ефективність
+## Results and Efficiency
 
-Метод PMM2 особливо ефективний для розподілів з високою асиметрією:
+PMM2 is particularly effective for distributions with high asymmetry:
 
-| Розподіл        | Асиметрія | Ексцес | Теоретичне покращення | Фактичне покращення |
-|-----------------|-----------|--------|------------------------|---------------------|
-| Гамма (a=0.5)   | 2.83      | 12     | 57%                    | ~50%                |
-| Експоненційний  | 2.00      | 6      | 50%                    | ~45%                |
-| Гамма (a=2)     | 1.41      | 3      | 40%                    | ~35%                |
-| Логнормальний   | 1.00      | 1.5    | 29%                    | ~25%                |
+| Distribution    | Skewness | Kurtosis | Theoretical Improvement | Actual Improvement |
+|-----------------|----------|----------|------------------------|-------------------|
+| Gamma (a=0.5)   | 2.83     | 12       | 57%                    | ~50%              |
+| Exponential     | 2.00     | 6        | 50%                    | ~45%              |
+| Gamma (a=2)     | 1.41     | 3        | 40%                    | ~35%              |
+| Lognormal       | 1.00     | 1.5      | 29%                    | ~25%              |
 
-## Автори
+## Adaptive Estimation
 
-- Сергій Заболотній - Черкаський Державний Фаховий Бізнес Коледж
+The package implements an adaptive procedure for PMM estimation:
+1. Find initial OLS estimates and calculate residuals
+2. Estimate moments and cumulants of the OLS residuals
+3. Calculate refined PMM estimates using these moment estimates
 
-## Ліцензія
+This approach doesn't require prior knowledge of the error distribution properties.
 
-Цей проект поширюється під ліцензією MIT.
+## Applications
+
+The method is particularly useful in:
+- Economic and financial modeling with asymmetric error distributions
+- Biological systems analysis
+- Technical measurements with non-Gaussian noise
+- Any regression problem where error distributions exhibit significant skewness
+
+## Authors
+
+- Serhii Zabolotnii - Cherkasy State Business College
+
+
+The method was originally described in:
+Zabolotnii S., Warsza Z.L., Tkachenko O. (2018) Polynomial Estimation of Linear Regression Parameters for the Asymmetric PDF of Errors. In: Szewczyk R., Zieliński C., Kaliczyńska M. (eds) Automation 2018. AUTOMATION 2018. Advances in Intelligent Systems and Computing, vol 743. Springer, Cham. https://doi.org/10.1007/978-3-319-77179-3_75
+
+## License
+
+This project is distributed under the MIT License.
