@@ -21,8 +21,6 @@ g = 1 - c3^2 / (2 + c4)
 
 where `c3` is the skewness coefficient and `c4` is the kurtosis coefficient.
 
-For a detailed theoretical foundation of the method, see the paper:
-[Polynomial Estimation of Linear Regression Parameters for the Asymmetric PDF of Errors](https://link.springer.com/chapter/10.1007/978-3-319-77179-3_75) (Zabolotnii, S., Warsza, Z.L., Tkachenko, O., 2018).
 
 ## Installation
 
