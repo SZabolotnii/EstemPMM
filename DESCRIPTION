@@ -1,0 +1,27 @@
+Package: EstemPMM
+Type: Package
+Title: Estimation with Polynomial Maximization Method (PMM)
+Version: 0.1.0
+Date: 2025-04-01
+Authors@R: 
+    person("Serhii", "Zabolotnii", 
+           email = "zabolotniua@gmail.com", 
+           role = c("aut", "cre"))
+Description: This package provides an implementation of the polynomial maximization
+  method for parameter estimation with non-Gaussian errors. Initially focusing on PMM2
+  for linear (in parameters) models, but designed to be extended to other variations such
+  as PMM3 in the future.
+License: GPL-3
+Encoding: UTF-8
+Depends: R (>= 3.5.0)
+Imports:
+    stats,
+    methods
+Suggests:
+    testthat (>= 3.0.0),
+    rmarkdown,
+    knitr
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Config/testthat/edition: 3

@@ -1,0 +1,11 @@
+---
+title: "EstemPMM: PMM2 usage"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{pmm_vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(EstemPMM)
