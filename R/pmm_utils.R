@@ -262,3 +262,24 @@ compare_with_ols <- function(formula, data, pmm2_args = list()) {
     residual_stats = res_stats
   ))
 }
+
+#' Calculate moments and cumulants of error distribution
+#'
+#' @param errors numeric vector of errors
+#' @return list with moments, cumulants and theoretical variance reduction coefficient
+#' @export
+compute_moments <- function(errors) {
+  m2 <- mean(errors^2)
+  m3 <- mean(errors^3)
+  m4 <- mean(errors^4)
+
+  c3 <- m3 / m2^(3/2)  # Коефіцієнт асиметрії
+  c4 <- m4 / m2^2 - 3  # Коефіцієнт ексцесу
+
+  # Теоретичний коефіцієнт зменшення дисперсії
+  g <- 1 - c3^2 / (2 + c4)
+
+  return(list(m2 = m2, m3 = m3, m4 = m4,
+              c3 = c3, c4 = c4,
+              g = g))
+}

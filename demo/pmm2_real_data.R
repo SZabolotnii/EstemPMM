@@ -6,11 +6,6 @@ library(ggplot2)
 library(gridExtra)
 library(dplyr)
 
-# Завантаження необхідних файлів пакету EstemPMM
-source("R/pmm_classes.R")
-source("R/pmm_utils.R")
-source("R/pmm_main.R")
-source("R/pmm_inference.R")
 
 #############################################################
 # Функція для обчислення моментів
