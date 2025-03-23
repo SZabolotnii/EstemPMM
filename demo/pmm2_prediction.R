@@ -1,12 +1,9 @@
 # Частина 3: Порівняння передбачувальної точності PMM2 та OLS
 # з використанням розділення даних та крос-валідації
 
-#############################################################
-# Функція для оцінки передбачувальної точності з розділенням даних
-#############################################################
-
-evaluate_prediction_accuracy <- function() {
-  # Завантаження даних Auto MPG з UCI Repository
+# Функція для об'єднаного виконання всіх експериментів з передбачення
+run_all_prediction_experiments <- function() {
+  # Завантаження даних Auto MPG з UCI Repository (лише один раз)
   cat("Завантаження даних Auto MPG з UCI Repository...\n")
 
   url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data"
@@ -20,39 +17,83 @@ evaluate_prediction_accuracy <- function() {
     cat("Не вдалося завантажити дані з UCI. Створюємо тестові дані...\n")
     set.seed(123)
     n <- 200
-    x <- runif(n, 8, 25)  # прискорення
+    # Створюємо тестові дані для моделі з прискоренням
+    x_acc <- runif(n, 8, 25)  # прискорення
     # Параметри регресії
-    a0 <- 5
-    a1 <- 1.2
+    a0_acc <- 5
+    a1_acc <- 1.2
     # Створимо асиметричні помилки
-    errors <- rgamma(n, shape = 2, scale = 1) - 2
-    y <- a0 + a1 * x + errors
+    errors_acc <- rgamma(n, shape = 2, scale = 1) - 2
+    y_acc <- a0_acc + a1_acc * x_acc + errors_acc
+
+    # Створюємо тестові дані для моделі з вагою
+    x_weight <- runif(n, 1500, 5000)  # вага
+    a0_weight <- 40
+    a1_weight <- -0.005
+    a2_weight <- 0.0000005
+    # Такі ж асиметричні помилки
+    y_weight <- a0_weight + a1_weight * x_weight + a2_weight * x_weight^2 + errors_acc
+
     auto_data <- data.frame(
-      mpg = y,
-      acceleration = x
+      mpg = y_acc,
+      acceleration = x_acc,
+      weight = x_weight
     )
+
+    cat("Створено тестові дані для моделювання.\n")
   }
 
-  # Попередня обробка
-  auto_data <- auto_data[complete.cases(auto_data[c("mpg", "acceleration")]), ]
+  # Проведення експерименту з прискоренням
+  cat("\n\n======= ЕКСПЕРИМЕНТ 1: MPG ~ ACCELERATION =======\n\n")
 
-  # Виберемо змінні для аналізу
-  model_data <- data.frame(
-    y = auto_data$mpg,
-    x = auto_data$acceleration
+  # Підготовка даних для прискорення
+  acc_data <- auto_data[complete.cases(auto_data[c("mpg", "acceleration")]), ]
+  model_data_acc <- data.frame(
+    y = acc_data$mpg,
+    x = acc_data$acceleration
   )
 
-  cat("Дані обробляються...\n")
-  cat("Розмір вибірки:", nrow(model_data), "спостережень\n")
+  # Спочатку виконуємо аналіз з простим розділенням даних
+  result_acc_split <- perform_simple_split(model_data_acc, "Acceleration", FALSE)
+
+  # Потім виконуємо k-fold крос-валідацію для моделі з прискоренням
+  result_acc_cv <- perform_cross_validation(model_data_acc, "Acceleration", FALSE)
+
+  # Проведення експерименту з вагою (квадратична модель)
+  cat("\n\n======= ЕКСПЕРИМЕНТ 2: MPG ~ WEIGHT + WEIGHT² =======\n\n")
+
+  # Підготовка даних для ваги
+  weight_data <- auto_data[complete.cases(auto_data[c("mpg", "weight")]), ]
+  model_data_weight <- data.frame(
+    y = weight_data$mpg,
+    x = weight_data$weight
+  )
+
+  # Спочатку виконуємо аналіз з простим розділенням даних для квадратичної моделі
+  result_weight_split <- perform_simple_split(model_data_weight, "Weight", TRUE)
+
+  # Потім виконуємо k-fold крос-валідацію для квадратичної моделі з вагою
+  result_weight_cv <- perform_cross_validation(model_data_weight, "Weight", TRUE)
+
+  # Повернення результатів обох експериментів
+  return(list(
+    acceleration = list(
+      simple_split = result_acc_split,
+      cross_validation = result_acc_cv
+    ),
+    weight = list(
+      simple_split = result_weight_split,
+      cross_validation = result_weight_cv
+    )
+  ))
+}
+
+# Функція для виконання аналізу з простим розділенням даних (80/20)
+perform_simple_split <- function(model_data, predictor_name, is_quadratic = FALSE) {
+  cat("\n--- Аналіз із простим розділенням даних (80/20) ---\n")
 
   # Встановлення seed для відтворюваності результатів
   set.seed(42)
-
-  #############################################################
-  # 1. Оцінка точності з простим розділенням даних (80/20)
-  #############################################################
-
-  cat("\n--- Аналіз із простим розділенням даних (80/20) ---\n")
 
   # Випадкове перемішування даних
   model_data <- model_data[sample(nrow(model_data)), ]
@@ -66,8 +107,14 @@ evaluate_prediction_accuracy <- function() {
   cat("Розмір тестової вибірки:", nrow(test_data), "\n")
 
   # Підгонка моделей на навчальній вибірці
-  ols_fit <- lm(y ~ x, data = train_data)
-  pmm2_fit <- lm_pmm2(y ~ x, data = train_data)
+  if (is_quadratic) {
+    # Використання I(x^2) для квадратичної моделі
+    ols_fit <- lm(y ~ x + I(x^2), data = train_data)
+    pmm2_fit <- lm_pmm2(y ~ x + I(x^2), data = train_data)
+  } else {
+    ols_fit <- lm(y ~ x, data = train_data)
+    pmm2_fit <- lm_pmm2(y ~ x, data = train_data)
+  }
 
   # Прогнозування на тестовій вибірці
   ols_pred <- predict(ols_fit, newdata = test_data)
@@ -108,8 +155,8 @@ evaluate_prediction_accuracy <- function() {
     geom_point(alpha = 0.5) +
     geom_point(aes(y = ols_pred, color = "OLS"), shape = 1, size = 2) +
     geom_point(aes(y = pmm2_pred, color = "PMM2"), shape = 2, size = 2) +
-    labs(title = "Фактичні та прогнозовані значення (тестова вибірка)",
-         x = "Прискорення", y = "MPG") +
+    labs(title = paste("Фактичні та прогнозовані значення -", predictor_name),
+         x = predictor_name, y = "MPG") +
     scale_color_manual(values = c("OLS" = "blue", "PMM2" = "red"),
                        name = "Метод") +
     theme_minimal()
@@ -118,7 +165,7 @@ evaluate_prediction_accuracy <- function() {
   p2 <- ggplot(test_data) +
     geom_histogram(aes(x = ols_error, fill = "OLS"), alpha = 0.5, bins = 20, position = "identity") +
     geom_histogram(aes(x = pmm2_error, fill = "PMM2"), alpha = 0.5, bins = 20, position = "identity") +
-    labs(title = "Розподіл похибок прогнозу (тестова вибірка)",
+    labs(title = paste("Розподіл похибок прогнозу -", predictor_name),
          x = "Похибка прогнозу", y = "Частота") +
     scale_fill_manual(values = c("OLS" = "blue", "PMM2" = "red"),
                       name = "Метод") +
@@ -127,17 +174,57 @@ evaluate_prediction_accuracy <- function() {
   # Відображення графіків
   grid.arrange(p1, p2, ncol = 2)
 
-  #############################################################
-  # 2. Крос-валідація (k-fold)
-  #############################################################
+  # Обчислення моментів залишків OLS на навчальній вибірці
+  if (is_quadratic) {
+    train_ols_fit <- lm(y ~ x + I(x^2), data = train_data)
+  } else {
+    train_ols_fit <- lm(y ~ x, data = train_data)
+  }
 
+  train_ols_resid <- residuals(train_ols_fit)
+  moments <- compute_moments(train_ols_resid)
+
+  # Повернення результатів
+  return(list(
+    ols_mse = ols_mse,
+    pmm2_mse = pmm2_mse,
+    ols_mae = ols_mae,
+    pmm2_mae = pmm2_mae,
+    ols_r2 = ols_r2,
+    pmm2_r2 = pmm2_r2,
+    moments = moments
+  ))
+}
+
+# Функція для виконання крос-валідації для будь-якої моделі
+perform_cross_validation <- function(model_data, predictor_name, is_quadratic = FALSE) {
   cat("\n--- Аналіз із k-fold крос-валідацією ---\n")
+  cat("Модель для змінної:", predictor_name, "\n")
+  cat("Тип моделі:", ifelse(is_quadratic, "Квадратична", "Лінійна"), "\n")
+  cat("Розмір вибірки:", nrow(model_data), "спостережень\n")
+
+  # Встановлення seed для відтворюваності результатів
+  set.seed(42)
+
+  # Підгонка OLS моделі на всіх даних для обчислення моментів
+  if (is_quadratic) {
+    full_ols_fit <- lm(y ~ x + I(x^2), data = model_data)
+  } else {
+    full_ols_fit <- lm(y ~ x, data = model_data)
+  }
+
+  full_ols_resid <- residuals(full_ols_fit)
+  moments <- compute_moments(full_ols_resid)
+
+  cat("\nМоменти розподілу залишків OLS:\n")
+  cat("Асиметрія (c3) =", round(moments$c3, 4), "\n")
+  cat("Ексцес (c4) =", round(moments$c4, 4), "\n")
+  cat("Теоретичний коефіцієнт g =", round(moments$g, 4), "\n\n")
 
   # Кількість розбиттів для крос-валідації
   k <- 5
 
   # Випадкове перемішування даних
-  set.seed(42)
   model_data <- model_data[sample(nrow(model_data)), ]
 
   # Розбиття даних на k підвибірок
@@ -161,8 +248,13 @@ evaluate_prediction_accuracy <- function() {
     fold_test <- model_data[test_indices, ]
 
     # Підгонка моделей
-    ols_fit_cv <- lm(y ~ x, data = fold_train)
-    pmm2_fit_cv <- lm_pmm2(y ~ x, data = fold_train)
+    if (is_quadratic) {
+      ols_fit_cv <- lm(y ~ x + I(x^2), data = fold_train)
+      pmm2_fit_cv <- lm_pmm2(y ~ x + I(x^2), data = fold_train)
+    } else {
+      ols_fit_cv <- lm(y ~ x, data = fold_train)
+      pmm2_fit_cv <- lm_pmm2(y ~ x, data = fold_train)
+    }
 
     # Прогнозування
     ols_pred_cv <- predict(ols_fit_cv, newdata = fold_test)
@@ -233,33 +325,33 @@ evaluate_prediction_accuracy <- function() {
   # Графіки результатів крос-валідації
   p3 <- ggplot(mse_data, aes(x = Method, y = Value, fill = Method)) +
     geom_boxplot() +
-    labs(title = "Розподіл MSE за методами",
+    labs(title = paste("Розподіл MSE за методами -", predictor_name),
          y = "MSE") +
     scale_fill_manual(values = c("OLS" = "blue", "PMM2" = "red")) +
     theme_minimal()
 
   p4 <- ggplot(mae_data, aes(x = Method, y = Value, fill = Method)) +
     geom_boxplot() +
-    labs(title = "Розподіл MAE за методами",
+    labs(title = paste("Розподіл MAE за методами -", predictor_name),
          y = "MAE") +
     scale_fill_manual(values = c("OLS" = "blue", "PMM2" = "red")) +
     theme_minimal()
 
   p5 <- ggplot(r2_data, aes(x = Method, y = Value, fill = Method)) +
     geom_boxplot() +
-    labs(title = "Розподіл R² за методами",
+    labs(title = paste("Розподіл R² за методами -", predictor_name),
          y = "R²") +
     scale_fill_manual(values = c("OLS" = "blue", "PMM2" = "red")) +
     theme_minimal()
 
   # Статистики порівняння
+  model_type <- ifelse(is_quadratic,
+                       paste("MPG ~", predictor_name, "+", predictor_name, "²"),
+                       paste("MPG ~", predictor_name))
+
   comparison_text <- paste(
     paste("Порівняння продуктивності PMM2 відносно OLS:"),
-    paste(""),
-    paste("Проста перевірка (80/20 розділення):"),
-    paste("  Зменшення MSE:", round((1 - pmm2_mse/ols_mse) * 100, 2), "%"),
-    paste("  Зменшення MAE:", round((1 - pmm2_mae/ols_mae) * 100, 2), "%"),
-    paste("  Покращення R²:", round((pmm2_r2/ols_r2 - 1) * 100, 2), "%"),
+    paste("Модель:", model_type),
     paste(""),
     paste("Крос-валідація (", k, "-fold):", sep=""),
     paste("  Зменшення MSE:", round((1 - mean_pmm2_mse/mean_ols_mse) * 100, 2), "%"),
@@ -267,16 +359,6 @@ evaluate_prediction_accuracy <- function() {
     paste("  Покращення R²:", round((mean_pmm2_r2/mean_ols_r2 - 1) * 100, 2), "%"),
     paste(""),
     paste("Моменти розподілу помилок:"),
-    sep = "\n"
-  )
-
-  # Обчислення моментів залишків OLS на всьому наборі даних
-  full_ols_fit <- lm(y ~ x, data = model_data)
-  full_ols_resid <- residuals(full_ols_fit)
-  moments <- compute_moments(full_ols_resid)
-
-  comparison_text <- paste(
-    comparison_text,
     paste("  Асиметрія (c3) =", round(moments$c3, 4)),
     paste("  Ексцес (c4) =", round(moments$c4, 4)),
     paste("  Теоретичний коефіцієнт g =", round(moments$g, 4)),
@@ -285,7 +367,7 @@ evaluate_prediction_accuracy <- function() {
     paste("  PMM2", ifelse(mean_pmm2_mse < mean_ols_mse,
                            "перевершує", "не перевершує"),
           "OLS за передбачувальною точністю"),
-    paste("  на даному наборі даних."),
+    paste("  для даної моделі."),
     sep = "\n"
   )
 
@@ -300,32 +382,23 @@ evaluate_prediction_accuracy <- function() {
 
   # Повернення результатів
   return(list(
-    simple_split = list(
-      ols_mse = ols_mse,
-      pmm2_mse = pmm2_mse,
-      ols_mae = ols_mae,
-      pmm2_mae = pmm2_mae,
-      ols_r2 = ols_r2,
-      pmm2_r2 = pmm2_r2
-    ),
-    cross_validation = list(
-      k = k,
-      ols_mse = ols_mse_cv,
-      pmm2_mse = pmm2_mse_cv,
-      ols_mae = ols_mae_cv,
-      pmm2_mae = pmm2_mae_cv,
-      ols_r2 = ols_r2_cv,
-      pmm2_r2 = pmm2_r2_cv,
-      mean_ols_mse = mean_ols_mse,
-      mean_pmm2_mse = mean_pmm2_mse,
-      mean_ols_mae = mean_ols_mae,
-      mean_pmm2_mae = mean_pmm2_mae,
-      mean_ols_r2 = mean_ols_r2,
-      mean_pmm2_r2 = mean_pmm2_r2
-    ),
+    k = k,
+    ols_mse = ols_mse_cv,
+    pmm2_mse = pmm2_mse_cv,
+    ols_mae = ols_mae_cv,
+    pmm2_mae = pmm2_mae_cv,
+    ols_r2 = ols_r2_cv,
+    pmm2_r2 = pmm2_r2_cv,
+    mean_ols_mse = mean_ols_mse,
+    mean_pmm2_mse = mean_pmm2_mse,
+    mean_ols_mae = mean_ols_mae,
+    mean_pmm2_mae = mean_pmm2_mae,
+    mean_ols_r2 = mean_ols_r2,
+    mean_pmm2_r2 = mean_pmm2_r2,
     moments = moments
   ))
 }
 
-# Запуск функції для порівняння передбачувальної точності
-prediction_results <- evaluate_prediction_accuracy()
+# Запуск усіх експериментів
+# Ця функція завантажує дані один раз і виконує всі експерименти
+all_prediction_results <- run_all_prediction_experiments()

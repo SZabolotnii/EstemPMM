@@ -98,6 +98,9 @@ lm_pmm2 <- function(formula, data,
     stop("OLS fitting resulted in NA coefficients. Check for multicollinearity.")
   }
 
+  # Convert b_ols to a numeric vector to ensure consistent handling
+  b_ols <- as.numeric(b_ols)
+
   # 2) OLS residuals => m2, m3, m4
   res_ols <- y - (X %*% b_ols)
   m2 <- mean(res_ols^2)
@@ -129,6 +132,11 @@ lm_pmm2 <- function(formula, data,
   b_est   <- out$b
   conv    <- out$convergence
   iter    <- out$iterations
+
+  # Ensure b_est is a numeric vector, not a matrix
+  if(is.matrix(b_est)) {
+    b_est <- as.numeric(b_est)
+  }
 
   if(verbose) {
     cat("PMM2 algorithm finished.\n")

@@ -48,28 +48,44 @@
 
     # Compute Yx = X %*% b_cur (predictor)
     # More efficient matrix multiplication
-    Yx <- X %*% b_cur
+    Yx <- as.vector(X %*% b_cur)  # Ensure Yx is a vector
 
     # Compute Z1 = A*Yx^2 + B*Yx + C
     Z1 <- A*(Yx^2) + B*Yx + C
 
     # Form Z - vector of equations
-    # More efficient matrix operations
-    Z <- c(sum(Z1), crossprod(X[,-1, drop=FALSE], Z1))
+    # Improved handling for multi-variable cases
+    if (p > 1) {
+      # Виконуємо crossprod для всіх предикторів, окрім перетину
+      Z_rest <- crossprod(X[, -1, drop=FALSE], Z1)
+
+      # Перевіряємо, чи Z_rest є матрицею (більше ніж 1 предиктор)
+      if (is.matrix(Z_rest)) {
+        Z_rest <- as.vector(Z_rest)
+      }
+
+      # Об'єднуємо результати
+      Z <- c(sum(Z1), Z_rest)
+    } else {
+      # Якщо лише перетин, Z - це просто сума
+      Z <- sum(Z1)
+    }
 
     # Form JZs - Jacobian matrix
     JZ11 <- 2*A*Yx + B
 
-    # Vectorized computation
+    # Vectorized computation of Jacobian matrix
     JZs <- matrix(NA, p, p)
     JZs[1,1] <- sum(JZ11)
 
+    # Перший рядок і перший стовпець Якобіана
     for (ii in 2:p) {
-      tmp <- JZ11*X[,ii]
+      tmp <- JZ11 * X[,ii]
       JZs[1,ii] <- sum(tmp)
-      JZs[ii,1] <- JZs[1,ii]
+      JZs[ii,1] <- JZs[1,ii]  # Якобіан симетричний
     }
 
+    # Решта елементів Якобіана
     for (ii in 2:p) {
       for (jj in 2:p) {
         tmp <- JZ11 * X[,ii] * X[,jj]
@@ -143,9 +159,9 @@
     }
   }
 
-  # Return results
+  # Return results - ensure b is a numeric vector, not a matrix
   list(
-    b = b_cur,
+    b = as.numeric(b_cur),
     convergence = converged,
     iterations = iterations
   )
