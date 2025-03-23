@@ -4,29 +4,66 @@
 \alias{lm_pmm2}
 \title{pmm2: Master function for PMM2 (S=2)}
 \usage{
-lm_pmm2(formula, data, max_iter = 50, tol = 1e-06, regularize = TRUE)
+lm_pmm2(
+  formula,
+  data,
+  max_iter = 50,
+  tol = 1e-06,
+  regularize = TRUE,
+  reg_lambda = 1e-08,
+  na.action = na.fail,
+  weights = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
-\item{formula}{R formula}
+\item{formula}{R formula for the model}
 
-\item{data}{data.frame}
+\item{data}{data.frame containing the variables in the formula}
 
-\item{max_iter}{integer: iteration limit}
+\item{max_iter}{integer: maximum number of iterations for the algorithm}
 
 \item{tol}{numeric: tolerance for convergence}
 
 \item{regularize}{logical: add small value to diagonal for numerical stability}
+
+\item{reg_lambda}{numeric: regularization parameter (if regularize=TRUE)}
+
+\item{na.action}{function to handle missing values, default is na.fail}
+
+\item{weights}{optional vector of weights (not yet implemented)}
+
+\item{verbose}{logical: whether to print progress information}
 }
 \value{
 An S4 \code{PMM2fit} object
 }
 \description{
-pmm2: Master function for PMM2 (S=2)
+Fits a linear model using the Polynomial Maximization Method (order 2)
+which is robust against non-Gaussian errors.
 }
 \details{
+The PMM2 algorithm works as follows:
 \enumerate{
-\item Fits OLS => b_ols
-\item computes m2,m3,m4 from OLS residuals
-\item calls internal iteration approach
+\item Fits ordinary least squares (OLS) regression to get initial estimates
+\item Computes central moments (m2, m3, m4) from OLS residuals
+\item Iteratively improves parameter estimates using a gradient-based approach
+}
+
+PMM2 is particularly useful when error terms are non-Gaussian.
+}
+\examples{
+\dontrun{
+# Generate sample data with t-distributed errors
+n <- 100
+x <- rnorm(n)
+y <- 2 + 3*x + rt(n, df=3)
+dat <- data.frame(y=y, x=x)
+
+# Fit model using PMM2
+fit <- lm_pmm2(y ~ x, data=dat)
+
+# Summary and inference
+summary(fit, formula=y~x, data=dat)
 }
 }

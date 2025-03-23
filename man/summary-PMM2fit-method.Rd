@@ -4,7 +4,7 @@
 \alias{summary,PMM2fit-method}
 \title{Summarize PMM2 results}
 \usage{
-\S4method{summary}{PMM2fit}(object, formula = NULL, data = NULL, B = 100)
+\S4method{summary}{PMM2fit}(object, formula = NULL, data = NULL, B = 100, ...)
 }
 \arguments{
 \item{object}{an object of class "PMM2fit"}
@@ -14,6 +14,8 @@
 \item{data}{(optional) the data used}
 
 \item{B}{number of bootstrap replicates for inference}
+
+\item{...}{additional arguments (not used)}
 }
 \value{
 Prints a summary to console; returns the object (invisibly).

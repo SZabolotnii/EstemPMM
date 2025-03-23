@@ -4,16 +4,30 @@
 \alias{pmm2_inference}
 \title{Bootstrap inference for a PMM2 fit}
 \usage{
-pmm2_inference(object, formula, data, B = 200, seed = NULL)
+pmm2_inference(
+  object,
+  formula,
+  data,
+  B = 200,
+  seed = NULL,
+  parallel = FALSE,
+  cores = NULL
+)
 }
 \arguments{
 \item{object}{an object of class PMM2fit}
 
-\item{formula, data}{the same formula and data used originally}
+\item{formula}{the same formula used originally}
+
+\item{data}{the data frame used originally}
 
 \item{B}{number of bootstrap replications}
 
 \item{seed}{(optional) for reproducibility}
+
+\item{parallel}{logical, whether to use parallel computation}
+
+\item{cores}{number of cores to use for parallel computation, default is detected}
 }
 \value{
 A data.frame with columns: Estimate, Std.Error, t.value, p.value

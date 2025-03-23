@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm_utils.R
 \name{.pmm2_fit}
 \alias{.pmm2_fit}
-\title{.pmm2_fit: unified implementation for PMM2}
+\title{PMM2 fitting algorithm - unified implementation}
 \usage{
 .pmm2_fit(
   b_init,
@@ -14,7 +14,8 @@
   max_iter = 50,
   tol = 1e-06,
   regularize = TRUE,
-  reg_lambda = 1e-08
+  reg_lambda = 1e-08,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -30,9 +31,19 @@
 
 \item{tol}{convergence tolerance}
 
-\item{regularize}{add small value to diagonal for numerical stability}
+\item{regularize}{logical, add small value to diagonal for numerical stability}
+
+\item{reg_lambda}{regularization parameter (if regularize=TRUE)}
+
+\item{verbose}{logical, whether to print progress information}
+}
+\value{
+A list with components:
+\item{b}{estimated parameters}
+\item{convergence}{logical convergence status}
+\item{iterations}{number of iterations performed}
 }
 \description{
-.pmm2_fit: unified implementation for PMM2
+Core iterative algorithm for PMM2 parameter estimation
 }
 \keyword{internal}

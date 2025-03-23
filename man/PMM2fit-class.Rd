@@ -14,8 +14,16 @@ An S4 class to store PMM2 fit results
 
 \item{\code{residuals}}{numeric vector of final residuals}
 
-\item{\code{m2,m3,m4}}{numeric central moments from the initial residuals}
+\item{\code{m2}}{numeric second central moment from the initial residuals}
 
-\item{\code{convergence}}{logical or integer code}
+\item{\code{m3}}{numeric third central moment from the initial residuals}
+
+\item{\code{m4}}{numeric fourth central moment from the initial residuals}
+
+\item{\code{convergence}}{logical or integer code indicating if the algorithm converged}
+
+\item{\code{iterations}}{integer number of iterations performed}
+
+\item{\code{call}}{the original function call}
 }}
 
