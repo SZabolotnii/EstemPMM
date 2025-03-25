@@ -29,7 +29,7 @@ run_ts_examples <- function() {
   # 1. AR(2) модель з гамма-розподіленими інноваціями
   cat("1. AR(2) модель з гамма-розподіленими інноваціями\n")
   ar_coef <- c(0.7, -0.3)
-  n <- 300
+  n <- 100
 
   tryCatch({
     ar_series <- as.numeric(arima.sim(model = list(ar = ar_coef), n = n,

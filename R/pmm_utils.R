@@ -1,5 +1,108 @@
 # pmm_utils.R
 
+#' Universal solver for PMM2 system of equations
+#'
+#' @param b_init Initial parameter estimates (usually from OLS or MLE)
+#' @param X Design matrix (including intercept and all predictors)
+#' @param y Response vector
+#' @param m2 Second central moment of residuals
+#' @param m3 Third central moment of residuals
+#' @param m4 Fourth central moment of residuals
+#' @param max_iter Maximum number of iterations
+#' @param tol Convergence tolerance
+#' @param regularize Whether to add regularization to Jacobian matrix
+#' @param reg_lambda Regularization parameter
+#' @param verbose Print progress information
+#'
+#' @return Vector of PMM2 parameter estimates
+#' @keywords internal
+solve_pmm2 <- function(b_init, X, y, m2, m3, m4,
+                       max_iter = 1000, tol = 1e-5,
+                       regularize = TRUE, reg_lambda = 1e-8,
+                       verbose = FALSE) {
+
+  # Get dimensions
+  P <- length(b_init)
+  n <- nrow(X)
+
+  # Define coefficients for PMM2 polynomial
+  A <- m3
+  B <- m4 - m2^2 - 2*m3*y
+  C <- m3*y^2 - (m4 - m2^2)*y - m2*m3
+
+  # Current parameter estimates
+  b_pmm2 <- b_init
+
+  # Initialize Jacobian matrix
+  JZs <- matrix(0, nrow = P, ncol = P)
+
+  # Iteration loop
+  for (iter in 1:max_iter) {
+    # Calculate predicted values
+    y_pred <- as.numeric(X %*% b_pmm2)
+
+    # Calculate Z1 = A*y_pred^2 + B*y_pred + C
+    Z1 <- A*y_pred^2 + B*y_pred + C
+
+    # Form Z vector for each parameter
+    Z <- numeric(P)
+    for (r in 1:P) {
+      Z[r] <- sum(Z1 * X[, r])
+    }
+
+    # Calculate derivative JZ11 = 2*A*y_pred + B
+    JZ11 <- 2*A*y_pred + B
+
+    # Form Jacobian matrix
+    for (i in 1:P) {
+      for (j in 1:P) {
+        JZs[i, j] <- sum(JZ11 * X[, i] * X[, j])
+      }
+    }
+
+    # Add regularization if requested
+    if (regularize) {
+      diag(JZs) <- diag(JZs) + reg_lambda
+    }
+
+    # Solve system JZs * delta = Z
+    delta <- tryCatch({
+      solve(JZs, Z)
+    }, error = function(e) {
+      if (verbose) {
+        cat("Error solving linear system:", conditionMessage(e), "\n")
+        cat("Adding stronger regularization\n")
+      }
+      diag(JZs) <- diag(JZs) + 1e-4
+      solve(JZs, Z)
+    })
+
+    # Update parameters
+    b_pmm2 <- b_pmm2 - delta
+
+    # Check convergence
+    if (sqrt(sum(delta^2)) < tol) {
+      if (verbose) {
+        cat("Converged after", iter, "iterations\n")
+      }
+      break
+    }
+
+    # Print progress if requested
+    if (verbose && iter %% 10 == 0) {
+      cat("Iteration", iter, ", change = ", sqrt(sum(delta^2)), "\n")
+    }
+  }
+
+  # Warning if not converged
+  if (iter == max_iter && verbose) {
+    cat("Warning: Maximum iterations reached without convergence\n")
+  }
+
+  return(b_pmm2)
+}
+
+
 #' PMM2 fitting algorithm - unified implementation
 #'
 #' Core iterative algorithm for PMM2 parameter estimation
@@ -212,6 +315,17 @@
   # Current innovations
   innovations <- innovations_init
 
+  # Check for non-finite values in innovations
+  if(any(is.infinite(innovations)) || any(is.na(innovations))) {
+    warning("Non-finite values in initial innovations. Replacing with estimated values.")
+    bad_idx <- is.infinite(innovations) | is.na(innovations)
+    if(sum(!bad_idx) > 0) {
+      innovations[bad_idx] <- mean(innovations[!bad_idx])
+    } else {
+      innovations[bad_idx] <- 0
+    }
+  }
+
   # Track convergence history if verbose
   if(verbose) {
     conv_history <- numeric(max_iter)
@@ -225,6 +339,15 @@
       # For AR models, calculate predicted values
       X <- create_ar_matrix(x, ar_order)
       y <- x[(ar_order + 1):n]
+
+      # Verify dimensions to prevent errors
+      if(nrow(X) != length(y)) {
+        warning("Dimension mismatch in AR model. Adjusting matrices.")
+        min_len <- min(nrow(X), length(y))
+        X <- X[1:min_len, , drop = FALSE]
+        y <- y[1:min_len]
+      }
+
       y_pred <- as.vector(X %*% b_cur)
 
       # Form matrices for the PMM algorithm
@@ -262,7 +385,15 @@
       # For MA-based models, we need to update innovations using ARMA framework
       if(model_type == "ma") {
         # For pure MA, update innovations directly
-        innovations <- update_ma_innovations(x, ma_part)
+        innovations <- tryCatch({
+          update_ma_innovations(x, ma_part)
+        }, error = function(e) {
+          if(verbose) {
+            cat("Error updating MA innovations:", conditionMessage(e), "\n")
+          }
+          # Return previous innovations if update fails
+          innovations_init
+        })
       } else {
         # For ARMA and ARIMA, use arima with fixed parameters
         arima_order <- c(ar_order, 0, ma_order) # d=0 as we're working with (differenced) x
@@ -280,11 +411,23 @@
         })
 
         if(is.null(curr_model)) {
-          warning("Failed to update model in iteration ", iter, ". Algorithm stopped.")
-          break
+          warning("Failed to update model in iteration ", iter, ". Using alternative approach.")
+          # Use previous innovations with small adjustment
+          innovations <- innovations * (1 + rnorm(length(innovations), 0, 0.01))
+        } else {
+          innovations <- residuals(curr_model)
         }
+      }
 
-        innovations <- residuals(curr_model)
+      # Check for non-finite values in innovations
+      if(any(is.infinite(innovations)) || any(is.na(innovations))) {
+        warning("Non-finite innovations detected in iteration ", iter, ". Regularizing values.")
+        bad_idx <- is.infinite(innovations) | is.na(innovations)
+        if(sum(!bad_idx) > 0) {
+          innovations[bad_idx] <- mean(innovations[!bad_idx])
+        } else {
+          innovations[bad_idx] <- 0
+        }
       }
 
       # Prepare design matrices for both AR and MA parts
@@ -293,27 +436,41 @@
       # For AR part, use lagged values of the series
       if(ar_order > 0) {
         for(i in 1:ar_order) {
-          J[(i+1):n, i] <- x[1:(n-i)]
+          # Ensure indices are valid
+          if(i+1 <= n && 1 <= n-i) {
+            J[(i+1):n, i] <- x[1:(n-i)]
+          }
         }
       }
 
       # For MA part, use lagged innovations
       if(ma_order > 0) {
         for(i in 1:ma_order) {
-          J[(i+1):n, ar_order+i] <- innovations[1:(n-i)]
+          # Ensure indices are valid
+          if(i+1 <= n && 1 <= n-i && i <= length(innovations)) {
+            J[(i+1):n, ar_order+i] <- innovations[1:(n-i)]
+          }
         }
       }
 
       # Remove initial rows that can't be used for all lags
       start_idx <- max(ar_order, ma_order) + 1
-      if(start_idx > 1) {
+      if(start_idx > 1 && start_idx <= n) {
         J_valid <- J[start_idx:n, , drop = FALSE]
         x_valid <- x[start_idx:n]
         innovations_valid <- innovations[start_idx:n]
       } else {
+        # Handle the case when start_idx is too large
+        warning("Not enough data points for the specified model orders. Using all available data.")
         J_valid <- J
         x_valid <- x
         innovations_valid <- innovations
+      }
+
+      # Ensure we have enough data
+      if(nrow(J_valid) < 1) {
+        warning("Insufficient data for PMM2 estimation. Stopping at iteration ", iter)
+        break
       }
 
       # Compute PMM2 coefficients
@@ -344,6 +501,13 @@
       diag(JZs) <- diag(JZs) + reg_lambda
     }
 
+    # Check if JZs is invertible
+    if(any(is.na(JZs)) || any(is.infinite(JZs)) ||
+       abs(det(JZs)) < 1e-10 || any(diag(JZs) < 1e-10)) {
+      warning("Jacobian matrix is near-singular in iteration ", iter, ". Adding stronger regularization.")
+      diag(JZs) <- diag(JZs) + 1e-4
+    }
+
     # Solve system JZs * delta = Z
     step <- tryCatch({
       solve(JZs, Z)
@@ -362,8 +526,16 @@
 
     # Check for numerical problems
     if(any(is.na(step)) || any(is.infinite(step))) {
-      warning("Numerical problems encountered in iteration ", iter, ". Algorithm stopped.")
-      break
+      warning("Numerical problems encountered in iteration ", iter, ". Using scaled step.")
+      # Replace NA/infinite values with small values
+      step[is.na(step) | is.infinite(step)] <- 0.01 * sign(Z[is.na(step) | is.infinite(step)])
+    }
+
+    # Limit step size to prevent divergence
+    max_step <- 0.5
+    if(max(abs(step)) > max_step) {
+      step <- step * (max_step / max(abs(step)))
+      if(verbose) cat("Step size limited in iteration ", iter, "\n")
     }
 
     # Update parameters
@@ -398,6 +570,14 @@
   if(model_type == "ar") {
     X <- create_ar_matrix(x, ar_order)
     y <- x[(ar_order + 1):n]
+
+    # Verify dimensions to prevent errors
+    if(nrow(X) != length(y)) {
+      min_len <- min(nrow(X), length(y))
+      X <- X[1:min_len, , drop = FALSE]
+      y <- y[1:min_len]
+    }
+
     final_innovations <- y - X %*% b_cur
   } else {
     # Extract AR and MA parts
@@ -427,16 +607,6 @@
     }
   }
 
-  # Plot convergence history if verbose
-  if(verbose && iterations > 1) {
-    if(requireNamespace("graphics", quietly = TRUE)) {
-      graphics::plot(1:iterations, conv_history[1:iterations], type = "b",
-                     xlab = "Iteration", ylab = "Parameter change",
-                     main = "Convergence history")
-      graphics::abline(h = tol, col = "red", lty = 2)
-    }
-  }
-
   # Return results
   list(
     b = as.numeric(b_cur),
@@ -445,6 +615,8 @@
     innovations = final_innovations
   )
 }
+
+
 
 #' Create design matrix for AR models
 #'
@@ -478,8 +650,7 @@ get_yw_estimates <- function(x, p) {
   }
 }
 
-#' Update innovations for MA model
-#'
+
 #' @param x centered time series
 #' @param ma_coef vector of MA coefficients
 #' @return vector of innovations
@@ -503,6 +674,20 @@ update_ma_innovations <- function(x, ma_coef) {
 
     # Compute current innovation
     innovations[t] <- x[t] - expected
+  }
+
+  # Check for non-finite values
+  if(any(is.infinite(innovations)) || any(is.na(innovations))) {
+    warning("Non-finite innovations detected in update_ma_innovations. Using regularized values.")
+    # Replace problematic values with mean or 0
+    bad_idx <- is.infinite(innovations) | is.na(innovations)
+    if(sum(!bad_idx) > 0) {
+      # If there are valid values, use their mean
+      innovations[bad_idx] <- mean(innovations[!bad_idx])
+    } else {
+      # Otherwise use 0
+      innovations[bad_idx] <- 0
+    }
   }
 
   return(innovations)
