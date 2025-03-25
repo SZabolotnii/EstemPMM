@@ -1,20 +1,20 @@
-# pmm_ts_methods.R
+# pmm_ts_methods.R - Методи для роботи з об'єктами моделей часових рядів
 
-#' Extract coefficients from a TS2fit object
+#' Витягнути коефіцієнти з об'єкта TS2fit
 #'
-#' @param object A TS2fit object
-#' @param ... Additional arguments (not used)
+#' @param object Об'єкт TS2fit
+#' @param ... Додаткові аргументи (не використовуються)
 #'
-#' @return A named vector of coefficients
+#' @return Іменований вектор коефіцієнтів
 #' @export
 setMethod("coef", "TS2fit",
           function(object, ...) {
-            # Get model parameters
+            # Отримати параметри моделі
             model_type <- object@model_type
             ar_order <- object@order$ar
             ma_order <- object@order$ma
 
-            # Extract and name AR coefficients
+            # Витягнути та іменувати AR коефіцієнти
             if(ar_order > 0) {
               ar_coefs <- object@coefficients[1:ar_order]
               names(ar_coefs) <- paste0("ar", 1:ar_order)
@@ -22,7 +22,7 @@ setMethod("coef", "TS2fit",
               ar_coefs <- numeric(0)
             }
 
-            # Extract and name MA coefficients
+            # Витягнути та іменувати MA коефіцієнти
             if(ma_order > 0) {
               ma_coefs <- object@coefficients[(ar_order+1):(ar_order+ma_order)]
               names(ma_coefs) <- paste0("ma", 1:ma_order)
@@ -30,10 +30,10 @@ setMethod("coef", "TS2fit",
               ma_coefs <- numeric(0)
             }
 
-            # Combine coefficients
+            # Об'єднати коефіцієнти
             result <- c(ar_coefs, ma_coefs)
 
-            # Add intercept if present
+            # Додати перехоплення, якщо присутнє
             if(object@intercept != 0) {
               result <- c(intercept = object@intercept, result)
             }
@@ -41,26 +41,95 @@ setMethod("coef", "TS2fit",
             return(result)
           })
 
-#' Extract residuals from a TS2fit object
+#' Витягнути залишки з об'єкта TS2fit
 #'
-#' @param object A TS2fit object
-#' @param ... Additional arguments (not used)
+#' @param object Об'єкт TS2fit
+#' @param ... Додаткові аргументи (не використовуються)
 #'
-#' @return A vector of residuals (innovations)
+#' @return Вектор залишків (інновацій)
 #' @export
 setMethod("residuals", "TS2fit",
           function(object, ...) {
             object@residuals
           })
 
-#' Plot diagnostics for TS2fit objects
+#' Отримати підігнані значення для AR моделі
 #'
-#' @param x A TS2fit object
-#' @param y Unused (for S4 method compatibility)
-#' @param which Integer vector specifying which plots to produce
-#' @param ... additional arguments passed to plotting functions
+#' @param object Об'єкт TS2fit з model_type="ar"
+#' @return Вектор підігнаних значень
+#' @keywords internal
+get_ar_fitted <- function(object) {
+  if(object@model_type != "ar") {
+    stop("Ця функція лише для AR моделей")
+  }
+
+  x <- object@original_series
+  ar_order <- object@order$ar
+  ar_coef <- object@coefficients[1:ar_order]
+  intercept <- object@intercept
+
+  if(intercept != 0) {
+    x_centered <- x - intercept
+  } else {
+    x_centered <- x
+  }
+
+  # Створити матрицю дизайну та обчислити підігнані значення
+  X <- create_ar_matrix(x_centered, ar_order)
+  fitted <- as.vector(X %*% ar_coef) + intercept
+  return(fitted)
+}
+
+#' Витягнути підігнані значення з об'єкта TS2fit
 #'
-#' @return Invisibly returns x
+#' @param object Об'єкт TS2fit
+#' @param ... Додаткові аргументи (не використовуються)
+#'
+#' @return Вектор підігнаних значень
+#' @export
+setMethod("fitted", "TS2fit",
+          function(object, ...) {
+            # Отримати тип моделі
+            model_type <- object@model_type
+
+            # Обчислити підігнані значення в залежності від типу моделі
+            if(model_type == "ar") {
+              # Для AR моделей використовувати пряме обчислення
+              fitted_values <- get_ar_fitted(object)
+            } else {
+              # Для інших моделей: підігнані = оригінальні мінус залишки
+              orig <- object@original_series
+              resid <- object@residuals
+
+              # Вирівняти довжини (часто залишки коротші через початкові значення)
+              len_diff <- length(orig) - length(resid)
+              if(len_diff > 0 && !all(is.na(resid))) {
+                # Знайти перше не-NA значення в resid
+                first_valid <- min(which(!is.na(resid)))
+
+                # Побудувати вектор fitted з NA в початку
+                fitted_values <- rep(NA, length(orig))
+                valid_indices <- first_valid:length(resid)
+
+                # Встановити дійсні значення
+                fitted_values[(len_diff + valid_indices)] <-
+                  orig[(len_diff + valid_indices)] - resid[valid_indices]
+              } else {
+                fitted_values <- orig - resid
+              }
+            }
+
+            return(fitted_values)
+          })
+
+#' Побудувати діагностичні графіки для об'єктів TS2fit
+#'
+#' @param x Об'єкт TS2fit
+#' @param y Не використовується (для сумісності методу S4)
+#' @param which Цілочисельний вектор, що вказує, які графіки виробляти
+#' @param ... додаткові аргументи, передані функціям побудови графіків
+#'
+#' @return Невидимо повертає x
 #'
 #' @export
 setMethod("plot", signature(x = "TS2fit", y = "missing"),
@@ -68,101 +137,83 @@ setMethod("plot", signature(x = "TS2fit", y = "missing"),
             op <- par(no.readonly = TRUE)
             on.exit(par(op))
 
-            # Get model parameters
+            # Отримати параметри моделі
             model_type <- x@model_type
             ar_order <- x@order$ar
             ma_order <- x@order$ma
             d <- x@order$d
 
-            # Default plot layout
+            # Макет графіка за замовчуванням
             par(mfrow = c(2, 2))
 
-            # For ARIMA models, we might want to plot the original/differenced series too
+            # Для моделей ARIMA ми можемо захотіти побудувати оригінальний/диференційований ряд також
             if(model_type == "arima" && length(which) > 4) {
               par(mfrow = c(3, 2))
             }
 
-            # Calculate fitted values
+            # Обчислити підігнані значення та залишки
             residuals <- as.numeric(x@residuals)
-            if(model_type == "ar") {
-              fitted <- get_ar_fitted(x)
-            } else {
-              # For MA, ARMA, ARIMA models, fitted values are original minus residuals
-              # (adjusting length as needed)
-              orig <- x@original_series
-              if(model_type == "arima" && d > 0) {
-                # For ARIMA, use differenced series for fitted
-                orig <- diff(orig, differences = d)
-              }
+            fitted <- fitted(x)
 
-              # Align lengths (often the residuals are shorter due to initial values)
-              len_diff <- length(orig) - length(residuals)
-              if(len_diff > 0) {
-                fitted <- orig[(len_diff+1):length(orig)] - residuals
-              } else {
-                fitted <- orig - residuals
-              }
-            }
-
-            # Determine which plots to display
+            # Визначити, які графіки відображати
             plot_idx <- 1
-            n_plots <- min(length(which), 6) # Max 6 plots
+            n_plots <- min(length(which), 6) # Максимум 6 графіків
 
-            # For ARIMA models, we may want different plots
+            # Для моделей ARIMA, ми можемо хотіти інші графіки
             if(model_type == "arima") {
-              # Plot 1: Original Time Series (ARIMA only)
+              # Графік 1: Оригінальний часовий ряд (тільки ARIMA)
               if(1 %in% which && plot_idx <= n_plots) {
                 plot(x@original_series, type = "l",
-                     main = "Original Time Series",
-                     xlab = "Time",
-                     ylab = "Value",
+                     main = "Оригінальний часовий ряд",
+                     xlab = "Час",
+                     ylab = "Значення",
                      ...)
                 plot_idx <- plot_idx + 1
               }
 
-              # Plot 2: Differenced Time Series (ARIMA only)
+              # Графік 2: Диференційований часовий ряд (тільки ARIMA)
               if(2 %in% which && plot_idx <= n_plots && d > 0) {
                 diff_series <- diff(x@original_series, differences = d)
                 plot(diff_series, type = "l",
-                     main = paste0("Differenced Series (d=", d, ")"),
-                     xlab = "Time",
-                     ylab = "Value",
+                     main = paste0("Диференційований ряд (d=", d, ")"),
+                     xlab = "Час",
+                     ylab = "Значення",
                      ...)
                 plot_idx <- plot_idx + 1
               }
             }
 
-            # Standard plots for all model types
-            # Plot: Residuals vs Fitted
+            # Стандартні графіки для всіх типів моделей
+            # Графік: Залишки vs Підігнані
             if(3 %in% which && plot_idx <= n_plots) {
               plot(fitted, residuals,
-                   main = "Residuals vs Fitted",
-                   xlab = "Fitted values",
-                   ylab = "Residuals",
+                   main = "Залишки vs Підігнані",
+                   xlab = "Підігнані значення",
+                   ylab = "Залишки",
                    ...)
               abline(h = 0, lty = 2)
               lines(lowess(fitted, residuals), col = "red")
               plot_idx <- plot_idx + 1
             }
 
-            # Plot: Normal Q-Q Plot
+            # Графік: Нормальний Q-Q графік
             if(4 %in% which && plot_idx <= n_plots) {
-              qqnorm(residuals, main = "Normal Q-Q Plot", ...)
+              qqnorm(residuals, main = "Нормальний Q-Q графік", ...)
               qqline(residuals)
               plot_idx <- plot_idx + 1
             }
 
-            # Plot: ACF of residuals
+            # Графік: ACF залишків
             if(5 %in% which && plot_idx <= n_plots) {
-              acf(residuals, main = "ACF of Residuals", ...)
+              acf(residuals, main = "ACF залишків", ...)
               plot_idx <- plot_idx + 1
             }
 
-            # Plot: Histogram of residuals
+            # Графік: Гістограма залишків
             if(6 %in% which && plot_idx <= n_plots) {
               hist(residuals,
-                   main = "Histogram of Residuals",
-                   xlab = "Residuals",
+                   main = "Гістограма залишків",
+                   xlab = "Залишки",
                    breaks = "FD",
                    ...)
               plot_idx <- plot_idx + 1
@@ -171,25 +222,25 @@ setMethod("plot", signature(x = "TS2fit", y = "missing"),
             invisible(x)
           })
 
-#' Predict method for TS2fit objects
+#' Метод прогнозування для об'єктів TS2fit
 #'
-#' @param object A TS2fit object
-#' @param n.ahead Number of steps ahead to predict
-#' @param ... additional arguments (not used)
+#' @param object Об'єкт TS2fit
+#' @param n.ahead Кількість кроків вперед для прогнозування
+#' @param ... додаткові аргументи (не використовуються)
 #'
-#' @return A vector or list of predictions, depending on model type
+#' @return Вектор або список прогнозів, залежно від типу моделі
 #'
 #' @export
 setMethod("predict", "TS2fit",
           function(object, n.ahead = 1, ...) {
-            # Get model parameters
+            # Отримати параметри моделі
             model_type <- object@model_type
             ar_order <- object@order$ar
             ma_order <- object@order$ma
             d <- object@order$d
             intercept <- object@intercept
 
-            # Extract coefficients
+            # Витягнути коефіцієнти
             if(ar_order > 0) {
               ar_coef <- object@coefficients[1:ar_order]
             } else {
@@ -202,51 +253,67 @@ setMethod("predict", "TS2fit",
               ma_coef <- numeric(0)
             }
 
-            # For AR models, implement direct prediction
+            # Для AR моделей, реалізувати пряме прогнозування
             if(model_type == "ar") {
               x <- object@original_series
               n <- length(x)
               pred <- numeric(n.ahead)
 
-              # Generate forecasts
+              # Генерувати прогнози
               for(i in 1:n.ahead) {
-                # Use original data and previous predictions as needed
+                # Використовувати оригінальні дані та попередні прогнози за потреби
                 lags <- numeric(ar_order)
                 for(j in 1:ar_order) {
                   if(i - j <= 0) {
-                    # Use original data
+                    # Використовувати оригінальні дані
                     lags[j] <- x[n - j + i]
                   } else {
-                    # Use previous predictions
+                    # Використовувати попередні прогнози
                     lags[j] <- pred[i - j]
                   }
                 }
 
-                # Compute prediction
+                # Обчислити прогноз
                 pred[i] <- sum(ar_coef * lags) + intercept
               }
 
               return(pred)
 
             } else if(model_type == "ma") {
-              # For MA models, predictions beyond the order are just the mean
+              # Для MA моделей, прогнози за межами порядку - це просто середнє
               innovations <- object@residuals
 
+              # Генерувати прогнози MA
+              ma_pred <- function(innovations, ma_coef, n.ahead) {
+                n <- length(innovations)
+                q <- length(ma_coef)
+                pred <- numeric(n.ahead)
+
+                for(i in 1:n.ahead) {
+                  for(j in 1:min(i, q)) {
+                    if((n - i + j) > 0) {
+                      pred[i] <- pred[i] + ma_coef[j] * innovations[n - i + j]
+                    }
+                  }
+                }
+                return(pred)
+              }
+
               if(n.ahead > ma_order) {
-                return(c(ma_predictions(innovations, ma_coef, n.ahead),
+                return(c(ma_pred(innovations, ma_coef, ma_order),
                          rep(intercept, n.ahead - ma_order)))
               } else {
-                return(ma_predictions(innovations, ma_coef, n.ahead))
+                return(ma_pred(innovations, ma_coef, n.ahead))
               }
 
             } else {
-              # For ARMA and ARIMA models, use stats::arima predictions
-              # which properly handles both components
+              # Для ARMA та ARIMA моделей, використовувати прогнози stats::arima
+              # які правильно обробляють обидва компоненти
 
-              # Set up the arima model with fixed parameters
+              # Налаштувати модель arima з фіксованими параметрами
               arima_order <- c(ar_order, ifelse(model_type == "arima", d, 0), ma_order)
 
-              # Use predict function from stats package
+              # Використовувати функцію прогнозування з пакету stats
               arima_pred <- stats::predict(
                 stats::arima(object@original_series,
                              order = arima_order,
@@ -259,48 +326,48 @@ setMethod("predict", "TS2fit",
             }
           })
 
-#' Compare PMM2 with classical time series estimation methods
+#' Порівняти PMM2 з класичними методами оцінювання часових рядів
 #'
-#' @param x A numeric vector of time series data
-#' @param order Model order specification (see ts_pmm2 for format)
-#' @param model_type Model type: "ar", "ma", "arma", or "arima"
-#' @param include.mean Logical, whether to include an intercept term
-#' @param pmm2_args List of additional arguments to pass to ts_pmm2()
+#' @param x Числовий вектор даних часового ряду
+#' @param order Специфікація порядку моделі (див. ts_pmm2 для формату)
+#' @param model_type Тип моделі: "ar", "ma", "arma", або "arima"
+#' @param include.mean Логічне, чи включати член перехоплення
+#' @param pmm2_args Список додаткових аргументів для передачі в ts_pmm2()
 #'
-#' @return A list with fitted models and comparison tables
+#' @return Список з підігнаними моделями та таблицями порівняння
 #' @export
 compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "arima"),
                                include.mean = TRUE, pmm2_args = list()) {
-  # Match model_type argument
+  # Вибрати аргумент model_type
   model_type <- match.arg(model_type)
 
-  # Prepare model comparison based on model_type
+  # Підготувати порівняння моделей на основі model_type
   if(model_type == "ar") {
-    # For AR models
-    # Fit AR model using Yule-Walker method
+    # Для AR моделей
+    # Підігнати AR модель за допомогою методу Юла-Волкера
     yw_fit <- stats::ar(x, order.max = order, aic = FALSE, method = "yw",
                         demean = include.mean)
 
-    # Fit AR model using OLS method
+    # Підігнати AR модель за допомогою методу OLS
     ols_fit <- stats::ar(x, order.max = order, aic = FALSE, method = "ols",
                          demean = include.mean)
 
-    # Fit AR model using MLE method
+    # Підігнати AR модель за допомогою методу MLE
     mle_fit <- stats::ar(x, order.max = order, aic = FALSE, method = "mle",
                          demean = include.mean)
 
-    # Fit AR model using PMM2
+    # Підігнати AR модель за допомогою PMM2
     pmm2_args <- c(list(x = x, order = order, model_type = "ar",
                         include.mean = include.mean), pmm2_args)
     pmm2_fit <- do.call(ts_pmm2, pmm2_args)
 
-    # Extract coefficients
+    # Витягнути коефіцієнти
     coef_yw <- yw_fit$ar
     coef_ols <- ols_fit$ar
     coef_mle <- mle_fit$ar
     coef_pmm2 <- pmm2_fit@coefficients
 
-    # Compute residuals
+    # Обчислити залишки
     res_yw <- yw_fit$resid[!is.na(yw_fit$resid)]
     res_ols <- ols_fit$resid[!is.na(ols_fit$resid)]
     res_mle <- mle_fit$resid[!is.na(mle_fit$resid)]
@@ -316,9 +383,9 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
     )
 
   } else if(model_type %in% c("ma", "arma", "arima")) {
-    # For MA, ARMA, and ARIMA models
+    # Для MA, ARMA та ARIMA моделей
 
-    # Prepare arima order based on model type
+    # Підготувати порядок arima на основі типу моделі
     if(model_type == "ma") {
       arima_order <- c(0, 0, order)
     } else if(model_type == "arma") {
@@ -327,18 +394,18 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
       arima_order <- order
     }
 
-    # Fit model using CSS method
+    # Підігнати модель за допомогою методу CSS
     css_fit <- arima(x, order = arima_order, method = "CSS", include.mean = include.mean)
 
-    # Fit model using ML method
+    # Підігнати модель за допомогою методу ML
     ml_fit <- arima(x, order = arima_order, method = "ML", include.mean = include.mean)
 
-    # Fit model using PMM2
+    # Підігнати модель за допомогою PMM2
     pmm2_args <- c(list(x = x, order = order, model_type = model_type,
                         include.mean = include.mean), pmm2_args)
     pmm2_fit <- do.call(ts_pmm2, pmm2_args)
 
-    # Extract AR and MA coefficient names based on model type
+    # Витягнути назви коефіцієнтів AR та MA на основі типу моделі
     if(model_type == "ma") {
       ar_names <- character(0)
       ma_names <- paste0("ma", 1:order)
@@ -352,12 +419,12 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
 
     coef_names <- c(ar_names, ma_names)
 
-    # Extract coefficients
+    # Витягнути коефіцієнти
     coef_css <- as.numeric(css_fit$coef[coef_names])
     coef_ml <- as.numeric(ml_fit$coef[coef_names])
     coef_pmm2 <- pmm2_fit@coefficients
 
-    # Compute residuals
+    # Обчислити залишки
     res_css <- residuals(css_fit)
     res_ml <- residuals(ml_fit)
     res_pmm2 <- pmm2_fit@residuals
@@ -371,7 +438,7 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
     )
   }
 
-  # Compute residual statistics for all methods
+  # Обчислити статистику залишків для всіх методів
   residuals_list <- if(model_type == "ar") {
     list(res_yw, res_ols, res_mle, res_pmm2)
   } else {
@@ -394,7 +461,7 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
     do.call(rbind, lapply(residuals_list, compute_res_stats))
   )
 
-  # Create coefficient comparison table
+  # Створити таблицю порівняння коефіцієнтів
   if(model_type == "ar") {
     coef_names <- paste0("ar", 1:order)
     coef_values <- list(coef_yw, coef_ols, coef_mle, coef_pmm2)
@@ -414,14 +481,14 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
     }))
   )
 
-  # Return results
+  # Повернути результати
   result_list$coefficients <- coef_table
   result_list$residual_stats <- res_stats
 
   return(result_list)
 }
 
-#' Compare AR models
+#' Порівняти методи AR
 #'
 #' @inheritParams compare_ts_methods
 #' @export
@@ -430,7 +497,7 @@ compare_ar_methods <- function(x, order = 1, include.mean = TRUE, pmm2_args = li
                      include.mean = include.mean, pmm2_args = pmm2_args)
 }
 
-#' Compare MA models
+#' Порівняти методи MA
 #'
 #' @inheritParams compare_ts_methods
 #' @export
@@ -439,7 +506,7 @@ compare_ma_methods <- function(x, order = 1, include.mean = TRUE, pmm2_args = li
                      include.mean = include.mean, pmm2_args = pmm2_args)
 }
 
-#' Compare ARMA models
+#' Порівняти методи ARMA
 #'
 #' @inheritParams compare_ts_methods
 #' @export
@@ -448,7 +515,7 @@ compare_arma_methods <- function(x, order = c(1, 1), include.mean = TRUE, pmm2_a
                      include.mean = include.mean, pmm2_args = pmm2_args)
 }
 
-#' Compare ARIMA models
+#' Порівняти методи ARIMA
 #'
 #' @inheritParams compare_ts_methods
 #' @export

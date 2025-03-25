@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm_ts_methods.R
 \name{compare_arima_methods}
 \alias{compare_arima_methods}
-\title{Compare ARIMA models}
+\title{Порівняти методи ARIMA}
 \usage{
 compare_arima_methods(
   x,
@@ -12,14 +12,14 @@ compare_arima_methods(
 )
 }
 \arguments{
-\item{x}{A numeric vector of time series data}
+\item{x}{Числовий вектор даних часового ряду}
 
-\item{order}{Model order specification (see ts_pmm2 for format)}
+\item{order}{Специфікація порядку моделі (див. ts_pmm2 для формату)}
 
-\item{include.mean}{Logical, whether to include an intercept term}
+\item{include.mean}{Логічне, чи включати член перехоплення}
 
-\item{pmm2_args}{List of additional arguments to pass to ts_pmm2()}
+\item{pmm2_args}{Список додаткових аргументів для передачі в ts_pmm2()}
 }
 \description{
-Compare ARIMA models
+Порівняти методи ARIMA
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm_ts_methods.R
 \name{compare_ts_methods}
 \alias{compare_ts_methods}
-\title{Compare PMM2 with classical time series estimation methods}
+\title{Порівняти PMM2 з класичними методами оцінювання часових рядів}
 \usage{
 compare_ts_methods(
   x,
@@ -13,19 +13,19 @@ compare_ts_methods(
 )
 }
 \arguments{
-\item{x}{A numeric vector of time series data}
+\item{x}{Числовий вектор даних часового ряду}
 
-\item{order}{Model order specification (see ts_pmm2 for format)}
+\item{order}{Специфікація порядку моделі (див. ts_pmm2 для формату)}
 
-\item{model_type}{Model type: "ar", "ma", "arma", or "arima"}
+\item{model_type}{Тип моделі: "ar", "ma", "arma", або "arima"}
 
-\item{include.mean}{Logical, whether to include an intercept term}
+\item{include.mean}{Логічне, чи включати член перехоплення}
 
-\item{pmm2_args}{List of additional arguments to pass to ts_pmm2()}
+\item{pmm2_args}{Список додаткових аргументів для передачі в ts_pmm2()}
 }
 \value{
-A list with fitted models and comparison tables
+Список з підігнаними моделями та таблицями порівняння
 }
 \description{
-Compare PMM2 with classical time series estimation methods
+Порівняти PMM2 з класичними методами оцінювання часових рядів
 }

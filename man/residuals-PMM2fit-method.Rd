@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm_main.R
 \name{residuals,PMM2fit-method}
 \alias{residuals,PMM2fit-method}
-\title{Extract residuals from a PMM2fit object}
+\title{Витягнути залишки з об'єкта PMM2fit}
 \usage{
 \S4method{residuals}{PMM2fit}(object, ...)
 }
 \arguments{
-\item{object}{A PMM2fit object}
+\item{object}{Об'єкт PMM2fit}
 
-\item{...}{Additional arguments (not used)}
+\item{...}{Додаткові аргументи (не використовуються)}
 }
 \value{
-A vector of residuals
+Вектор залишків
 }
 \description{
-Extract residuals from a PMM2fit object
+Витягнути залишки з об'єкта PMM2fit
 }

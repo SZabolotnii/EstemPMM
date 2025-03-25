@@ -617,82 +617,6 @@ solve_pmm2 <- function(b_init, X, y, m2, m3, m4,
 }
 
 
-
-#' Create design matrix for AR models
-#'
-#' @param x centered time series
-#' @param p AR order
-#' @return Design matrix with lagged values
-#' @keywords internal
-create_ar_matrix <- function(x, p) {
-  n <- length(x)
-  X <- matrix(NA, nrow = n - p, ncol = p)
-  for(i in 1:p) {
-    X[, i] <- x[(p - i + 1):(n - i)]
-  }
-  return(X)
-}
-
-#' Get Yule-Walker estimates for AR model
-#'
-#' @param x centered time series
-#' @param p AR order
-#' @return Vector of AR coefficients
-#' @keywords internal
-get_yw_estimates <- function(x, p) {
-  acf_values <- stats::acf(x, lag.max = p, plot = FALSE)$acf[-1]
-  if(p == 1) {
-    return(acf_values)
-  } else {
-    # Solve Yule-Walker equations
-    R <- stats::toeplitz(c(1, acf_values[1:(p-1)]))
-    return(solve(R, acf_values))
-  }
-}
-
-
-#' @param x centered time series
-#' @param ma_coef vector of MA coefficients
-#' @return vector of innovations
-#' @keywords internal
-update_ma_innovations <- function(x, ma_coef) {
-  n <- length(x)
-  q <- length(ma_coef)
-
-  # Initialize innovations as zeros
-  innovations <- numeric(n)
-
-  # Iteratively compute innovations
-  for(t in 1:n) {
-    # Compute expected value based on previous innovations
-    expected <- 0
-    for(j in 1:q) {
-      if(t - j > 0) {
-        expected <- expected + ma_coef[j] * innovations[t - j]
-      }
-    }
-
-    # Compute current innovation
-    innovations[t] <- x[t] - expected
-  }
-
-  # Check for non-finite values
-  if(any(is.infinite(innovations)) || any(is.na(innovations))) {
-    warning("Non-finite innovations detected in update_ma_innovations. Using regularized values.")
-    # Replace problematic values with mean or 0
-    bad_idx <- is.infinite(innovations) | is.na(innovations)
-    if(sum(!bad_idx) > 0) {
-      # If there are valid values, use their mean
-      innovations[bad_idx] <- mean(innovations[!bad_idx])
-    } else {
-      # Otherwise use 0
-      innovations[bad_idx] <- 0
-    }
-  }
-
-  return(innovations)
-}
-
 #' Calculate kurtosis from data
 #'
 #' @param x numeric vector
@@ -757,53 +681,6 @@ pmm_skewness <- function(x) {
   return(skew)
 }
 
-#' Compare PMM2 with OLS
-#'
-#' @param formula Model formula
-#' @param data Data frame
-#' @param pmm2_args List of arguments to pass to lm_pmm2()
-#'
-#' @return A list with OLS and PMM2 fit objects
-#' @export
-compare_with_ols <- function(formula, data, pmm2_args = list()) {
-  # Fit OLS model
-  fit_ols <- lm(formula, data)
-
-  # Fit PMM2 model with default or specified arguments
-  args <- c(list(formula = formula, data = data), pmm2_args)
-  fit_pmm2 <- do.call(lm_pmm2, args)
-
-  # Extract and compare coefficients
-  coef_ols <- coef(fit_ols)
-  coef_pmm2 <- coef(fit_pmm2)
-
-  # Compute residual statistics
-  res_ols <- residuals(fit_ols)
-  res_pmm2 <- residuals(fit_pmm2)
-
-  res_stats <- data.frame(
-    Method = c("OLS", "PMM2"),
-    RSS = c(sum(res_ols^2), sum(res_pmm2^2)),
-    MAE = c(mean(abs(res_ols)), mean(abs(res_pmm2))),
-    Skewness = c(pmm_skewness(res_ols), pmm_skewness(res_pmm2)),
-    Kurtosis = c(pmm_kurtosis(res_ols), pmm_kurtosis(res_pmm2))
-  )
-
-  # Create comparison table of coefficients
-  coef_table <- data.frame(
-    Coefficient = names(coef_ols),
-    OLS = coef_ols,
-    PMM2 = coef_pmm2[names(coef_ols)],
-    Diff_Percent = 100 * (coef_pmm2[names(coef_ols)] - coef_ols) / abs(coef_ols)
-  )
-
-  return(list(
-    ols = fit_ols,
-    pmm2 = fit_pmm2,
-    coefficients = coef_table,
-    residual_stats = res_stats
-  ))
-}
 
 #' Calculate moments and cumulants of error distribution
 #'

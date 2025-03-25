@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm_inference.R
 \name{plot_pmm2_bootstrap}
 \alias{plot_pmm2_bootstrap}
-\title{Plot bootstrap distributions for a PMM2 fit}
+\title{Побудувати графіки бутстреп-розподілів для підгонки PMM2}
 \usage{
 plot_pmm2_bootstrap(object, coefficients = NULL)
 }
 \arguments{
-\item{object}{Result from pmm2_inference}
+\item{object}{Результат з pmm2_inference}
 
-\item{coefficients}{Which coefficients to plot, defaults to all}
+\item{coefficients}{Які коефіцієнти побудувати, за замовчуванням усі}
 }
 \value{
-Invisibly returns the histogram information
+Невидимо повертає інформацію про гістограму
 }
 \description{
-Plot bootstrap distributions for a PMM2 fit
+Побудувати графіки бутстреп-розподілів для підгонки PMM2
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm_inference.R
 \name{pmm2_inference}
 \alias{pmm2_inference}
-\title{Bootstrap inference for a PMM2 fit}
+\title{Бутстреп-висновок для підгонки PMM2}
 \usage{
 pmm2_inference(
   object,
@@ -15,23 +15,23 @@ pmm2_inference(
 )
 }
 \arguments{
-\item{object}{an object of class PMM2fit}
+\item{object}{об'єкт класу PMM2fit}
 
-\item{formula}{the same formula used originally}
+\item{formula}{та сама формула, що використовувалася спочатку}
 
-\item{data}{the data frame used originally}
+\item{data}{фрейм даних, що використовувався спочатку}
 
-\item{B}{number of bootstrap replications}
+\item{B}{кількість бутстреп-реплікацій}
 
-\item{seed}{(optional) for reproducibility}
+\item{seed}{(опціонально) для відтворюваності}
 
-\item{parallel}{logical, whether to use parallel computation}
+\item{parallel}{логічне, чи використовувати паралельні обчислення}
 
-\item{cores}{number of cores to use for parallel computation, default is detected}
+\item{cores}{кількість ядер для використання при паралельних обчисленнях, за замовчуванням - автовизначення}
 }
 \value{
-A data.frame with columns: Estimate, Std.Error, t.value, p.value
+data.frame з стовпцями: Estimate, Std.Error, t.value, p.value
 }
 \description{
-Bootstrap inference for a PMM2 fit
+Бутстреп-висновок для підгонки PMM2
 }

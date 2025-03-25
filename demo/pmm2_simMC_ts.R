@@ -182,8 +182,8 @@ monte_carlo_comparison <- function(R = W,
                                    model_list = list(
                                      list(type="AR",    ar=c(0.7, -0.3), ma=NULL, d=0, n=N),
                                      list(type="MA",    ar=NULL, ma=c(0.6, -0.1), d=0, n=N),
-                                     list(type="ARMA",  ar=0.7,  ma=0.4,  d=0, n=N),
-                                     list(type="ARIMA", ar=0.7,  ma=0.4,  d=1, n=N)
+                                     list(type="ARMA",  ar=0.7,  ma=-0.4,  d=0, n=N),
+                                     list(type="ARIMA", ar=0.7,  ma=-0.4,  d=1, n=N)
                                    ),
                                    shape_gamma = 2,
                                    methods_ar   = c("MLE","OLS","PMM2","YW"),

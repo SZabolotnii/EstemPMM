@@ -2,20 +2,20 @@
 % Please edit documentation in R/pmm_main.R
 \name{AIC,PMM2fit-method}
 \alias{AIC,PMM2fit-method}
-\title{Calculate AIC for a PMM2fit object}
+\title{Розрахувати AIC для об'єкта PMM2fit}
 \usage{
 \S4method{AIC}{PMM2fit}(object, ..., k = 2)
 }
 \arguments{
-\item{object}{A PMM2fit object}
+\item{object}{Об'єкт PMM2fit}
 
-\item{...}{Additional arguments (not used)}
+\item{...}{Додаткові аргументи (не використовуються)}
 
-\item{k}{The penalty per parameter to be used; default is 2}
+\item{k}{Штраф за параметр, що буде використовуватись; стандартно 2}
 }
 \value{
-The AIC value
+Значення AIC
 }
 \description{
-Calculate AIC for a PMM2fit object
+Розрахувати AIC для об'єкта PMM2fit
 }

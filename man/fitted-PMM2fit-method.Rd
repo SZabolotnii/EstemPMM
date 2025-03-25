@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm_main.R
 \name{fitted,PMM2fit-method}
 \alias{fitted,PMM2fit-method}
-\title{Extract fitted values from a PMM2fit object}
+\title{Витягнути підігнані значення з об'єкта PMM2fit}
 \usage{
-\S4method{fitted}{PMM2fit}(object, ...)
+\S4method{fitted}{PMM2fit}(object, data = NULL, ...)
 }
 \arguments{
-\item{object}{A PMM2fit object}
+\item{object}{Об'єкт PMM2fit}
 
-\item{...}{Additional arguments (not used)}
+\item{...}{Додаткові аргументи (не використовуються)}
 }
 \value{
-A vector of fitted values
+Вектор підігнаних значень
 }
 \description{
-Extract fitted values from a PMM2fit object
+Витягнути підігнані значення з об'єкта PMM2fit
 }

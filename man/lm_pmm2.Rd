@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm_main.R
 \name{lm_pmm2}
 \alias{lm_pmm2}
-\title{pmm2: Master function for PMM2 (S=2)}
+\title{pmm2: Головна функція для PMM2 (S=2)}
 \usage{
 lm_pmm2(
   formula,
@@ -17,53 +17,53 @@ lm_pmm2(
 )
 }
 \arguments{
-\item{formula}{R formula for the model}
+\item{formula}{Формула R для моделі}
 
-\item{data}{data.frame containing the variables in the formula}
+\item{data}{data.frame, що містить змінні у формулі}
 
-\item{max_iter}{integer: maximum number of iterations for the algorithm}
+\item{max_iter}{ціле: максимальна кількість ітерацій для алгоритму}
 
-\item{tol}{numeric: tolerance for convergence}
+\item{tol}{числове: допуск для збіжності}
 
-\item{regularize}{logical: add small value to diagonal for numerical stability}
+\item{regularize}{логічне: додати мале значення до діагоналі для числової стабільності}
 
-\item{reg_lambda}{numeric: regularization parameter (if regularize=TRUE)}
+\item{reg_lambda}{числове: параметр регуляризації (якщо regularize=TRUE)}
 
-\item{na.action}{function to handle missing values, default is na.fail}
+\item{na.action}{функція для обробки відсутніх значень, за замовчуванням - na.fail}
 
-\item{weights}{optional vector of weights (not yet implemented)}
+\item{weights}{опціональний вектор ваг (поки не реалізовано)}
 
-\item{verbose}{logical: whether to print progress information}
+\item{verbose}{логічне: чи виводити інформацію про прогрес}
 }
 \value{
-An S4 \code{PMM2fit} object
+Об'єкт S4 \code{PMM2fit}
 }
 \description{
-Fits a linear model using the Polynomial Maximization Method (order 2)
-which is robust against non-Gaussian errors.
+Підганяє лінійну модель за допомогою методу максимізації поліномів (порядок 2),
+який є робастним щодо негаусівських помилок.
 }
 \details{
-The PMM2 algorithm works as follows:
+Алгоритм PMM2 працює наступним чином:
 \enumerate{
-\item Fits ordinary least squares (OLS) regression to get initial estimates
-\item Computes central moments (m2, m3, m4) from OLS residuals
-\item Iteratively improves parameter estimates using a gradient-based approach
+\item Підганяє звичайну регресію найменших квадратів (OLS) для отримання початкових оцінок
+\item Обчислює центральні моменти (m2, m3, m4) із залишків OLS
+\item Ітеративно покращує оцінки параметрів за допомогою підходу на основі градієнта
 }
 
-PMM2 is particularly useful when error terms are non-Gaussian.
+PMM2 особливо корисний, коли терми помилок не є гаусівськими.
 }
 \examples{
 \dontrun{
-# Generate sample data with t-distributed errors
+# Генерувати дані вибірки з t-розподіленими помилками
 n <- 100
 x <- rnorm(n)
 y <- 2 + 3*x + rt(n, df=3)
 dat <- data.frame(y=y, x=x)
 
-# Fit model using PMM2
+# Підігнати модель за допомогою PMM2
 fit <- lm_pmm2(y ~ x, data=dat)
 
-# Summary and inference
+# Резюме та статистичний висновок
 summary(fit, formula=y~x, data=dat)
 }
 }

@@ -2,22 +2,22 @@
 % Please edit documentation in R/pmm_ts_methods.R
 \name{plot,TS2fit,missing-method}
 \alias{plot,TS2fit,missing-method}
-\title{Plot diagnostics for TS2fit objects}
+\title{Побудувати діагностичні графіки для об'єктів TS2fit}
 \usage{
 \S4method{plot}{TS2fit,missing}(x, y, which = c(1:4), ...)
 }
 \arguments{
-\item{x}{A TS2fit object}
+\item{x}{Об'єкт TS2fit}
 
-\item{y}{Unused (for S4 method compatibility)}
+\item{y}{Не використовується (для сумісності методу S4)}
 
-\item{which}{Integer vector specifying which plots to produce}
+\item{which}{Цілочисельний вектор, що вказує, які графіки виробляти}
 
-\item{...}{additional arguments passed to plotting functions}
+\item{...}{додаткові аргументи, передані функціям побудови графіків}
 }
 \value{
-Invisibly returns x
+Невидимо повертає x
 }
 \description{
-Plot diagnostics for TS2fit objects
+Побудувати діагностичні графіки для об'єктів TS2fit
 }

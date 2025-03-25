@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm_main.R
 \name{coef,PMM2fit-method}
 \alias{coef,PMM2fit-method}
-\title{Extract coefficients from a PMM2fit object}
+\title{Витягнути коефіцієнти з об'єкта PMM2fit}
 \usage{
 \S4method{coef}{PMM2fit}(object, ...)
 }
 \arguments{
-\item{object}{A PMM2fit object}
+\item{object}{Об'єкт PMM2fit}
 
-\item{...}{Additional arguments (not used)}
+\item{...}{Додаткові аргументи (не використовуються)}
 }
 \value{
-A vector of coefficients
+Вектор коефіцієнтів
 }
 \description{
-Extract coefficients from a PMM2fit object
+Витягнути коефіцієнти з об'єкта PMM2fit
 }
