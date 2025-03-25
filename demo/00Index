@@ -1,0 +1,5 @@
+pmm2_demo_runner    Demonstration of main PMM2 functions
+pmm2_prediction     Examples of prediction with PMM2
+pmm2_real_data      PMM2 applied to real datasets
+pmm2_simulation     PMM2 simulation studies
+pmm_ts_examples     Time series examples with PMM2

@@ -6,6 +6,4 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(EstemPMM)
+\`\`\`{r setup, include=FALSE} knitr::opts_chunk\$set(echo = TRUE) library(EstemPMM)

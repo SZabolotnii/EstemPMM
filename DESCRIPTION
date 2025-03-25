@@ -16,7 +16,8 @@ Encoding: UTF-8
 Depends: R (>= 3.5.0)
 Imports:
     stats,
-    methods
+    methods,
+    MASS
 Suggests:
     testthat (>= 3.0.0),
     rmarkdown,
