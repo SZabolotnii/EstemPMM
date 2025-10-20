@@ -168,12 +168,15 @@ compare_single_spec <- function(spec,
   theoretical_moments <- innov_info$theoretical
 
   parameter_names <- param_names(spec)
+  mse_vec <- as.vector(t(mse))
+  ratios <- as.vector(t(mse / matrix(baseline_mse, nrow = length(methods), ncol = n_params, byrow = TRUE)))
+
   parameter_df <- data.frame(
     model = label,
     method = rep(methods, each = n_params),
     parameter = rep(parameter_names, times = length(methods)),
-    mse = as.numeric(mse),
-    mse_ratio = as.numeric(mse / rep(baseline_mse, times = length(methods))),
+    mse = mse_vec,
+    mse_ratio = ratios,
     successful_runs = rep(success, each = n_params),
     total_runs = n_sim,
     theoretical_c3 = theoretical_moments$c3,
@@ -240,7 +243,7 @@ compare_single_spec <- function(spec,
 simulate_series <- function(spec, n, innov_info) {
   model_type <- spec$model
   record_env <- new.env(parent = emptyenv())
-  rand_gen <- function(nn) {
+  rand_gen <- function(nn, ...) {
     z <- innov_info$generator(nn)
     record_env$innov <- z
     z
@@ -248,14 +251,14 @@ simulate_series <- function(spec, n, innov_info) {
 
   series <- if (model_type == "ar") {
     stats::arima.sim(model = list(ar = spec$theta), n = n,
-                     rand.gen = rand_gen, method = "ML")
+                     rand.gen = rand_gen)
   } else if (model_type == "ma") {
     stats::arima.sim(model = list(ma = spec$theta), n = n,
-                     rand.gen = rand_gen, method = "ML")
+                     rand.gen = rand_gen)
   } else if (model_type == "arma") {
     theta <- spec$theta
     stats::arima.sim(model = list(ar = theta$ar, ma = theta$ma), n = n,
-                     rand.gen = rand_gen, method = "ML")
+                     rand.gen = rand_gen)
   } else {
     stop("Невідомий тип моделі: ", model_type)
   }

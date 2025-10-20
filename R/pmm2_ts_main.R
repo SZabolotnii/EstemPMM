@@ -51,6 +51,47 @@ ts_pmm2 <- function(x, order,
   # 1) Перевірка вхідних даних
   model_params <- validate_ts_parameters(x, order, model_type, include.mean)
 
+  if (model_params$model_type == "ma") {
+    q <- model_params$ma_order
+    css_fit <- ma_css_fit(model_params$original_x, q, include.mean, verbose)
+
+    if (method == "css") {
+      moments <- compute_moments(css_fit$residuals)
+      return(new("MAPMM2",
+                 coefficients    = as.numeric(css_fit$coefficients),
+                 residuals       = as.numeric(css_fit$residuals),
+                 m2              = as.numeric(moments$m2),
+                 m3              = as.numeric(moments$m3),
+                 m4              = as.numeric(moments$m4),
+                 convergence     = css_fit$convergence,
+                 iterations      = as.numeric(css_fit$iterations),
+                 call            = cl,
+                 model_type      = "ma",
+                 intercept       = if (include.mean) as.numeric(css_fit$intercept) else 0,
+                 original_series = as.numeric(model_params$original_x),
+                 order           = list(ar = 0L, ma = q, d = 0L)))
+    }
+
+    pmm2_fit <- ma_pmm2_fit(model_params$original_x, q, css_fit,
+                             max_iter = max_iter, tol = tol,
+                             verbose = verbose)
+    moments <- compute_moments(pmm2_fit$innovations)
+
+    return(new("MAPMM2",
+               coefficients    = as.numeric(pmm2_fit$coefficients),
+               residuals       = as.numeric(pmm2_fit$innovations),
+               m2              = as.numeric(moments$m2),
+               m3              = as.numeric(moments$m3),
+               m4              = as.numeric(moments$m4),
+               convergence     = pmm2_fit$convergence,
+               iterations      = as.numeric(pmm2_fit$iterations),
+               call            = cl,
+               model_type      = "ma",
+               intercept       = if (include.mean) as.numeric(pmm2_fit$intercept) else 0,
+               original_series = as.numeric(model_params$original_x),
+               order           = list(ar = 0L, ma = q, d = 0L)))
+  }
+
   # 2) Отримання початкових оцінок
   init <- get_initial_estimates(model_params, initial, method, verbose)
   b_init      <- init$b_init
@@ -205,4 +246,139 @@ arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2", max_iter = 50, to
           include.mean = include.mean, initial = initial,
           na.action = na.action, regularize = regularize,
           reg_lambda = reg_lambda, verbose = verbose)
+}
+
+# --- MA utilities ---------------------------------------------------------
+
+ma_css_fit <- function(x, q, include_mean = TRUE, verbose = FALSE) {
+  fit <- tryCatch(
+    stats::arima(x, order = c(0, 0, q), method = "CSS-ML",
+                 include.mean = include_mean),
+    error = function(e) NULL
+  )
+
+  if (is.null(fit)) {
+    if (verbose) {
+      cat("Не вдалось оцінити MA модель через stats::arima: повертаю нульові коефіцієнти\n")
+    }
+    coef_css <- rep(0, q)
+    intercept <- if (include_mean) mean(x) else 0
+    residuals <- x - intercept
+    residuals[is.na(residuals)] <- 0
+    return(list(
+      coefficients = coef_css,
+      intercept = intercept,
+      residuals = residuals,
+      convergence = FALSE,
+      iterations = 0L
+    ))
+  }
+
+  names_coef <- names(fit$coef)
+  coef_css <- numeric(q)
+  for (j in seq_len(q)) {
+    coef_name <- paste0("ma", j)
+    if (coef_name %in% names_coef) {
+      coef_css[j] <- fit$coef[coef_name]
+    } else if (length(fit$coef) >= j) {
+      coef_css[j] <- fit$coef[j]
+    } else {
+      coef_css[j] <- 0
+    }
+  }
+
+  intercept <- 0
+  if (include_mean) {
+    intercept_name <- setdiff(names_coef, paste0("ma", seq_len(q)))
+    if (length(intercept_name) > 0) {
+      intercept <- as.numeric(fit$coef[intercept_name[1]])
+    }
+  }
+
+  residuals <- as.numeric(fit$residuals)
+  residuals[is.na(residuals)] <- 0
+
+  list(
+    coefficients = coef_css,
+    intercept = intercept,
+    residuals = residuals,
+    convergence = TRUE,
+    iterations = 1L
+  )
+}
+
+ma_pmm2_fit <- function(x, q, css_fit, max_iter = 50, tol = 1e-6, verbose = FALSE) {
+  design <- ma_build_design(css_fit$intercept, css_fit$residuals, x, q)
+  moments <- compute_moments(css_fit$residuals)
+
+  b_init <- c(0, css_fit$coefficients)
+  solve_res <- ma_solve_pmm2(b_init, design$X, design$y,
+                             moments$m2, moments$m3, moments$m4,
+                             max_iter = max_iter, tol = tol,
+                             verbose = verbose)
+
+  theta <- solve_res$coefficients
+  innovations <- ma_compute_innovations(x - css_fit$intercept, theta, q)
+
+  list(
+    coefficients = theta,
+    intercept = css_fit$intercept,
+    innovations = innovations,
+    convergence = solve_res$convergence,
+    iterations = solve_res$iterations
+  )
+}
+
+ma_build_design <- function(intercept, residuals, x, q) {
+  idx <- seq.int(q + 1L, length(x))
+  X <- matrix(1, nrow = length(idx), ncol = q + 1L)
+  for (j in seq_len(q)) {
+    X[, j + 1L] <- residuals[idx - j]
+  }
+  y <- x[idx] - intercept
+  list(X = X, y = y)
+}
+
+ma_solve_pmm2 <- function(b_init, X, Y, m2, m3, m4,
+                          max_iter = 50, tol = 1e-6,
+                          verbose = FALSE) {
+  b <- as.numeric(b_init)
+  iterations <- 0L
+  converged <- FALSE
+  for (iter in seq_len(max_iter)) {
+    iterations <- iter
+    S <- as.vector(X %*% b)
+    Z1 <- m3 * S^2 + (m4 - m2^2 - 2 * m3 * Y) * S +
+      (m3 * Y^2 - (m4 - m2^2) * Y - m2 * m3)
+    Z <- as.numeric(t(X) %*% Z1)
+    JZ11 <- 2 * m3 * S + (m4 - m2^2 - 2 * m3 * Y)
+    J <- t(X) %*% (X * JZ11)
+    step <- tryCatch(solve(J, Z), error = function(e) NULL)
+    if (is.null(step)) {
+      if (verbose) cat("Система сингулярна на ітерації", iter, "\n")
+      break
+    }
+    b_new <- b - step
+    if (sqrt(sum((b_new - b)^2)) < tol) {
+      b <- b_new
+      converged <- TRUE
+      break
+    }
+    b <- b_new
+  }
+  list(coefficients = b[-1], convergence = converged, iterations = iterations)
+}
+
+ma_compute_innovations <- function(x, theta, q) {
+  n <- length(x)
+  innovations <- numeric(n)
+  history <- rep(0, q)
+  for (t in seq_len(n)) {
+    ma_component <- if (q > 0) sum(theta * history) else 0
+    innovations[t] <- x[t] - ma_component
+    if (q > 0) {
+      history <- c(innovations[t], history)[seq_len(q)]
+    }
+  }
+  innovations
 }

@@ -487,7 +487,9 @@ compute_ts_residuals <- function(coefs, model_info) {
 
   # Підготувати фіксовані параметри для arima
   fixed_params <- c(ar_coefs, ma_coefs)
-  if (include.mean) {
+  include_intercept <- include.mean && !(model_info$model_type == "arima" && model_info$d > 0)
+
+  if (include_intercept) {
     fixed_params <- c(fixed_params, model_info$x_mean)
     names(fixed_params) <- c(
       if(ar_order > 0) paste0("ar", 1:ar_order) else NULL,
@@ -504,9 +506,9 @@ compute_ts_residuals <- function(coefs, model_info) {
   # Обчислити залишки з фіксованими параметрами
   final_fit <- tryCatch({
     stats::arima(model_info$original_x,
-                 order = arima_order,
-                 fixed = fixed_params,
-                 include.mean = include.mean)
+                order = arima_order,
+                fixed = fixed_params,
+                include.mean = include_intercept)
   }, error = function(e) {
     if (verbose_flag) cat("Помилка при обчисленні кінцевих залишків:", e$message, "\n")
     list(residuals = rep(NA, length(model_info$original_x)))
