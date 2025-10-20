@@ -46,7 +46,7 @@ pmm2_monte_carlo_compare <- function(model_specs,
                                      n_sim,
                                      innovations = list(type = "gaussian"),
                                      seed = NULL,
-                                     include.mean = FALSE,
+                                     include.mean = TRUE,
                                      progress = interactive(),
                                      verbose = FALSE) {
   if (missing(model_specs) || length(model_specs) == 0L) {
@@ -239,28 +239,30 @@ compare_single_spec <- function(spec,
 
 simulate_series <- function(spec, n, innov_info) {
   model_type <- spec$model
-  burn_in <- innov_info$burn_in %||% .pmm2_default_burn_in
-  total_n <- n + burn_in
-  innov <- innov_info$generator(total_n)
+  record_env <- new.env(parent = emptyenv())
+  rand_gen <- function(nn) {
+    z <- innov_info$generator(nn)
+    record_env$innov <- z
+    z
+  }
 
-  series_full <- if (model_type == "ar") {
-    stats::arima.sim(model = list(ar = spec$theta), n = total_n, innov = innov)
+  series <- if (model_type == "ar") {
+    stats::arima.sim(model = list(ar = spec$theta), n = n,
+                     rand.gen = rand_gen, method = "ML")
   } else if (model_type == "ma") {
-    stats::arima.sim(model = list(ma = spec$theta), n = total_n, innov = innov)
+    stats::arima.sim(model = list(ma = spec$theta), n = n,
+                     rand.gen = rand_gen, method = "ML")
   } else if (model_type == "arma") {
     theta <- spec$theta
-    stats::arima.sim(
-      model = list(ar = theta$ar, ma = theta$ma),
-      n = total_n,
-      innov = innov
-    )
+    stats::arima.sim(model = list(ar = theta$ar, ma = theta$ma), n = n,
+                     rand.gen = rand_gen, method = "ML")
   } else {
     stop("Невідомий тип моделі: ", model_type)
   }
 
   list(
-    series = tail(series_full, n),
-    innovations = tail(innov, n)
+    series = series,
+    innovations = record_env$innov
   )
 }
 

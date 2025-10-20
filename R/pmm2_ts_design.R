@@ -316,8 +316,7 @@ get_initial_estimates <- function(model_params,
     arima_order <- c(ar_order, ifelse(mtype=="arima", d, 0), ma_order)
     if (is.null(initial)) {
       init_fit <- NULL
-      try_methods <- c("CSS","CSS-ML","ML")
-      if(method=="pmm2") try_methods <- c("CSS","CSS-ML","ML")
+      try_methods <- c("CSS-ML","ML","CSS")
 
       for(mm in try_methods) {
         tmp <- tryCatch({
