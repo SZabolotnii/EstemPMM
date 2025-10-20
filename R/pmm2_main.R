@@ -1,4 +1,4 @@
-# pmm_main.R - Основний модуль для лінійних моделей PMM2
+# pmm2_main.R - Основний модуль для лінійних моделей PMM2
 
 #' pmm2: Головна функція для PMM2 (S=2)
 #'
@@ -154,6 +154,10 @@ lm_pmm2 <- function(formula, data,
              convergence = conv,
              iterations = iter,
              call = call)
+  attr(ans, "model_matrix") <- X
+  attr(ans, "model_frame") <- mf
+  attr(ans, "response") <- as.numeric(y)
+  attr(ans, "data") <- data
 
   return(ans)
 }
@@ -215,6 +219,70 @@ setMethod("AIC", "PMM2fit",
             -2 * ll + k * p
           })
 
+#' Побудувати діагностичні графіки для об'єкта PMM2fit
+#'
+#' @param x Об'єкт PMM2fit
+#' @param y Не використовується (сумісність з generic)
+#' @param which Набір графіків для відображення (значення 1-4)
+#' @param ... Додаткові аргументи, що передаються графічним функціям
+#'
+#' @return Невидимо повертає вхідний об'єкт
+#' @export
+setMethod("plot", signature(x = "PMM2fit", y = "missing"),
+          function(x, y, which = 1:4, ...) {
+            res <- as.numeric(x@residuals)
+            fitted_vals <- tryCatch({
+              fitted(x)
+            }, error = function(e) {
+              stored_X <- attr(x, "model_matrix")
+              if(!is.null(stored_X)) {
+                as.vector(stored_X %*% x@coefficients)
+              } else {
+                seq_along(res)
+              }
+            })
+
+            which <- intersect(unique(which), 1:4)
+            if(length(which) == 0) {
+              which <- 1:4
+            }
+
+            old_par <- graphics::par(no.readonly = TRUE)
+            on.exit(graphics::par(old_par))
+            n_plots <- length(which)
+            graphics::par(mfrow = c(2, 2))
+
+            for(idx in which) {
+              switch(idx,
+                     {
+                       graphics::plot(fitted_vals, res,
+                                      main = "Residuals vs Fitted",
+                                      xlab = "Fitted values",
+                                      ylab = "Residuals", ...)
+                       graphics::abline(h = 0, col = "red", lty = 2)
+                     },
+                     {
+                       stats::qqnorm(res, main = "Normal Q-Q", ...)
+                       stats::qqline(res, col = "red", lty = 2)
+                     },
+                     {
+                       graphics::plot(seq_along(res), res, type = "l",
+                                      main = "Residuals over Index",
+                                      xlab = "Observation",
+                                      ylab = "Residual", ...)
+                       graphics::abline(h = 0, col = "red", lty = 2)
+                     },
+                     {
+                       graphics::hist(res,
+                                      main = "Residual Histogram",
+                                      xlab = "Residuals",
+                                      breaks = "FD", ...)
+                     })
+            }
+
+            invisible(x)
+          })
+
 #' Допоміжна функція для витягнення підігнаних значень
 #'
 #' @param object Об'єкт PMM2fit
@@ -226,19 +294,43 @@ fitted_values <- function(object, data = NULL) {
     stop("Об'єкт PMM2fit не містить інформації про виклик")
   }
 
+  # Фолбек до збережених атрибутів
+  stored_X <- attr(object, "model_matrix")
+  stored_response <- attr(object, "response")
+  stored_mf <- attr(object, "model_frame")
+  stored_data <- attr(object, "data")
+
+  if (!is.null(stored_X)) {
+    fitted_attr <- tryCatch({
+      as.vector(stored_X %*% object@coefficients)
+    }, error = function(e) NULL)
+    if (!is.null(fitted_attr)) {
+      return(fitted_attr)
+    }
+  }
+
+  if (!is.null(stored_response) &&
+      length(stored_response) == length(object@residuals)) {
+    return(as.vector(stored_response - object@residuals))
+  }
+
   # Спробувати реконструювати оригінальні дані
   data_to_use <- data
   if(is.null(data_to_use)) {
-    # Спробувати отримати дані з виклику, але безпечно обробити можливі помилки
-    tryCatch({
-      data_to_use <- eval(object@call$data, envir = parent.frame())
-    }, error = function(e) {
-      # Якщо дані не можна отримати, використовуємо NULL
-      # і видаємо помилку тільки якщо дані не надані явно
-      if(is.null(data)) {
-        stop("Не вдалося отримати дані з об'єкта. Передайте параметр 'data'.")
-      }
-    })
+    if (!is.null(stored_mf)) {
+      data_to_use <- stored_mf
+    } else if (!is.null(stored_data)) {
+      data_to_use <- stored_data
+    } else {
+      # Спробувати отримати дані з виклику, але безпечно обробити можливі помилки
+      tryCatch({
+        data_to_use <- eval(object@call$data, envir = parent.frame())
+      }, error = function(e) {
+        if(is.null(data)) {
+          stop("Не вдалося отримати дані з об'єкта. Передайте параметр 'data'.")
+        }
+      })
+    }
   }
 
   if(is.null(data_to_use)) {

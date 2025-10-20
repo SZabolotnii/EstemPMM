@@ -1,4 +1,4 @@
-# pmm_utils.R
+# pmm2_utils.R
 
 #' Universal solver for PMM2 system of equations
 #'
@@ -701,4 +701,47 @@ compute_moments <- function(errors) {
   return(list(m2 = m2, m3 = m3, m4 = m4,
               c3 = c3, c4 = c4,
               g = g))
+}
+
+#' Обчислити теоретичні коефіцієнти асиметрії, ексцесу та фактор зменшення дисперсії
+#'
+#' @param m2,m3,m4 центральні моменти другого, третього та четвертого порядків
+#'
+#' @return Список з полями `c3`, `c4` та `g`
+#' @export
+pmm2_variance_factor <- function(m2, m3, m4) {
+  if (is.na(m2) || m2 <= 0) {
+    return(list(c3 = NA_real_, c4 = NA_real_, g = NA_real_))
+  }
+  c3 <- m3 / m2^(3/2)
+  c4 <- m4 / m2^2 - 3
+  denom <- 2 + c4
+  g <- if (is.na(denom) || denom == 0) NA_real_ else 1 - (c3^2) / denom
+  list(c3 = c3, c4 = c4, g = g)
+}
+
+#' Обчислити теоретичні матриці дисперсій для ОМНК та PMM2
+#'
+#' @param X Матриця дизайну із стовпцем одиниць
+#' @param m2,m3,m4 центральні моменти залишків ОМНК
+#'
+#' @return Список з полями `ols`, `pmm2`, `c3`, `c4`, `g`
+#' @export
+pmm2_variance_matrices <- function(X, m2, m3, m4) {
+  X <- as.matrix(X)
+  XtX <- crossprod(X)
+  V1 <- tryCatch({
+    m2 * solve(XtX)
+  }, error = function(e) {
+    stop("Не вдається обернути матрицю X'X: ", conditionMessage(e), call. = FALSE)
+  })
+
+  vf <- pmm2_variance_factor(m2, m3, m4)
+  if (is.na(vf$g)) {
+    V2 <- matrix(NA_real_, nrow = nrow(V1), ncol = ncol(V1))
+  } else {
+    V2 <- vf$g * V1
+  }
+
+  list(ols = V1, pmm2 = V2, c3 = vf$c3, c4 = vf$c4, g = vf$g)
 }

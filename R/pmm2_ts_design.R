@@ -1,4 +1,4 @@
-# pmm_ts_design.R - Функції для роботи з дизайн-матрицями часових рядів
+# pmm2_ts_design.R - Функції для роботи з дизайн-матрицями часових рядів
 
 #' Перевірка та підготовка параметрів часового ряду
 #'
@@ -468,6 +468,7 @@ compute_ts_residuals <- function(coefs, model_info) {
   d           <- model_info$d
   model_type  <- model_info$model_type
   include.mean <- model_info$include.mean
+  verbose_flag <- isTRUE(model_info$verbose)
 
   # Розділити коефіцієнти на AR та MA частини
   if (ar_order > 0) {
@@ -508,7 +509,7 @@ compute_ts_residuals <- function(coefs, model_info) {
                  fixed = fixed_params,
                  include.mean = include.mean)
   }, error = function(e) {
-    if (verbose) cat("Помилка при обчисленні кінцевих залишків:", e$message, "\n")
+    if (verbose_flag) cat("Помилка при обчисленні кінцевих залишків:", e$message, "\n")
     list(residuals = rep(NA, length(model_info$original_x)))
   })
 

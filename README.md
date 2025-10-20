@@ -1,7 +1,7 @@
 # EstemPMM: Polynomial Maximization Method for Regression Analysis
 
 [![R](https://img.shields.io/badge/R-%3E%3D%204.0.0-blue)](https://cran.r-project.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: GPL-3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 ## Overview
 
@@ -64,12 +64,41 @@ compare_with_ols(y ~ x, data)
 ## Project Structure
 
 The package consists of several key R files:
-- `pmm_classes.R`: Defines S4 classes for PMM2 fit results
-- `pmm_main.R`: Contains the main function for PMM2 implementation
-- `pmm_utils.R`: Provides utility functions for PMM
-- `pmm_inference.R`: Implements bootstrap inference for PMM2 fits
+- `pmm2_classes.R`: Defines S4 classes for PMM2 fit results
+- `pmm2_main.R`: Contains linear PMM2 fitting functions
+- `pmm2_ts_main.R`: Provides PMM2 fitting wrappers for time series models
+- `pmm2_utils.R`: Provides optimization utilities for PMM2
+- `pmm2_common.R`: Hosts shared numerical routines used by PMM2 algorithms
+- `pmm2_inference.R`: Implements bootstrap inference for PMM2 fits
+- `pmm2_ts_design.R`: Builds design matrices and helpers for time series estimation
 - `pmm2_simulation.R`: Contains code for Monte Carlo simulations
 - `pmm2_real_data.R`: Applies PMM2 to real-world data (Auto MPG dataset)
+
+## Variance Diagnostics
+
+You can inspect the theoretical skewness, kurtosis, and expected variance reduction
+obtained from the PMM2 algorithm using the helper utilities:
+
+```r
+library(EstemPMM)
+
+set.seed(42)
+x <- rnorm(200)
+errors <- rgamma(200, shape = 2, scale = 1) - 2
+y <- 1 + 0.7 * x + errors
+dat <- data.frame(y, x)
+
+fit <- lm_pmm2(y ~ x, data = dat)
+
+# Retrieve theoretical cumulants and variance ratio g
+vf <- pmm2_variance_factor(fit@m2, fit@m3, fit@m4)
+vf$g  # Expected Var(PMM2) / Var(OLS)
+
+# Compare variance matrices for OLS and PMM2
+vm <- pmm2_variance_matrices(attr(fit, "model_matrix"),
+                             fit@m2, fit@m3, fit@m4)
+vm$pmm2
+```
 
 ## Demo Script
 
@@ -126,4 +155,4 @@ Zabolotnii S., Warsza Z.L., Tkachenko O. (2018) Polynomial Estimation of Linear 
 
 ## License
 
-This project is distributed under the MIT License.
+This project is distributed under the GPL-3 License.

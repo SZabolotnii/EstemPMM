@@ -8,10 +8,11 @@ library(dplyr)
 library(parallel)
 
 # Завантаження необхідних файлів пакету EstemPMM
-source("R/pmm_classes.R")
-source("R/pmm_utils.R")
-source("R/pmm_main.R")
-source("R/pmm_inference.R")
+source("R/pmm2_classes.R")
+source("R/pmm2_utils.R")
+source("R/pmm2_common.R")
+source("R/pmm2_main.R")
+source("R/pmm2_inference.R")
 
 #############################################################
 # Допоміжні функції для симуляцій Монте-Карло

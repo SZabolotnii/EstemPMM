@@ -1,4 +1,4 @@
-# pmm_ts_main.R - Уніфікований модуль для моделей часових рядів з PMM2
+# pmm2_ts_main.R - Уніфікований модуль для моделей часових рядів з PMM2
 
 #' Підігнати модель часового ряду за допомогою методу PMM2
 #'
@@ -88,7 +88,8 @@ ts_pmm2 <- function(x, order,
       innovations = innovations,
       x = x_centered,
       x_mean = x_mean,
-      original_x = orig_x
+      original_x = orig_x,
+      verbose = verbose
     )
 
     result <- pmm2_algorithm(

@@ -1,7 +1,7 @@
-# pmm_package.R - Головний файл пакету з залежностями та імпортами
+# pmm2_package.R - Головний файл пакету з залежностями та імпортами
 
 #' @importFrom methods is new slotNames
-#' @importFrom graphics abline hist legend lines par
+#' @importFrom graphics abline hist legend lines par plot
 #' @importFrom stats acf arima cov dnorm lm lm.fit lowess model.frame model.matrix model.response na.fail na.pass pnorm qqline qqnorm quantile arima.sim diffinv rnorm sd
 #' @importFrom utils tail
 NULL
@@ -44,10 +44,8 @@ NULL
 #' \code{\link{pmm_kurtosis}} - Обчислення ексцесу
 #'
 #' \code{\link{compute_moments}} - Обчислення моментів та кумулянтів
-#'
-#' @docType package
-#' @name pmm2
-NULL
+#' @keywords internal
+"_PACKAGE"
 
 #' Клас S4 PMM2fit
 #'

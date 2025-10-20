@@ -1,4 +1,4 @@
-# pmm_classes.R - Ієрархія класів для моделей PMM2
+# pmm2_classes.R - Ієрархія класів для моделей PMM2
 
 #' Базовий клас S4 для зберігання результатів PMM2 моделей
 #'
@@ -108,6 +108,14 @@ setMethod("summary", "PMM2fit",
             cat("  m3 =", object@m3, "\n")
             cat("  m4 =", object@m4, "\n\n")
 
+            vf <- pmm2_variance_factor(object@m2, object@m3, object@m4)
+            if(!is.na(vf$g)) {
+              cat("Теоретичні характеристики PMM2 (S = 2):\n")
+              cat("  c3 =", vf$c3, "\n")
+              cat("  c4 =", vf$c4, "\n")
+              cat("  g  =", vf$g, " (очікуване відношення Var[PMM2]/Var[OLS])\n\n")
+            }
+
             cat("Інформація про алгоритм:\n")
             cat("  Статус збіжності:", object@convergence, "\n")
             if("iterations" %in% slotNames(object)) {
@@ -188,6 +196,14 @@ setMethod("summary", "TS2fit",
             cat("  m2 =", object@m2, "\n")
             cat("  m3 =", object@m3, "\n")
             cat("  m4 =", object@m4, "\n\n")
+
+            vf <- pmm2_variance_factor(object@m2, object@m3, object@m4)
+            if(!is.na(vf$g)) {
+              cat("Теоретичні характеристики PMM2 (S = 2):\n")
+              cat("  c3 =", vf$c3, "\n")
+              cat("  c4 =", vf$c4, "\n")
+              cat("  g  =", vf$g, " (очікуване відношення Var[PMM2]/Var[OLS])\n\n")
+            }
 
             cat("Інформація про алгоритм:\n")
             cat("  Статус збіжності:", object@convergence, "\n")

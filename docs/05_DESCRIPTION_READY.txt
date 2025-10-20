@@ -1,0 +1,37 @@
+Package: EstemPMM
+Type: Package
+Title: Polynomial Maximization Method for Non-Gaussian Regression
+Version: 0.1.0
+Date: 2025-01-15
+Authors@R: 
+    person("Serhii", "Zabolotnii", 
+           email = "zabolotniua@gmail.com", 
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0000-0000-0000"))
+Maintainer: Serhii Zabolotnii <zabolotniua@gmail.com>
+Description: 
+    Implements the Polynomial Maximization Method (PMM) for parameter estimation
+    in linear and time series models when error distributions deviate from normality.
+    The PMM2 variant achieves lower variance parameter estimates compared to ordinary
+    least squares (OLS) when errors exhibit significant skewness. Includes methods
+    for linear regression, AR/MA/ARMA/ARIMA models, and bootstrap inference.
+License: GPL-3
+Encoding: UTF-8
+Depends: R (>= 3.5.0)
+Imports:
+    methods,
+    stats,
+    graphics,
+    utils
+Suggests:
+    testthat (>= 3.0.0),
+    rmarkdown,
+    knitr,
+    MASS
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Config/testthat/edition: 3
+URL: https://github.com/SZabolotnii/EstemPMM
+BugReports: https://github.com/SZabolotnii/EstemPMM/issues
+VignetteBuilder: knitr
