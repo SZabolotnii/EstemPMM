@@ -1,18 +1,19 @@
 # Симуляції Монте-Карло для оцінки ефективності PMM2
 # Частина 1: Моделювання та порівняння методів на різних розподілах похибок
 
-# Завантаження необхідних пакетів
+# Перевірка наявності та підключення необхідних пакунків
+required_pkgs <- c("EstemPMM", "ggplot2", "gridExtra", "dplyr", "parallel")
+missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)]
+if (length(missing_pkgs) > 0) {
+  stop("Для цього демо встановіть пакунки: ",
+       paste(missing_pkgs, collapse = ", "), call. = FALSE)
+}
+
+library(EstemPMM)
 library(ggplot2)
 library(gridExtra)
 library(dplyr)
 library(parallel)
-
-# Завантаження необхідних файлів пакету EstemPMM
-source("R/pmm2_classes.R")
-source("R/pmm2_utils.R")
-source("R/pmm2_common.R")
-source("R/pmm2_main.R")
-source("R/pmm2_inference.R")
 
 #############################################################
 # Допоміжні функції для симуляцій Монте-Карло
@@ -54,23 +55,6 @@ generate_data <- function(n, distribution, a0, a1, ...) {
   return(data.frame(x = x, y = y, errors = errors))
 }
 
-# Функція для обчислення моментів і кумулянтів розподілу помилок
-compute_moments <- function(errors) {
-  m2 <- mean(errors^2)
-  m3 <- mean(errors^3)
-  m4 <- mean(errors^4)
-
-  c3 <- m3 / m2^(3/2)  # Коефіцієнт асиметрії
-  c4 <- m4 / m2^2 - 3  # Коефіцієнт ексцесу
-
-  # Теоретичний коефіцієнт зменшення дисперсії
-  g <- 1 - c3^2 / (2 + c4)
-
-  return(list(m2 = m2, m3 = m3, m4 = m4,
-              c3 = c3, c4 = c4,
-              g = g))
-}
-
 # Функція для порівняння методів PMM2 та OLS
 compare_methods <- function(data, true_a0, true_a1) {
   # Підгонка OLS
@@ -99,7 +83,7 @@ compare_methods <- function(data, true_a0, true_a1) {
   pmm2_bias_a1 <- pmm2_fit@coefficients[2] - true_a1
 
   # Моменти розподілу помилок
-  moments <- compute_moments(data$errors)
+  moments <- EstemPMM::compute_moments(data$errors)
 
   return(list(
     ols_coef = coef(ols_fit),
@@ -162,7 +146,7 @@ monte_carlo <- function(n_sim, n_samples, distribution, true_a0, true_a1, parall
 
   # Генерація одноразового набору даних для обчислення моментів
   data <- generate_data(10000, distribution, true_a0, true_a1)
-  moments <- compute_moments(data$errors)
+  moments <- EstemPMM::compute_moments(data$errors)
 
   return(list(
     ols_a0_mean = mean(ols_a0),
@@ -356,5 +340,5 @@ run_all_simulations <- function() {
   return(list(results = results, summary = summary_table))
 }
 
-# Щоб запустити всі симуляції, розкоментуйте виклик:
-all_results <- run_all_simulations()
+# Щоб запустити всі симуляції, викличте вручну:
+# run_all_simulations()

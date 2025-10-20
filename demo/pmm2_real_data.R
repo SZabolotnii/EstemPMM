@@ -1,32 +1,18 @@
 # Застосування PMM2 до реальних даних
 # Частина 2: Порівняння PMM2 та OLS на наборі даних Auto MPG
 
-# Завантаження необхідних пакетів
+# Перевірки наявності пакунків
+required_pkgs <- c("EstemPMM", "ggplot2", "gridExtra", "dplyr")
+missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)]
+if (length(missing_pkgs) > 0) {
+  stop("Для цього демо встановіть пакунки: ",
+       paste(missing_pkgs, collapse = ", "), call. = FALSE)
+}
+
+library(EstemPMM)
 library(ggplot2)
 library(gridExtra)
 library(dplyr)
-
-
-#############################################################
-# Функція для обчислення моментів
-#############################################################
-
-# Функція для обчислення моментів і кумулянтів розподілу помилок
-compute_moments <- function(errors) {
-  m2 <- mean(errors^2)
-  m3 <- mean(errors^3)
-  m4 <- mean(errors^4)
-
-  c3 <- m3 / m2^(3/2)  # Коефіцієнт асиметрії
-  c4 <- m4 / m2^2 - 3  # Коефіцієнт ексцесу
-
-  # Теоретичний коефіцієнт зменшення дисперсії
-  g <- 1 - c3^2 / (2 + c4)
-
-  return(list(m2 = m2, m3 = m3, m4 = m4,
-              c3 = c3, c4 = c4,
-              g = g))
-}
 
 #############################################################
 # Функція для застосування PMM2 до даних Auto MPG
@@ -80,7 +66,7 @@ apply_to_mpg_data <- function() {
 
   # Обчислення моментів залишків OLS
   ols_resid <- residuals(ols_fit)
-  moments <- compute_moments(ols_resid)
+  moments <- EstemPMM::compute_moments(ols_resid)
 
   # Створення даних для відображення ліній регресії
   x_range <- seq(min(model_data$x), max(model_data$x), length.out = 100)
@@ -273,5 +259,5 @@ apply_to_mpg_data <- function() {
   ))
 }
 
-# Щоб запустити аналіз реальних даних, розкоментуйте виклик:
-results <- apply_to_mpg_data()
+# Щоб запустити аналіз реальних даних, викличте вручну:
+# apply_to_mpg_data()

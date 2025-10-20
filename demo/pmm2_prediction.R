@@ -1,6 +1,17 @@
 # Частина 3: Порівняння передбачувальної точності PMM2 та OLS
 # з використанням розділення даних та крос-валідації
 
+required_pkgs <- c("EstemPMM", "ggplot2", "reshape2")
+missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)]
+if (length(missing_pkgs) > 0) {
+  stop("Для цього демо встановіть пакунки: ",
+       paste(missing_pkgs, collapse = ", "), call. = FALSE)
+}
+
+library(EstemPMM)
+library(ggplot2)
+library(reshape2)
+
 # Функція для об'єднаного виконання всіх експериментів з передбачення
 run_all_prediction_experiments <- function() {
   # Завантаження даних Auto MPG з UCI Repository (лише один раз)
@@ -399,6 +410,5 @@ perform_cross_validation <- function(model_data, predictor_name, is_quadratic = 
   ))
 }
 
-# Запуск усіх експериментів
-# Ця функція завантажує дані один раз і виконує всі експерименти
-all_prediction_results <- run_all_prediction_experiments()
+# Щоб виконати всі експерименти, викличте:
+# run_all_prediction_experiments()

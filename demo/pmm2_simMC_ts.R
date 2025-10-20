@@ -3,9 +3,15 @@
 ################################################################
 
 
+required_pkgs <- c("EstemPMM", "dplyr", "ggplot2")
+missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)]
+if (length(missing_pkgs) > 0) {
+  stop("Для цього демо встановіть пакунки: ",
+       paste(missing_pkgs, collapse = ", "), call. = FALSE)
+}
+
 library(EstemPMM)
 library(dplyr)
-library(moments)     # для skewness(), kurtosis()
 library(ggplot2)   # опційно, якщо захочете ggplot-візуалізації
 
 # (Припускаємо, що у вас є функції ar_pmm2, ma_pmm2, arma_pmm2, arima_pmm2)
@@ -159,13 +165,15 @@ fit_model <- function(series, model_type, method,
     stop("Unknown model_type in fit_model")
   }
 
-  # Обчислення c3, c4 і g2:
-  # skewness() і kurtosis() з пакета moments
-  # kurtosis(...) дає повну 4-ту моментну характеристику => ексцес = kurtosis(...) - 3
-  c3 <- if(all(is.finite(res))) skewness(res, na.rm=TRUE) else NA
-  # c4 = excess kurtosis
-  c4 <- if(all(is.finite(res))) kurtosis(res, na.rm=TRUE) - 3 else NA
-  g2 <- if(!is.na(c3) && !is.na(c4)) 1 - c3^2 / (2 + c4) else NA
+  # Обчислення c3, c4 і g2 за допомогою функції з пакета EstemPMM
+  if (all(is.finite(res))) {
+    moments <- EstemPMM::compute_moments(res)
+    c3 <- moments$c3
+    c4 <- moments$c4
+    g2 <- moments$g
+  } else {
+    c3 <- c4 <- g2 <- NA
+  }
 
   list(coefs = coefs_est, res = res, c3 = c3, c4 = c4, g2 = g2)
 }
