@@ -18,7 +18,8 @@
 pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
                            max_iter = 50, tol = 1e-6,
                            regularize = TRUE, reg_lambda = 1e-8,
-                           verbose = FALSE) {
+                           verbose = FALSE,
+                           poly_terms = NULL) {
   # Поточні оцінки параметрів
   b_cur <- b_init
   converged <- FALSE
@@ -29,9 +30,18 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
   # A = c3 * sigma^3, B = (c4 + 3) * sigma^4 - sigma^4 - 2 c3 * sigma^3 * y,
   # C = c3 * y^2 * sigma^3 - ((c4 + 3) * sigma^4 - sigma^4) * y - sigma^2 * c3 * sigma^3.
   # Підстановка σ^2 = m2, m3 = c3 σ^3, m4 = (c4 + 3) σ^4 дає наведені нижче формули.
-  A <- m3
-  B <- m4 - m2^2 - 2*m3*y
-  C <- m3*y^2 - (m4 - m2^2)*y - m2*m3
+  if (is.null(poly_terms)) {
+    A <- m3
+    B <- m4 - m2^2 - 2 * m3 * y
+    C <- m3 * y^2 - (m4 - m2^2) * y - m2 * m3
+  } else {
+    A <- poly_terms$A
+    B <- poly_terms$B
+    C <- poly_terms$C
+    if (length(B) != nrow(X) || length(C) != nrow(X)) {
+      stop("poly_terms$B та poly_terms$C повинні мати довжину, що дорівнює кількості рядків X")
+    }
+  }
 
   # Відстежувати історію збіжності, якщо verbose
   if (verbose) {
@@ -56,7 +66,7 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     }
 
     # Обчислити похідну JZ11 = 2*A*y_pred + B
-    JZ11 <- 2*A*y_pred + B
+    JZ11 <- 2 * A * y_pred + B
 
     # Сформувати матрицю Якобіана
     JZs <- matrix(0, p, p)
