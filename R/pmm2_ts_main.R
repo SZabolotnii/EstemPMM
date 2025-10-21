@@ -92,6 +92,131 @@ ts_pmm2 <- function(x, order,
                order           = list(ar = 0L, ma = q, d = 0L)))
   }
 
+  if (model_params$model_type == "arima") {
+    p <- model_params$ar_order
+    d <- model_params$d
+    q <- model_params$ma_order
+
+    css_fit <- tryCatch(
+      stats::arima(model_params$original_x,
+                   order = c(p, d, q),
+                   method = "CSS-ML",
+                   include.mean = include.mean),
+      error = function(e) NULL
+    )
+
+    if (is.null(css_fit)) {
+      stop("Не вдалося оцінити ARIMA модель класичним методом")
+    }
+
+    coef_names <- names(css_fit$coef)
+    ar_css <- if (p > 0) as.numeric(css_fit$coef[paste0("ar", seq_len(p))]) else numeric(0)
+    ma_css <- if (q > 0) as.numeric(css_fit$coef[paste0("ma", seq_len(q))]) else numeric(0)
+
+    intercept_css <- 0
+    if (include.mean && d == 0) {
+      intercept_name <- setdiff(coef_names,
+                                c(paste0("ar", seq_len(p)), paste0("ma", seq_len(q))))
+      if (length(intercept_name) > 0) {
+        intercept_css <- as.numeric(css_fit$coef[intercept_name[1]])
+      }
+    }
+
+    residuals_css <- as.numeric(css_fit$residuals)
+    residuals_css[is.na(residuals_css)] <- 0
+
+    x_diff <- if (d > 0) diff(model_params$original_x, differences = d)
+              else model_params$original_x
+    res_diff <- tail(residuals_css, length(x_diff))
+
+    include_intercept_diff <- include.mean && d == 0
+
+    if (method == "css") {
+      res_clean <- res_diff[is.finite(res_diff)]
+      moments <- compute_moments(res_clean)
+      return(new("ARIMAPMM2",
+                 coefficients    = as.numeric(c(ar_css, ma_css)),
+                 residuals       = as.numeric(residuals_css),
+                 m2              = as.numeric(moments$m2),
+                 m3              = as.numeric(moments$m3),
+                 m4              = as.numeric(moments$m4),
+                 convergence     = TRUE,
+                 iterations      = 1L,
+                 call            = cl,
+                 model_type      = "arima",
+                 intercept       = if (include_intercept_diff) intercept_css else 0,
+                 original_series = as.numeric(model_params$original_x),
+                 order           = list(ar = p, ma = q, d = d)))
+    }
+
+    design <- arma_build_design(x_diff, res_diff,
+                                 p = p, q = q,
+                                 intercept = intercept_css,
+                                 include_intercept = include_intercept_diff)
+
+    moments <- compute_moments(res_diff[is.finite(res_diff)])
+    b_init <- c(if (include_intercept_diff) 0 else NULL, ar_css, ma_css)
+
+    algo_res <- pmm2_algorithm(
+      b_init = b_init,
+      X = design$X,
+      y = design$y,
+      m2 = moments$m2,
+      m3 = moments$m3,
+      m4 = moments$m4,
+      max_iter = max_iter,
+      tol = tol,
+      regularize = regularize,
+      reg_lambda = reg_lambda,
+      verbose = verbose
+    )
+
+    if (include_intercept_diff) {
+      intercept_hat <- algo_res$b[1]
+      ar_hat <- if (p > 0) algo_res$b[1 + seq_len(p)] else numeric(0)
+      ma_hat <- if (q > 0) algo_res$b[1 + p + seq_len(q)] else numeric(0)
+    } else {
+      intercept_hat <- 0
+      ar_hat <- if (p > 0) algo_res$b[seq_len(p)] else numeric(0)
+      ma_hat <- if (q > 0) algo_res$b[p + seq_len(q)] else numeric(0)
+    }
+
+    x_mean <- if (include_intercept_diff) intercept_hat else 0
+    x_centered <- x_diff - x_mean
+
+    model_info <- list(
+      ar_order = p,
+      ma_order = q,
+      d = d,
+      model_type = "arima",
+      include.mean = include.mean,
+      innovations = res_diff,
+      x = x_centered,
+      x_mean = x_mean,
+      original_x = model_params$original_x,
+      verbose = verbose
+    )
+
+    final_coef <- c(ar_hat, ma_hat)
+    final_res <- compute_ts_residuals(final_coef, model_info)
+    res_clean <- final_res[is.finite(final_res)]
+    moments_final <- compute_moments(res_clean)
+
+    return(new("ARIMAPMM2",
+               coefficients    = as.numeric(final_coef),
+               residuals       = as.numeric(final_res),
+               m2              = as.numeric(moments_final$m2),
+               m3              = as.numeric(moments_final$m3),
+               m4              = as.numeric(moments_final$m4),
+               convergence     = algo_res$convergence,
+               iterations      = as.numeric(algo_res$iterations),
+               call            = cl,
+               model_type      = "arima",
+               intercept       = if (include_intercept_diff) as.numeric(intercept_hat) else 0,
+               original_series = as.numeric(model_params$original_x),
+               order           = list(ar = p, ma = q, d = d)))
+  }
+
   # 2) Отримання початкових оцінок
   init <- get_initial_estimates(model_params, initial, method, verbose)
   b_init      <- init$b_init
@@ -381,4 +506,32 @@ ma_compute_innovations <- function(x, theta, q) {
     }
   }
   innovations
+}
+
+arma_build_design <- function(x, residuals, p, q, intercept = 0, include_intercept = FALSE) {
+  n <- length(x)
+  max_lag <- max(p, q)
+  if (n <= max_lag) {
+    stop("Недостатньо даних для побудови ARMA дизайн-матриці")
+  }
+
+  idx <- seq.int(max_lag + 1L, n)
+  columns <- list()
+  if (include_intercept) {
+    columns <- c(columns, list(rep(1, length(idx))))
+  }
+  if (p > 0) {
+    for (j in seq_len(p)) {
+      columns <- c(columns, list(x[idx - j]))
+    }
+  }
+  if (q > 0) {
+    for (j in seq_len(q)) {
+      columns <- c(columns, list(residuals[idx - j]))
+    }
+  }
+
+  X <- if (length(columns) > 0) do.call(cbind, columns) else matrix(0, length(idx), 0)
+  y <- x[idx] - intercept
+  list(X = X, y = y)
 }

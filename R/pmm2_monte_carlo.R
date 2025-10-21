@@ -98,7 +98,7 @@ compare_single_spec <- function(spec,
                                 include.mean,
                                 progress,
                                 verbose) {
-  model_type <- match.arg(spec$model, c("ar", "ma", "arma"))
+  model_type <- match.arg(spec$model, c("ar", "ma", "arma", "arima"))
   label <- if (!is.null(spec$label)) spec$label else default_label(spec)
 
   true_theta <- extract_true_params(spec)
@@ -259,6 +259,13 @@ simulate_series <- function(spec, n, innov_info) {
     theta <- spec$theta
     stats::arima.sim(model = list(ar = theta$ar, ma = theta$ma), n = n,
                      rand.gen = rand_gen)
+  } else if (model_type == "arima") {
+    theta <- spec$theta
+    stats::arima.sim(model = list(order = spec$order,
+                                  ar = theta$ar,
+                                  ma = theta$ma),
+                     n = n,
+                     rand.gen = rand_gen)
   } else {
     stop("Невідомий тип моделі: ", model_type)
   }
@@ -279,19 +286,26 @@ fit_and_extract <- function(series, spec, method, include.mean) {
     fit <- ma_pmm2(series, order = spec$order, method = method,
                    include.mean = include.mean, verbose = FALSE)
     est <- fit@coefficients[seq_len(spec$order)]
-  } else {
+  } else if (model_type == "arma") {
     order <- spec$order
     fit <- arma_pmm2(series, order = order, method = method,
                      include.mean = include.mean, verbose = FALSE)
     p <- order[1]
     q <- order[2]
     est <- fit@coefficients[seq_len(p + q)]
+  } else {
+    order <- spec$order
+    fit <- arima_pmm2(series, order = order, method = method,
+                      include.mean = include.mean, verbose = FALSE)
+    p <- order[1]
+    q <- order[3]
+    est <- fit@coefficients[seq_len(p + q)]
   }
   as.numeric(est)
 }
 
 extract_true_params <- function(spec) {
-  if (spec$model == "arma") {
+  if (spec$model == "arma" || spec$model == "arima") {
     theta <- spec$theta
     c(if (length(theta$ar)) theta$ar else numeric(0),
       if (length(theta$ma)) theta$ma else numeric(0))
@@ -305,9 +319,14 @@ param_names <- function(spec) {
     paste0("ar", seq_len(spec$order))
   } else if (spec$model == "ma") {
     paste0("ma", seq_len(spec$order))
-  } else {
+  } else if (spec$model == "arma") {
     p <- spec$order[1]
     q <- spec$order[2]
+    c(if (p > 0) paste0("ar", seq_len(p)) else character(0),
+      if (q > 0) paste0("ma", seq_len(q)) else character(0))
+  } else {
+    p <- spec$order[1]
+    q <- spec$order[3]
     c(if (p > 0) paste0("ar", seq_len(p)) else character(0),
       if (q > 0) paste0("ma", seq_len(q)) else character(0))
   }
@@ -318,8 +337,10 @@ default_label <- function(spec) {
     paste0("AR(", spec$order, ")")
   } else if (spec$model == "ma") {
     paste0("MA(", spec$order, ")")
-  } else {
+  } else if (spec$model == "arma") {
     paste0("ARMA(", spec$order[1], ",", spec$order[2], ")")
+  } else {
+    paste0("ARIMA(", spec$order[1], ",", spec$order[2], ",", spec$order[3], ")")
   }
 }
 
