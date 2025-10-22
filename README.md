@@ -150,8 +150,18 @@ The method is particularly useful in:
 - Serhii Zabolotnii - Cherkasy State Business College
 
 
-The method was originally described in:
+## Scientific Publications
+
+The Polynomial Maximization Method and its applications are described in the following peer-reviewed publications:
+
+### Linear Regression (PMM2 for lm_pmm2)
 Zabolotnii S., Warsza Z.L., Tkachenko O. (2018) Polynomial Estimation of Linear Regression Parameters for the Asymmetric PDF of Errors. In: Szewczyk R., Zieliński C., Kaliczyńska M. (eds) Automation 2018. AUTOMATION 2018. Advances in Intelligent Systems and Computing, vol 743. Springer, Cham. https://doi.org/10.1007/978-3-319-77179-3_75
+
+### Autoregressive Models (PMM2 for ar_pmm2)
+Zabolotnii S., Tkachenko O., Warsza Z.L. (2022) Application of the Polynomial Maximization Method for Estimation Parameters of Autoregressive Models with Asymmetric Innovations. In: Szewczyk R., Zieliński C., Kaliczyńska M. (eds) Automation 2022. AUTOMATION 2022. Advances in Intelligent Systems and Computing, vol 1427. Springer, Cham. https://doi.org/10.1007/978-3-031-03502-9_37
+
+### Moving Average Models (PMM2 for ma_pmm2)
+Zabolotnii S., Tkachenko O., Warsza Z.L. (2023) Polynomial Maximization Method for Estimation Parameters of Asymmetric Non-gaussian Moving Average Models. In: Szewczyk R., et al. (eds) Automation 2023. AUTOMATION 2023. Lecture Notes in Networks and Systems, vol 630. Springer, Cham.
 
 ## License
 
