@@ -1,6 +1,8 @@
-pmm2_demo_runner    Demonstration of main PMM2 functions
-pmm2_prediction     Examples of prediction with PMM2
-pmm2_real_data      PMM2 applied to real datasets
-pmm2_simulation     PMM2 simulation studies
-pmm_ts_examples     Time series examples with PMM2
-test_pmm            Quick PMM2 sanity check
+test_pmm                     Quick PMM2 sanity check (< 30 sec)
+pmm2_comparison_boxplots     Monte Carlo comparison with boxplots (2-3 min, RECOMMENDED)
+pmm_ts_examples              Time series examples: AR, MA, ARMA, ARIMA (1-2 min)
+pmm2_real_data               PMM2 applied to Auto MPG dataset (2-3 min)
+pmm2_simulation              Monte Carlo simulation studies (5-10 min)
+pmm2_prediction              Prediction accuracy with cross-validation (3-5 min)
+pmm2_simMC_ts                Monte Carlo for time series models (5-10 min)
+pmm2_demo_runner             Interactive demo menu (various durations)
