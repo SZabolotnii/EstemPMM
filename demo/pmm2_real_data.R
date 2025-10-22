@@ -70,6 +70,76 @@ ols_resid <- residuals(ols_fit)
 pmm2_resid <- pmm2_fit@residuals
 moments <- compute_moments(ols_resid)
 
+# Bootstrap analysis (OLS vs PMM2 coefficients)
+cat("==============================================================\n")
+cat("  Bootstrap Analysis (Coefficient Stability)\n")
+cat("==============================================================\n\n")
+
+set.seed(2025)
+n_boot <- 1000
+boot_stat_names <- c("ols_b0", "ols_b1", "pmm2_b0", "pmm2_b1", "diff_b1")
+na_boot_vec <- setNames(rep(NA_real_, length(boot_stat_names)), boot_stat_names)
+boot_draws <- replicate(
+  n_boot,
+  {
+    idx <- sample.int(nrow(model_data), replace = TRUE)
+    dat <- model_data[idx, , drop = FALSE]
+
+    ols_boot <- lm(y ~ x, data = dat)
+    pmm2_boot <- try(lm_pmm2(y ~ x, data = dat, verbose = FALSE), silent = TRUE)
+
+    if (inherits(pmm2_boot, "try-error")) {
+      return(na_boot_vec)
+    }
+
+    ols_coef_b <- coef(ols_boot)
+    pmm2_coef_b <- coef(pmm2_boot)
+
+    c(
+      ols_b0 = unname(ols_coef_b[1]),
+      ols_b1 = unname(ols_coef_b[2]),
+      pmm2_b0 = unname(pmm2_coef_b[1]),
+      pmm2_b1 = unname(pmm2_coef_b[2]),
+      diff_b1 = unname(pmm2_coef_b[2] - ols_coef_b[2])
+    )
+  },
+  simplify = "matrix"
+)
+
+rownames(boot_draws) <- boot_stat_names
+boot_results <- t(boot_draws)
+boot_results <- boot_results[complete.cases(boot_results), , drop = FALSE]
+
+if (nrow(boot_results) == 0) {
+  cat("No valid bootstrap samples were obtained. Skipping bootstrap summary.\n\n")
+} else {
+  cat("Valid resamples:", nrow(boot_results), "of", n_boot, "\n")
+  boot_means <- colMeans(boot_results)
+  boot_sd <- apply(boot_results, 2, sd)
+  boot_ci_b1 <- quantile(boot_results[, "diff_b1"], probs = c(0.025, 0.975))
+  boot_ci_b0 <- quantile(
+    boot_results[, "pmm2_b0"] - boot_results[, "ols_b0"],
+    probs = c(0.025, 0.975)
+  )
+
+  cat("Bootstrapped mean slope (β₁):\n")
+  cat("  OLS:  ", sprintf("%.4f", boot_means["ols_b1"]),
+      " (SD =", sprintf("%.4f", boot_sd["ols_b1"]), ")\n")
+  cat("  PMM2: ", sprintf("%.4f", boot_means["pmm2_b1"]),
+      " (SD =", sprintf("%.4f", boot_sd["pmm2_b1"]), ")\n")
+  cat("  Difference (PMM2 - OLS):\n")
+  cat("    Mean:", sprintf("%+.4f", boot_means["diff_b1"]),
+      "| SD =", sprintf("%.4f", boot_sd["diff_b1"]), "\n")
+  cat("    95% percentile CI: [",
+      sprintf("%+.4f", boot_ci_b1[1]), ", ",
+      sprintf("%+.4f", boot_ci_b1[2]), "]\n", sep = "")
+
+  cat("\nBootstrapped intercept difference (PMM2 - OLS):\n")
+  cat("  95% percentile CI: [",
+      sprintf("%+.4f", boot_ci_b0[1]), ", ",
+      sprintf("%+.4f", boot_ci_b0[2]), "]\n\n", sep = "")
+}
+
 # Print results
 cat("\n==============================================================\n")
 cat("  Regression Results\n")
@@ -179,6 +249,72 @@ abline(h = 0, col = "red", lty = 2)
 
 # Reset plotting parameters
 par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
+
+# Bootstrap visualizations (if available)
+if (nrow(boot_results) > 0) {
+  cat("Rendering bootstrap coefficient diagnostics...\n\n")
+  par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
+
+  hist(
+    boot_results[, "diff_b1"],
+    breaks = 30,
+    probability = TRUE,
+    main = expression("Bootstrap Distribution of " * Delta * beta[1]),
+    xlab = expression(Delta * beta[1] ~ "(PMM2 - OLS)"),
+    col = "lightgreen",
+    border = "white"
+  )
+  lines(density(boot_results[, "diff_b1"]), col = "darkgreen", lwd = 2)
+  abline(v = 0, col = "red", lty = 2, lwd = 2)
+  abline(v = boot_means["diff_b1"], col = "blue", lwd = 2)
+  legend(
+    "topright",
+    legend = c("Density", "Mean", "Zero difference"),
+    col = c("darkgreen", "blue", "red"),
+    lty = c(1, 1, 2),
+    lwd = c(2, 2, 2),
+    cex = 0.8
+  )
+
+  plot(ecdf(boot_results[, "diff_b1"]),
+       main = expression("ECDF of " * Delta * beta[1]),
+       xlab = expression(Delta * beta[1]),
+       ylab = "Empirical CDF",
+       col = "darkgreen",
+       lwd = 2,
+       verticals = TRUE,
+       do.points = FALSE)
+  abline(v = 0, col = "red", lty = 2, lwd = 2)
+  abline(v = boot_ci_b1, col = "blue", lty = 3, lwd = 2)
+  legend("bottomright",
+         legend = c("ECDF", "Zero difference", "95% CI bounds"),
+         col = c("darkgreen", "red", "blue"),
+         lty = c(1, 2, 3),
+         lwd = c(2, 2, 2),
+         cex = 0.8)
+
+  boxplot(
+    boot_results[, c("ols_b1", "pmm2_b1")],
+    names = c("OLS b1", "PMM2 b1"),
+    col = c("lightblue", "lightgreen"),
+    main = "Bootstrap Slopes",
+    ylab = "Slope estimate"
+  )
+  abline(h = coef(ols_fit)[2], col = "blue", lty = 2)
+  abline(h = coef(pmm2_fit)[2], col = "darkgreen", lty = 2)
+
+  boxplot(
+    boot_results[, c("ols_b0", "pmm2_b0")],
+    names = c("OLS b0", "PMM2 b0"),
+    col = c("lightblue", "lightgreen"),
+    main = "Bootstrap Intercepts",
+    ylab = "Intercept estimate"
+  )
+  abline(h = coef(ols_fit)[1], col = "blue", lty = 2)
+  abline(h = coef(pmm2_fit)[1], col = "darkgreen", lty = 2)
+
+  par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
+}
 
 cat("\n==============================================================\n")
 cat("  Interpretation\n")
