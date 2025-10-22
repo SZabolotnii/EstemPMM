@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm2_utils.R
 \name{pmm2_variance_matrices}
 \alias{pmm2_variance_matrices}
-\title{Обчислити теоретичні матриці дисперсій для ОМНК та PMM2}
+\title{Obchyslyty teoretychni matrytsi dyspersii dlia OMNK ta PMM2}
 \usage{
 pmm2_variance_matrices(X, m2, m3, m4)
 }
 \arguments{
-\item{X}{Матриця дизайну із стовпцем одиниць}
+\item{X}{Matrytsia dyzainu iz stovptsem odynyts}
 
-\item{m2, m3, m4}{центральні моменти залишків ОМНК}
+\item{m2, m3, m4}{tsentralni momenty zalyshkiv OMNK}
 }
 \value{
-Список з полями \code{ols}, \code{pmm2}, \code{c3}, \code{c4}, \code{g}
+Spysok z poliamy \code{ols}, \code{pmm2}, \code{c3}, \code{c4}, \code{g}
 }
 \description{
-Обчислити теоретичні матриці дисперсій для ОМНК та PMM2
+Obchyslyty teoretychni matrytsi dyspersii dlia OMNK ta PMM2
 }

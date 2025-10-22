@@ -4,51 +4,51 @@
 \name{EstemPMM-package}
 \alias{EstemPMM}
 \alias{EstemPMM-package}
-\title{PMM2: Поліноміальний метод максимізації для робастної регресії та часових рядів}
+\title{PMM2: Polinomialnyi metod maksymizatsii dlia robastnoi rehresii ta chasovykh riadiv}
 \description{
-Пакет PMM2 пропонує робастні методи для оцінювання параметрів лінійних
-моделей та моделей часових рядів, робастних до негаусівських помилок.
+Paket PMM2 proponuie robastni metody dlia otsiniuvannia parametriv liniinykh
+modelei ta modelei chasovykh riadiv, robastnykh do nehausivskykh pomylok.
 }
-\section{Функції лінійної регресії}{
+\section{Funktsii liniinoi rehresii}{
 
 
-\code{\link{lm_pmm2}} - Підгонка лінійної моделі за допомогою PMM2
+\code{\link{lm_pmm2}} - Pidhonka liniinoi modeli za dopomohoiu PMM2
 
-\code{\link{compare_with_ols}} - Порівняння PMM2 з OLS
-}
-
-\section{Функції часових рядів}{
-
-
-\code{\link{ts_pmm2}} - Загальна функція для підгонки моделей часових рядів за допомогою PMM2
-
-\code{\link{ar_pmm2}} - Підгонка AR моделей
-
-\code{\link{ma_pmm2}} - Підгонка MA моделей
-
-\code{\link{arma_pmm2}} - Підгонка ARMA моделей
-
-\code{\link{arima_pmm2}} - Підгонка ARIMA моделей
-
-\code{\link{compare_ts_methods}} - Порівняння PMM2 з класичними методами
+\code{\link{compare_with_ols}} - Porivniannia PMM2 z OLS
 }
 
-\section{Статистичний висновок}{
+\section{Funktsii chasovykh riadiv}{
 
 
-\code{\link{pmm2_inference}} - Бутстреп-висновок для лінійних моделей
+\code{\link{ts_pmm2}} - Zahalna funktsiia dlia pidhonky modelei chasovykh riadiv za dopomohoiu PMM2
 
-\code{\link{ts_pmm2_inference}} - Бутстреп-висновок для моделей часових рядів
+\code{\link{ar_pmm2}} - Pidhonka AR modelei
+
+\code{\link{ma_pmm2}} - Pidhonka MA modelei
+
+\code{\link{arma_pmm2}} - Pidhonka ARMA modelei
+
+\code{\link{arima_pmm2}} - Pidhonka ARIMA modelei
+
+\code{\link{compare_ts_methods}} - Porivniannia PMM2 z klasychnymy metodamy
 }
 
-\section{Утиліти}{
+\section{Statystychnyi vysnovok}{
 
 
-\code{\link{pmm_skewness}} - Обчислення асиметрії
+\code{\link{pmm2_inference}} - Butstrep-vysnovok dlia liniinykh modelei
 
-\code{\link{pmm_kurtosis}} - Обчислення ексцесу
+\code{\link{ts_pmm2_inference}} - Butstrep-vysnovok dlia modelei chasovykh riadiv
+}
 
-\code{\link{compute_moments}} - Обчислення моментів та кумулянтів
+\section{Utylity}{
+
+
+\code{\link{pmm_skewness}} - Obchyslennia asymetrii
+
+\code{\link{pmm_kurtosis}} - Obchyslennia ekstsesu
+
+\code{\link{compute_moments}} - Obchyslennia momentiv ta kumuliantiv
 }
 
 \seealso{

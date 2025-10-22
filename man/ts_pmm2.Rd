@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_ts_main.R
 \name{ts_pmm2}
 \alias{ts_pmm2}
-\title{Підігнати модель часового ряду за допомогою методу PMM2}
+\title{Pidihnaty model chasovoho riadu za dopomohoiu metodu PMM2}
 \usage{
 ts_pmm2(
   x,
@@ -20,46 +20,46 @@ ts_pmm2(
 )
 }
 \arguments{
-\item{x}{Числовий вектор даних часового ряду}
+\item{x}{Chyslovyi vektor danykh chasovoho riadu}
 
-\item{order}{Специфікація порядку моделі:
-- Для AR моделей: одне ціле число (порядок AR)
-- Для MA моделей: одне ціле число (порядок MA)
-- Для ARMA моделей: вектор c(p, q) (порядки AR та MA)
-- Для ARIMA моделей: вектор c(p, d, q) (порядки AR, диференціювання та MA)}
+\item{order}{Spetsyfikatsiia poriadku modeli:
+- Dlia AR modelei: odne tsile chyslo (poriadok AR)
+- Dlia MA modelei: odne tsile chyslo (poriadok MA)
+- Dlia ARMA modelei: vektor c(p, q) (poriadky AR ta MA)
+- Dlia ARIMA modelei: vektor c(p, d, q) (poriadky AR, dyferentsiiuvannia ta MA)}
 
-\item{model_type}{Рядок, що визначає тип моделі: "ar", "ma", "arma", або "arima"}
+\item{model_type}{Riadok, shcho vyznachaie typ modeli: "ar", "ma", "arma", abo "arima"}
 
-\item{method}{Рядок: метод оцінювання, один з "pmm2" (за замовчуванням), "css", "ml", "yw", "ols"}
+\item{method}{Riadok: metod otsiniuvannia, odyn z "pmm2" (za zamovchuvanniam), "css", "ml", "yw", "ols"}
 
-\item{max_iter}{Ціле число: максимальна кількість ітерацій для алгоритму}
+\item{max_iter}{Tsile chyslo: maksymalna kilkist iteratsii dlia alhorytmu}
 
-\item{tol}{Числове: допуск для збіжності}
+\item{tol}{Chyslove: dopusk dlia zbizhnosti}
 
-\item{include.mean}{Логічне: чи включати член середнього (перехоплення)}
+\item{include.mean}{Lohichne: chy vkliuchaty chlen serednoho (perekhoplennia)}
 
-\item{initial}{Список або вектор початкових оцінок параметрів (опціонально)}
+\item{initial}{Spysok abo vektor pochatkovykh otsinok parametriv (optsionalno)}
 
-\item{na.action}{Функція для обробки відсутніх значень, за замовчуванням - na.fail}
+\item{na.action}{Funktsiia dlia obrobky vidsutnikh znachen, za zamovchuvanniam - na.fail}
 
-\item{regularize}{Логічне, додавати малі значення до діагоналі для числової стабільності}
+\item{regularize}{Lohichne, dodavaty mali znachennia do diahonali dlia chyslovoi stabilnosti}
 
-\item{reg_lambda}{Параметр регуляризації (якщо regularize=TRUE)}
+\item{reg_lambda}{Parametr rehuliaryzatsii (iakshcho regularize=TRUE)}
 
-\item{verbose}{Логічне: чи виводити інформацію про прогрес}
+\item{verbose}{Lohichne: chy vyvodyty informatsiiu pro prohres}
 }
 \value{
-Об'єкт S4 \code{TS2fit} відповідного підкласу
+Ob'iekt S4 \code{TS2fit} vidpovidnoho pidklasu
 }
 \description{
-Підігнати модель часового ряду за допомогою методу PMM2
+Pidihnaty model chasovoho riadu za dopomohoiu metodu PMM2
 }
 \details{
-Алгоритм PMM2 працює наступним чином:
+Alhorytm PMM2 pratsiuie nastupnym chynom:
 \enumerate{
-\item Підганяє початкову модель за допомогою стандартного методу (OLS, Юла-Волкера, CSS або ML)
-\item Обчислює центральні моменти (m2, m3, m4) з початкових залишків/інновацій
-\item Використовує ці моменти зі спеціалізованим розв'язувачем (pmm2_algorithm) для знаходження
-робастних оцінок параметрів
+\item Pidhaniaie pochatkovu model za dopomohoiu standartnoho metodu (OLS, Yula-Volkera, CSS abo ML)
+\item Obchysliuie tsentralni momenty (m2, m3, m4) z pochatkovykh zalyshkiv/innovatsii
+\item Vykorystovuie tsi momenty zi spetsializovanym rozv'iazuvachem (pmm2_algorithm) dlia znakhodzhennia
+robastnykh otsinok parametriv
 }
 }

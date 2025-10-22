@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_inference.R
 \name{pmm2_inference}
 \alias{pmm2_inference}
-\title{Бутстреп-висновок для підгонки PMM2}
+\title{Butstrep-vysnovok dlia pidhonky PMM2}
 \usage{
 pmm2_inference(
   object,
@@ -15,23 +15,23 @@ pmm2_inference(
 )
 }
 \arguments{
-\item{object}{об'єкт класу PMM2fit}
+\item{object}{ob'iekt klasu PMM2fit}
 
-\item{formula}{та сама формула, що використовувалася спочатку}
+\item{formula}{ta sama formula, shcho vykorystovuvalasia spochatku}
 
-\item{data}{фрейм даних, що використовувався спочатку}
+\item{data}{freim danykh, shcho vykorystovuvavsia spochatku}
 
-\item{B}{кількість бутстреп-реплікацій}
+\item{B}{kilkist butstrep-replikatsii}
 
-\item{seed}{(опціонально) для відтворюваності}
+\item{seed}{(optsionalno) dlia vidtvoriuvanosti}
 
-\item{parallel}{логічне, чи використовувати паралельні обчислення}
+\item{parallel}{lohichne, chy vykorystovuvaty paralelni obchyslennia}
 
-\item{cores}{кількість ядер для використання при паралельних обчисленнях, за замовчуванням - автовизначення}
+\item{cores}{kilkist iader dlia vykorystannia pry paralelnykh obchyslenniakh, za zamovchuvanniam - avtovyznachennia}
 }
 \value{
-data.frame з стовпцями: Estimate, Std.Error, t.value, p.value
+data.frame z stovptsiamy: Estimate, Std.Error, t.value, p.value
 }
 \description{
-Бутстреп-висновок для підгонки PMM2
+Butstrep-vysnovok dlia pidhonky PMM2
 }

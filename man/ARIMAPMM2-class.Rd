@@ -3,7 +3,7 @@
 \docType{class}
 \name{ARIMAPMM2-class}
 \alias{ARIMAPMM2-class}
-\title{Клас S4 для зберігання результатів PMM2 моделі ARIMA}
+\title{Klas S4 dlia zberihannia rezultativ PMM2 modeli ARIMA}
 \description{
-Клас S4 для зберігання результатів PMM2 моделі ARIMA
+Klas S4 dlia zberihannia rezultativ PMM2 modeli ARIMA
 }

@@ -1,44 +1,44 @@
-# pmm2_main.R - Основний модуль для лінійних моделей PMM2
+# pmm2_main.R - Osnovnyi modul dlia liniinykh modelei PMM2
 
-#' pmm2: Головна функція для PMM2 (S=2)
+#' pmm2: Holovna funktsiia dlia PMM2 (S=2)
 #'
-#' Підганяє лінійну модель за допомогою методу максимізації поліномів (порядок 2),
-#' який є робастним щодо негаусівських помилок.
+#' Pidhaniaie liniinu model za dopomohoiu metodu maksymizatsii polinomiv (poriadok 2),
+#' iakyi ie robastnym shchodo nehausivskykh pomylok.
 #'
-#' @param formula Формула R для моделі
-#' @param data data.frame, що містить змінні у формулі
-#' @param max_iter ціле: максимальна кількість ітерацій для алгоритму
-#' @param tol числове: допуск для збіжності
-#' @param regularize логічне: додати мале значення до діагоналі для числової стабільності
-#' @param reg_lambda числове: параметр регуляризації (якщо regularize=TRUE)
-#' @param na.action функція для обробки відсутніх значень, за замовчуванням - na.fail
-#' @param weights опціональний вектор ваг (поки не реалізовано)
-#' @param verbose логічне: чи виводити інформацію про прогрес
+#' @param formula Formula R dlia modeli
+#' @param data data.frame, shcho mistyt zminni u formuli
+#' @param max_iter tsile: maksymalna kilkist iteratsii dlia alhorytmu
+#' @param tol chyslove: dopusk dlia zbizhnosti
+#' @param regularize lohichne: dodaty male znachennia do diahonali dlia chyslovoi stabilnosti
+#' @param reg_lambda chyslove: parametr rehuliaryzatsii (iakshcho regularize=TRUE)
+#' @param na.action funktsiia dlia obrobky vidsutnikh znachen, za zamovchuvanniam - na.fail
+#' @param weights optsionalnyi vektor vah (poky ne realizovano)
+#' @param verbose lohichne: chy vyvodyty informatsiiu pro prohres
 #'
 #' @details
-#' Алгоритм PMM2 працює наступним чином:
+#' Alhorytm PMM2 pratsiuie nastupnym chynom:
 #'
-#' 1. Підганяє звичайну регресію найменших квадратів (OLS) для отримання початкових оцінок
-#' 2. Обчислює центральні моменти (m2, m3, m4) із залишків OLS
-#' 3. Ітеративно покращує оцінки параметрів за допомогою підходу на основі градієнта
+#' 1. Pidhaniaie zvychainu rehresiiu naimenshykh kvadrativ (OLS) dlia otrymannia pochatkovykh otsinok
+#' 2. Obchysliuie tsentralni momenty (m2, m3, m4) iz zalyshkiv OLS
+#' 3. Iteratyvno pokrashchuie otsinky parametriv za dopomohoiu pidkhodu na osnovi hradiienta
 #'
-#' PMM2 особливо корисний, коли терми помилок не є гаусівськими.
+#' PMM2 osoblyvo korysnyi, koly termy pomylok ne ie hausivskymy.
 #'
-#' @return Об'єкт S4 \code{PMM2fit}
+#' @return Ob'iekt S4 \code{PMM2fit}
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # Генерувати дані вибірки з t-розподіленими помилками
+#' # Heneruvaty dani vybirky z t-rozpodilenymy pomylkamy
 #' n <- 100
 #' x <- rnorm(n)
 #' y <- 2 + 3*x + rt(n, df=3)
 #' dat <- data.frame(y=y, x=x)
 #'
-#' # Підігнати модель за допомогою PMM2
+#' # Pidihnaty model za dopomohoiu PMM2
 #' fit <- lm_pmm2(y ~ x, data=dat)
 #'
-#' # Резюме та статистичний висновок
+#' # Reziume ta statystychnyi vysnovok
 #' summary(fit, formula=y~x, data=dat)
 #' }
 lm_pmm2 <- function(formula, data,
@@ -47,61 +47,61 @@ lm_pmm2 <- function(formula, data,
                     na.action=na.fail, weights=NULL,
                     verbose=FALSE)
 {
-  # Захопити виклик
+  # Zakhopyty vyklyk
   call <- match.call()
 
-  # Перевірити валідність входу
+  # Pereviryty validnist vkhodu
   if(missing(formula) || missing(data)) {
-    stop("Обидва 'formula' та 'data' мають бути надані")
+    stop("Obydva 'formula' ta 'data' maiut buty nadani")
   }
 
   if(!is.data.frame(data)) {
-    stop("'data' має бути data.frame")
+    stop("'data' maie buty data.frame")
   }
 
   if(max_iter <= 0) {
-    stop("'max_iter' має бути додатним")
+    stop("'max_iter' maie buty dodatnym")
   }
 
   if(tol <= 0) {
-    stop("'tol' має бути додатним")
+    stop("'tol' maie buty dodatnym")
   }
 
-  # Обробити відсутні значення
+  # Obrobyty vidsutni znachennia
   if(!is.null(na.action)) {
     data <- na.action(data)
   }
 
-  # Перевірити на ваги
+  # Pereviryty na vahy
   if(!is.null(weights)) {
-    warning("Ваги поки не реалізовані в PMM2. Ігнорую ваги.")
+    warning("Vahy poky ne realizovani v PMM2. Ihnoruiu vahy.")
   }
 
   # 1) OLS
-  if(verbose) cat("Підганяю початкову модель OLS...\n")
+  if(verbose) cat("Pidhaniaiu pochatkovu model OLS...\n")
 
   mf <- model.frame(formula, data)
   X  <- model.matrix(formula, mf)
   y  <- model.response(mf)
 
-  # Перевірити на дефіцит рангу
+  # Pereviryty na defitsyt ranhu
   qr_X <- qr(X)
   if(qr_X$rank < ncol(X)) {
-    warning("Матриця дизайну має дефіцит рангу, деякі коефіцієнти можуть бути неоцінюваними")
+    warning("Matrytsia dyzainu maie defitsyt ranhu, deiaki koefitsiienty mozhut buty neotsiniuvanymy")
   }
 
   fit_ols <- lm.fit(x=X, y=y)
   b_ols   <- fit_ols$coefficients
 
-  # Обробити NA в коефіцієнтах OLS
+  # Obrobyty NA v koefitsiientakh OLS
   if(any(is.na(b_ols))) {
-    stop("Підгонка OLS привела до NA коефіцієнтів. Перевірте на мультиколінеарність.")
+    stop("Pidhonka OLS pryvela do NA koefitsiientiv. Perevirte na multykolinearnist.")
   }
 
-  # Перетворити b_ols на числовий вектор для забезпечення узгодженої обробки
+  # Peretvoryty b_ols na chyslovyi vektor dlia zabezpechennia uzhodzhenoi obrobky
   b_ols <- as.numeric(b_ols)
 
-  # 2) OLS залишки => m2, m3, m4
+  # 2) OLS zalyshky => m2, m3, m4
   res_ols <- y - (X %*% b_ols)
   moments <- compute_moments(res_ols)
   m2 <- moments$m2
@@ -109,42 +109,42 @@ lm_pmm2 <- function(formula, data,
   m4 <- moments$m4
 
   if(verbose) {
-    cat("Початкові моменти із залишків OLS:\n")
+    cat("Pochatkovi momenty iz zalyshkiv OLS:\n")
     cat("  m2 =", m2, "\n")
     cat("  m3 =", m3, "\n")
     cat("  m4 =", m4, "\n")
   }
 
-  # Перевірити на потенційні проблеми з моментами
+  # Pereviryty na potentsiini problemy z momentamy
   if(m2 <= 0) {
-    warning("Другий центральний момент (m2) не є додатним. Результати можуть бути ненадійними.")
+    warning("Druhyi tsentralnyi moment (m2) ne ie dodatnym. Rezultaty mozhut buty nenadiinymy.")
   }
 
   if(m4 <= m2^2) {
-    warning("Четвертий центральний момент (m4) менший за m2^2. Це порушує базову нерівність для розподілів ймовірностей.")
+    warning("Chetvertyi tsentralnyi moment (m4) menshyi za m2^2. Tse porushuie bazovu nerivnist dlia rozpodiliv imovirnostei.")
   }
 
-  # 3) Запустити уніфікований алгоритм PMM2
-  if(verbose) cat("Починаю ітерації PMM2...\n")
+  # 3) Zapustyty unifikovanyi alhorytm PMM2
+  if(verbose) cat("Pochynaiu iteratsii PMM2...\n")
 
   out <- pmm2_algorithm(b_ols, X, y, m2, m3, m4,
                         max_iter = max_iter, tol = tol,
                         regularize = regularize, reg_lambda = reg_lambda,
                         verbose = verbose)
 
-  # Витягнути результати
+  # Vytiahnuty rezultaty
   b_est   <- out$b
   conv    <- out$convergence
   iter    <- out$iterations
   final_res <- out$residuals
 
   if(verbose) {
-    cat("Алгоритм PMM2 завершено.\n")
-    cat("  Збігся:", conv, "\n")
-    cat("  Ітерацій:", iter, "\n")
+    cat("Alhorytm PMM2 zaversheno.\n")
+    cat("  Zbihsia:", conv, "\n")
+    cat("  Iteratsii:", iter, "\n")
   }
 
-  # Повернути об'єкт S4 з усіма результатами
+  # Povernuty ob'iekt S4 z usima rezultatamy
   ans <- new("PMM2fit",
              coefficients = b_est,
              residuals = final_res,
@@ -162,49 +162,50 @@ lm_pmm2 <- function(formula, data,
   return(ans)
 }
 
-#' Витягнути коефіцієнти з об'єкта PMM2fit
+#' Vytiahnuty koefitsiienty z ob'iekta PMM2fit
 #'
-#' @param object Об'єкт PMM2fit
-#' @param ... Додаткові аргументи (не використовуються)
+#' @param object Ob'iekt PMM2fit
+#' @param ... Dodatkovi arhumenty (ne vykorystovuiutsia)
 #'
-#' @return Вектор коефіцієнтів
+#' @return Vektor koefitsiientiv
 #' @export
 setMethod("coef", "PMM2fit",
           function(object, ...) {
             object@coefficients
           })
 
-#' Витягнути залишки з об'єкта PMM2fit
+#' Vytiahnuty zalyshky z ob'iekta PMM2fit
 #'
-#' @param object Об'єкт PMM2fit
-#' @param ... Додаткові аргументи (не використовуються)
+#' @param object Ob'iekt PMM2fit
+#' @param ... Dodatkovi arhumenty (ne vykorystovuiutsia)
 #'
-#' @return Вектор залишків
+#' @return Vektor zalyshkiv
 #' @export
 setMethod("residuals", "PMM2fit",
           function(object, ...) {
             object@residuals
           })
 
-#' Витягнути підігнані значення з об'єкта PMM2fit
+#' Vytiahnuty pidihnani znachennia z ob'iekta PMM2fit
 #'
-#' @param object Об'єкт PMM2fit
-#' @param ... Додаткові аргументи (не використовуються)
+#' @param object Ob'iekt PMM2fit
+#' @param data Neobov'iazkove dzherelo dlia rekonstruktsii modeli, yakshcho ob'iekt ne mistyt zberezhenykh danykh
+#' @param ... Dodatkovi arhumenty (ne vykorystovuiutsia)
 #'
-#' @return Вектор підігнаних значень
+#' @return Vektor pidihnanykh znachen
 #' @export
 setMethod("fitted", "PMM2fit",
           function(object, data = NULL, ...) {
             fitted_values(object, data)
           })
 
-#' Розрахувати AIC для об'єкта PMM2fit
+#' Rozrakhuvaty AIC dlia ob'iekta PMM2fit
 #'
-#' @param object Об'єкт PMM2fit
-#' @param ... Додаткові аргументи (не використовуються)
-#' @param k Штраф за параметр, що буде використовуватись; стандартно 2
+#' @param object Ob'iekt PMM2fit
+#' @param ... Dodatkovi arhumenty (ne vykorystovuiutsia)
+#' @param k Shtraf za parametr, shcho bude vykorystovuvatys; standartno 2
 #'
-#' @return Значення AIC
+#' @return Znachennia AIC
 #' @export
 setMethod("AIC", "PMM2fit",
           function(object, ..., k = 2) {
@@ -212,21 +213,21 @@ setMethod("AIC", "PMM2fit",
             n <- length(res)
             p <- length(object@coefficients)
 
-            # Апроксимація логарифмічної правдоподібності
+            # Aproksymatsiia loharyfmichnoi pravdopodibnosti
             ll <- -n/2 * log(sum(res^2)/n) - n/2 * (1 + log(2*pi))
 
             # AIC
             -2 * ll + k * p
           })
 
-#' Побудувати діагностичні графіки для об'єкта PMM2fit
+#' Pobuduvaty diahnostychni hrafiky dlia ob'iekta PMM2fit
 #'
-#' @param x Об'єкт PMM2fit
-#' @param y Не використовується (сумісність з generic)
-#' @param which Набір графіків для відображення (значення 1-4)
-#' @param ... Додаткові аргументи, що передаються графічним функціям
+#' @param x Ob'iekt PMM2fit
+#' @param y Ne vykorystovuietsia (sumisnist z generic)
+#' @param which Nabir hrafikiv dlia vidobrazhennia (znachennia 1-4)
+#' @param ... Dodatkovi arhumenty, shcho peredaiutsia hrafichnym funktsiiam
 #'
-#' @return Невидимо повертає вхідний об'єкт
+#' @return Nevydymo povertaie vkhidnyi ob'iekt
 #' @export
 setMethod("plot", signature(x = "PMM2fit", y = "missing"),
           function(x, y, which = 1:4, ...) {
@@ -283,18 +284,18 @@ setMethod("plot", signature(x = "PMM2fit", y = "missing"),
             invisible(x)
           })
 
-#' Допоміжна функція для витягнення підігнаних значень
+#' Dopomizhna funktsiia dlia vytiahnennia pidihnanykh znachen
 #'
-#' @param object Об'єкт PMM2fit
-#' @return Вектор підігнаних значень
+#' @param object Ob'iekt PMM2fit
+#' @return Vektor pidihnanykh znachen
 #'
 #' @keywords internal
 fitted_values <- function(object, data = NULL) {
   if(is.null(object@call)) {
-    stop("Об'єкт PMM2fit не містить інформації про виклик")
+    stop("Ob'iekt PMM2fit ne mistyt informatsii pro vyklyk")
   }
 
-  # Фолбек до збережених атрибутів
+  # Folbek do zberezhenykh atrybutiv
   stored_X <- attr(object, "model_matrix")
   stored_response <- attr(object, "response")
   stored_mf <- attr(object, "model_frame")
@@ -314,7 +315,7 @@ fitted_values <- function(object, data = NULL) {
     return(as.vector(stored_response - object@residuals))
   }
 
-  # Спробувати реконструювати оригінальні дані
+  # Sprobuvaty rekonstruiuvaty oryhinalni dani
   data_to_use <- data
   if(is.null(data_to_use)) {
     if (!is.null(stored_mf)) {
@@ -322,69 +323,69 @@ fitted_values <- function(object, data = NULL) {
     } else if (!is.null(stored_data)) {
       data_to_use <- stored_data
     } else {
-      # Спробувати отримати дані з виклику, але безпечно обробити можливі помилки
+      # Sprobuvaty otrymaty dani z vyklyku, ale bezpechno obrobyty mozhlyvi pomylky
       tryCatch({
         data_to_use <- eval(object@call$data, envir = parent.frame())
       }, error = function(e) {
         if(is.null(data)) {
-          stop("Не вдалося отримати дані з об'єкта. Передайте параметр 'data'.")
+          stop("Ne vdalosia otrymaty dani z ob'iekta. Peredaite parametr 'data'.")
         }
       })
     }
   }
 
   if(is.null(data_to_use)) {
-    stop("Потрібен фрейм даних для обчислення підігнаних значень")
+    stop("Potriben freim danykh dlia obchyslennia pidihnanykh znachen")
   }
 
-  # Реконструювати формулу
+  # Rekonstruiuvaty formulu
   formula <- eval(object@call$formula)
 
-  # Безпечна побудова матриці дизайну
+  # Bezpechna pobudova matrytsi dyzainu
   tryCatch({
     mf <- model.frame(formula, data_to_use)
     X <- model.matrix(formula, mf)
 
-    # Обчислити підігнані значення
+    # Obchyslyty pidihnani znachennia
     fitted <- as.vector(X %*% object@coefficients)
     return(fitted)
   }, error = function(e) {
-    stop("Помилка при обчисленні підігнаних значень: ", e$message)
+    stop("Pomylka pry obchyslenni pidihnanykh znachen: ", e$message)
   })
 }
 
-#' Порівняти PMM2 з OLS
+#' Porivniaty PMM2 z OLS
 #'
-#' @param formula Формула моделі
-#' @param data Фрейм даних
-#' @param pmm2_args Список аргументів для передачі в lm_pmm2()
+#' @param formula Formula modeli
+#' @param data Freim danykh
+#' @param pmm2_args Spysok arhumentiv dlia peredachi v lm_pmm2()
 #'
-#' @return Список з об'єктами підгонки OLS та PMM2
+#' @return Spysok z ob'iektamy pidhonky OLS ta PMM2
 #' @export
 compare_with_ols <- function(formula, data, pmm2_args = list()) {
-  # Підгонка OLS моделі
+  # Pidhonka OLS modeli
   fit_ols <- lm(formula, data)
 
-  # Підгонка PMM2 моделі з стандартними або заданими аргументами
+  # Pidhonka PMM2 modeli z standartnymy abo zadanymy arhumentamy
   args <- c(list(formula = formula, data = data), pmm2_args)
   fit_pmm2 <- do.call(lm_pmm2, args)
 
-  # Витягнути та порівняти коефіцієнти
+  # Vytiahnuty ta porivniaty koefitsiienty
   coef_ols <- coef(fit_ols)
   coef_pmm2 <- coef(fit_pmm2)
 
-  # Перевірка, чи імена коефіцієнтів PMM2 встановлені коректно
+  # Perevirka, chy imena koefitsiientiv PMM2 vstanovleni korektno
   if(is.null(names(coef_pmm2)) || all(names(coef_pmm2) == "")) {
-    # Якщо імена не встановлені, використаємо імена з OLS
+    # Yakshcho imena ne vstanovleni, vykorystaiemo imena z OLS
     if(length(coef_ols) == length(coef_pmm2)) {
       names(coef_pmm2) <- names(coef_ols)
     } else {
-      # Якщо довжини відрізняються, використаємо генеровані імена
+      # Yakshcho dovzhyny vidrizniaiutsia, vykorystaiemo henerovani imena
       names(coef_pmm2) <- paste0("coef", seq_along(coef_pmm2))
     }
   }
 
-  # Обчислити статистику залишків
+  # Obchyslyty statystyku zalyshkiv
   res_ols <- residuals(fit_ols)
   res_pmm2 <- residuals(fit_pmm2)
 
@@ -396,8 +397,8 @@ compare_with_ols <- function(formula, data, pmm2_args = list()) {
     Kurtosis = c(pmm_kurtosis(res_ols), pmm_kurtosis(res_pmm2))
   )
 
-  # Створити таблицю порівняння коефіцієнтів
-  # Використовуємо всі унікальні імена коефіцієнтів
+  # Stvoryty tablytsiu porivniannia koefitsiientiv
+  # Vykorystovuiemo vsi unikalni imena koefitsiientiv
   all_coef_names <- unique(c(names(coef_ols), names(coef_pmm2)))
 
   coef_table <- data.frame(
@@ -407,7 +408,7 @@ compare_with_ols <- function(formula, data, pmm2_args = list()) {
     Diff_Percent = numeric(length(all_coef_names))
   )
 
-  # Заповнюємо значення для OLS
+  # Zapovniuiemo znachennia dlia OLS
   for(i in seq_along(all_coef_names)) {
     name <- all_coef_names[i]
     if(name %in% names(coef_ols)) {
@@ -419,7 +420,7 @@ compare_with_ols <- function(formula, data, pmm2_args = list()) {
     if(name %in% names(coef_pmm2)) {
       coef_table$PMM2[i] <- coef_pmm2[name]
 
-      # Обчислити процентну різницю тільки якщо обидва значення існують
+      # Obchyslyty protsentnu riznytsiu tilky iakshcho obydva znachennia isnuiut
       if(!is.na(coef_table$OLS[i]) && coef_table$OLS[i] != 0) {
         coef_table$Diff_Percent[i] <- 100 * (coef_table$PMM2[i] - coef_table$OLS[i]) / abs(coef_table$OLS[i])
       }
@@ -438,87 +439,87 @@ compare_with_ols <- function(formula, data, pmm2_args = list()) {
 }
 
 
-#' Метод прогнозування для об'єктів PMM2fit
+#' Metod prohnozuvannia dlia ob'iektiv PMM2fit
 #'
-#' @param object Об'єкт PMM2fit
-#' @param newdata Новий фрейм даних для прогнозування
-#' @param debug Логічне значення, чи виводити дебаг-інформацію
-#' @param ... додаткові аргументи (не використовуються)
+#' @param object Ob'iekt PMM2fit
+#' @param newdata Novyi freim danykh dlia prohnozuvannia
+#' @param debug Lohichne znachennia, chy vyvodyty debah-informatsiiu
+#' @param ... dodatkovi arhumenty (ne vykorystovuiutsia)
 #'
-#' @return Вектор прогнозів
+#' @return Vektor prohnoziv
 #' @export
 setMethod("predict", "PMM2fit",
           function(object, newdata = NULL, debug = FALSE, ...) {
             if(is.null(newdata)) {
-              stop("Параметр newdata має бути наданий")
+              stop("Parametr newdata maie buty nadanyi")
             }
 
             if(is.null(object@call)) {
-              stop("Об'єкт PMM2fit не містить інформації про виклик")
+              stop("Ob'iekt PMM2fit ne mistyt informatsii pro vyklyk")
             }
 
-            # Витягнути формулу з виклику
+            # Vytiahnuty formulu z vyklyku
             formula <- eval(object@call$formula)
 
             if(debug) {
-              cat("Формула:", deparse(formula), "\n")
-              cat("Коефіцієнти:", paste(names(object@coefficients), "=", object@coefficients, collapse=", "), "\n")
-              cat("Розмір newdata:", nrow(newdata), "x", ncol(newdata), "\n")
-              cat("Змінні в newdata:", paste(names(newdata), collapse=", "), "\n")
+              cat("Formula:", deparse(formula), "\n")
+              cat("Koefitsiienty:", paste(names(object@coefficients), "=", object@coefficients, collapse=", "), "\n")
+              cat("Rozmir newdata:", nrow(newdata), "x", ncol(newdata), "\n")
+              cat("Zminni v newdata:", paste(names(newdata), collapse=", "), "\n")
             }
 
-            # Просте рішення - напряму використаємо праву частину формули для побудови матриці дизайну
+            # Proste rishennia - napriamu vykorystaiemo pravu chastynu formuly dlia pobudovy matrytsi dyzainu
             rhs <- formula[[3]]
             design_formula <- as.formula(paste("~", deparse(rhs)))
 
             if(debug) {
-              cat("Формула дизайну:", deparse(design_formula), "\n")
+              cat("Formula dyzainu:", deparse(design_formula), "\n")
             }
 
-            # Створити матрицю дизайну
+            # Stvoryty matrytsiu dyzainu
             X <- model.matrix(design_formula, newdata)
 
             if(debug) {
-              cat("Розмір матриці дизайну:", nrow(X), "x", ncol(X), "\n")
-              cat("Стовпці матриці дизайну:", paste(colnames(X), collapse=", "), "\n")
+              cat("Rozmir matrytsi dyzainu:", nrow(X), "x", ncol(X), "\n")
+              cat("Stovptsi matrytsi dyzainu:", paste(colnames(X), collapse=", "), "\n")
             }
 
-            # Виправляємо проблему з іменами коефіцієнтів
-            # Якщо імена відсутні або порожні, заповнюємо їх правильними значеннями
+            # Vypravliaiemo problemu z imenamy koefitsiientiv
+            # Yakshcho imena vidsutni abo porozhni, zapovniuiemo ikh pravylnymy znachenniamy
             if(is.null(names(object@coefficients)) || all(names(object@coefficients) == "")) {
               if(debug) {
-                cat("Імена коефіцієнтів відсутні або порожні. Використовуємо стандартні імена.\n")
+                cat("Imena koefitsiientiv vidsutni abo porozhni. Vykorystovuiemo standartni imena.\n")
               }
 
               expected_names <- colnames(X)
               if(length(expected_names) == length(object@coefficients)) {
                 names(object@coefficients) <- expected_names
               } else {
-                warning("Кількість коефіцієнтів не відповідає кількості стовпців у матриці дизайну.")
+                warning("Kilkist koefitsiientiv ne vidpovidaie kilkosti stovptsiv u matrytsi dyzainu.")
                 if(length(object@coefficients) == 3 && ncol(X) == 3 &&
                    all(colnames(X) == c("(Intercept)", "x1", "x2"))) {
-                  # Найчастіший випадок - регресія з 2 змінними
+                  # Naichastishyi vypadok - rehresiia z 2 zminnymy
                   names(object@coefficients) <- c("(Intercept)", "x1", "x2")
                 } else {
-                  # Загальне присвоєння імен
+                  # Zahalne prysvoiennia imen
                   names(object@coefficients) <- paste0("coef", seq_along(object@coefficients))
                 }
               }
 
               if(debug) {
-                cat("Нові імена коефіцієнтів:", paste(names(object@coefficients), collapse=", "), "\n")
+                cat("Novi imena koefitsiientiv:", paste(names(object@coefficients), collapse=", "), "\n")
               }
             }
 
-            # Обчислити прогнози безпосередньо
+            # Obchyslyty prohnozy bezposeredno
             predictions <- numeric(nrow(newdata))
 
-            # Для спрощення, просто обчислюємо прогнози вручну для типової регресії
+            # Dlia sproshchennia, prosto obchysliuiemo prohnozy vruchnu dlia typovoi rehresii
             if(length(object@coefficients) == 3 && all(c("x1", "x2") %in% names(newdata))) {
               if(debug) {
-                cat("Обчислюємо прогнози вручну для типової регресії з інтерсептом і двома змінними.\n")
+                cat("Obchysliuiemo prohnozy vruchnu dlia typovoi rehresii z interseptom i dvoma zminnymy.\n")
               }
-              # Якщо це типова регресія y ~ x1 + x2
+              # Yakshcho tse typova rehresiia y ~ x1 + x2
               intercept_idx <- which(names(object@coefficients) == "(Intercept)")
               x1_idx <- which(names(object@coefficients) == "x1")
               x2_idx <- which(names(object@coefficients) == "x2")
@@ -528,25 +529,25 @@ setMethod("predict", "PMM2fit",
                   object@coefficients[x1_idx] * newdata$x1 +
                   object@coefficients[x2_idx] * newdata$x2
               } else {
-                # Якщо імена не такі як очікується, використовуємо їх позиції
+                # Yakshcho imena ne taki iak ochikuietsia, vykorystovuiemo ikh pozytsii
                 predictions <- object@coefficients[1] +
                   object@coefficients[2] * newdata$x1 +
                   object@coefficients[3] * newdata$x2
               }
             } else {
-              # Для інших випадків
+              # Dlia inshykh vypadkiv
               if(debug) {
-                cat("Намагаємося обчислити загальний випадок.\n")
+                cat("Namahaiemosia obchyslyty zahalnyi vypadok.\n")
               }
-              # Спрощений підхід для загального випадку
+              # Sproshchenyi pidkhid dlia zahalnoho vypadku
               coeffs <- object@coefficients
 
-              # Інтерсепт
+              # Intersept
               if("(Intercept)" %in% names(coeffs)) {
                 predictions <- predictions + coeffs["(Intercept)"]
               }
 
-              # Інші змінні
+              # Inshi zminni
               for(var_name in intersect(names(coeffs), names(newdata))) {
                 if(var_name != "(Intercept)") {
                   predictions <- predictions + coeffs[var_name] * newdata[[var_name]]
@@ -555,8 +556,8 @@ setMethod("predict", "PMM2fit",
             }
 
             if(debug) {
-              cat("Розмір вектора прогнозів:", length(predictions), "\n")
-              cat("Перші кілька прогнозів:", paste(head(predictions), collapse=", "), "\n")
+              cat("Rozmir vektora prohnoziv:", length(predictions), "\n")
+              cat("Pershi kilka prohnoziv:", paste(head(predictions), collapse=", "), "\n")
             }
 
             return(predictions)

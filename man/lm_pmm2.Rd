@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_main.R
 \name{lm_pmm2}
 \alias{lm_pmm2}
-\title{pmm2: Головна функція для PMM2 (S=2)}
+\title{pmm2: Holovna funktsiia dlia PMM2 (S=2)}
 \usage{
 lm_pmm2(
   formula,
@@ -17,53 +17,53 @@ lm_pmm2(
 )
 }
 \arguments{
-\item{formula}{Формула R для моделі}
+\item{formula}{Formula R dlia modeli}
 
-\item{data}{data.frame, що містить змінні у формулі}
+\item{data}{data.frame, shcho mistyt zminni u formuli}
 
-\item{max_iter}{ціле: максимальна кількість ітерацій для алгоритму}
+\item{max_iter}{tsile: maksymalna kilkist iteratsii dlia alhorytmu}
 
-\item{tol}{числове: допуск для збіжності}
+\item{tol}{chyslove: dopusk dlia zbizhnosti}
 
-\item{regularize}{логічне: додати мале значення до діагоналі для числової стабільності}
+\item{regularize}{lohichne: dodaty male znachennia do diahonali dlia chyslovoi stabilnosti}
 
-\item{reg_lambda}{числове: параметр регуляризації (якщо regularize=TRUE)}
+\item{reg_lambda}{chyslove: parametr rehuliaryzatsii (iakshcho regularize=TRUE)}
 
-\item{na.action}{функція для обробки відсутніх значень, за замовчуванням - na.fail}
+\item{na.action}{funktsiia dlia obrobky vidsutnikh znachen, za zamovchuvanniam - na.fail}
 
-\item{weights}{опціональний вектор ваг (поки не реалізовано)}
+\item{weights}{optsionalnyi vektor vah (poky ne realizovano)}
 
-\item{verbose}{логічне: чи виводити інформацію про прогрес}
+\item{verbose}{lohichne: chy vyvodyty informatsiiu pro prohres}
 }
 \value{
-Об'єкт S4 \code{PMM2fit}
+Ob'iekt S4 \code{PMM2fit}
 }
 \description{
-Підганяє лінійну модель за допомогою методу максимізації поліномів (порядок 2),
-який є робастним щодо негаусівських помилок.
+Pidhaniaie liniinu model za dopomohoiu metodu maksymizatsii polinomiv (poriadok 2),
+iakyi ie robastnym shchodo nehausivskykh pomylok.
 }
 \details{
-Алгоритм PMM2 працює наступним чином:
+Alhorytm PMM2 pratsiuie nastupnym chynom:
 \enumerate{
-\item Підганяє звичайну регресію найменших квадратів (OLS) для отримання початкових оцінок
-\item Обчислює центральні моменти (m2, m3, m4) із залишків OLS
-\item Ітеративно покращує оцінки параметрів за допомогою підходу на основі градієнта
+\item Pidhaniaie zvychainu rehresiiu naimenshykh kvadrativ (OLS) dlia otrymannia pochatkovykh otsinok
+\item Obchysliuie tsentralni momenty (m2, m3, m4) iz zalyshkiv OLS
+\item Iteratyvno pokrashchuie otsinky parametriv za dopomohoiu pidkhodu na osnovi hradiienta
 }
 
-PMM2 особливо корисний, коли терми помилок не є гаусівськими.
+PMM2 osoblyvo korysnyi, koly termy pomylok ne ie hausivskymy.
 }
 \examples{
 \dontrun{
-# Генерувати дані вибірки з t-розподіленими помилками
+# Heneruvaty dani vybirky z t-rozpodilenymy pomylkamy
 n <- 100
 x <- rnorm(n)
 y <- 2 + 3*x + rt(n, df=3)
 dat <- data.frame(y=y, x=x)
 
-# Підігнати модель за допомогою PMM2
+# Pidihnaty model za dopomohoiu PMM2
 fit <- lm_pmm2(y ~ x, data=dat)
 
-# Резюме та статистичний висновок
+# Reziume ta statystychnyi vysnovok
 summary(fit, formula=y~x, data=dat)
 }
 }

@@ -2,20 +2,20 @@
 % Please edit documentation in R/pmm2_main.R
 \name{AIC,PMM2fit-method}
 \alias{AIC,PMM2fit-method}
-\title{Розрахувати AIC для об'єкта PMM2fit}
+\title{Rozrakhuvaty AIC dlia ob'iekta PMM2fit}
 \usage{
 \S4method{AIC}{PMM2fit}(object, ..., k = 2)
 }
 \arguments{
-\item{object}{Об'єкт PMM2fit}
+\item{object}{Ob'iekt PMM2fit}
 
-\item{...}{Додаткові аргументи (не використовуються)}
+\item{...}{Dodatkovi arhumenty (ne vykorystovuiutsia)}
 
-\item{k}{Штраф за параметр, що буде використовуватись; стандартно 2}
+\item{k}{Shtraf za parametr, shcho bude vykorystovuvatys; standartno 2}
 }
 \value{
-Значення AIC
+Znachennia AIC
 }
 \description{
-Розрахувати AIC для об'єкта PMM2fit
+Rozrakhuvaty AIC dlia ob'iekta PMM2fit
 }

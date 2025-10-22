@@ -59,8 +59,8 @@ compare_ts_fit <- function(series, fit_pmm2, fit_css, model_name, true_coef = NU
   cat("  Kurtosis (c4):", sprintf("%.4f", moments_css$c4), "\n")
 
   if (abs(moments_css$c3) > 0.3) {
-    cat("  → Non-Gaussian residuals detected\n")
-    cat("  → PMM2 expected to improve efficiency\n")
+    cat("  -> Non-Gaussian residuals detected\n")
+    cat("  -> PMM2 expected to improve efficiency\n")
   }
 }
 
@@ -87,7 +87,7 @@ for (i in 2:n) {
   ar1_series[i] <- phi1 * ar1_series[i-1] + innovations_ar1[i]
 }
 
-cat("Generated AR(1) series with φ =", phi1, "\n")
+cat("Generated AR(1) series with phi =", phi1, "\n")
 cat("Sample size:", n, "observations\n")
 cat("Innovation distribution: Gamma (right-skewed)\n\n")
 
@@ -147,7 +147,7 @@ for (i in 2:n) {
   ma1_series[i] <- innovations_ma1[i] + theta1 * innovations_ma1[i-1]
 }
 
-cat("Generated MA(1) series with θ =", theta1, "\n")
+cat("Generated MA(1) series with theta =", theta1, "\n")
 cat("Sample size:", n, "observations\n")
 cat("Innovation distribution: Student-t (df=4, heavy tails)\n\n")
 
@@ -209,8 +209,8 @@ arma11_series <- arima.sim(n = n,
                            innov = innovations_arma)
 
 cat("Generated ARMA(1,1) series\n")
-cat("  AR coefficient (φ):", phi_arma, "\n")
-cat("  MA coefficient (θ):", theta_arma, "\n")
+cat("  AR coefficient (phi):", phi_arma, "\n")
+cat("  MA coefficient (theta):", theta_arma, "\n")
 cat("Sample size:", n, "observations\n")
 cat("Innovation distribution: Contaminated normal (outliers)\n\n")
 
@@ -271,8 +271,8 @@ arma_stationary <- arima.sim(n = n,
 arima111_series <- cumsum(arma_stationary)
 
 cat("Generated ARIMA(1,1,1) series\n")
-cat("  AR coefficient (φ):", phi_arima, "\n")
-cat("  MA coefficient (θ):", theta_arima, "\n")
+cat("  AR coefficient (phi):", phi_arima, "\n")
+cat("  MA coefficient (theta):", theta_arima, "\n")
 cat("  Differencing order (d): 1\n")
 cat("Sample size:", n, "observations\n")
 cat("Innovation distribution: Chi-squared (skewed)\n\n")
@@ -298,7 +298,7 @@ plot(arima111_series, type = "l", main = "Original Series (Non-stationary)",
 # Differenced series (stationary)
 diff_series <- diff(arima111_series)
 plot(diff_series, type = "l", main = "After Differencing (Stationary)",
-     xlab = "Time", ylab = "Δ Value", col = "blue")
+     xlab = "Time", ylab = "Delta Value", col = "blue")
 
 # ACF of original
 acf(arima111_series, main = "ACF (Original)", lag.max = 20)
@@ -330,31 +330,31 @@ cat("This demo illustrated PMM2 application to various time\n")
 cat("series models:\n\n")
 
 cat("1. AR(1) - Autoregressive with skewed innovations\n")
-cat("   → PMM2 provides more efficient estimates\n\n")
+cat("   -> PMM2 provides more efficient estimates\n\n")
 
 cat("2. MA(1) - Moving average with heavy-tailed innovations\n")
-cat("   → PMM2 handles outliers better than CSS\n\n")
+cat("   -> PMM2 handles outliers better than CSS\n\n")
 
 cat("3. ARMA(1,1) - Combined model with contaminated innovations\n")
-cat("   → PMM2 robust to mixed distributions\n\n")
+cat("   -> PMM2 robust to mixed distributions\n\n")
 
 cat("4. ARIMA(1,1,1) - Integrated series with skewed innovations\n")
-cat("   → PMM2 works with differenced data\n\n")
+cat("   -> PMM2 works with differenced data\n\n")
 
 cat("Key Observations:\n")
-cat("• When innovations are non-Gaussian (skewed, heavy-tailed),\n")
+cat("- When innovations are non-Gaussian (skewed, heavy-tailed),\n")
 cat("  PMM2 typically provides:\n")
 cat("    - Lower residual variance\n")
 cat("    - More accurate coefficient estimates\n")
 cat("    - Better model fit\n\n")
 
-cat("• For approximately Gaussian innovations, PMM2 and CSS\n")
+cat("- For approximately Gaussian innovations, PMM2 and CSS\n")
 cat("  perform similarly (as expected)\n\n")
 
 cat("For more advanced analysis:\n")
-cat("  • Monte Carlo simulations: demo('pmm2_simMC_ts')\n")
-cat("  • Bootstrap inference: vignette('03-bootstrap-inference')\n")
-cat("  • Detailed methodology: vignette('02-pmm2-time-series')\n\n")
+cat("  - Monte Carlo simulations: demo('pmm2_simMC_ts')\n")
+cat("  - Bootstrap inference: vignette('03-bootstrap-inference')\n")
+cat("  - Detailed methodology: vignette('02-pmm2-time-series')\n\n")
 
 cat("Demo completed successfully!\n")
 cat("==============================================================\n\n")

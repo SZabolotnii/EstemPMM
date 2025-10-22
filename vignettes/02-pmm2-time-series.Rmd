@@ -251,7 +251,8 @@ summary(fit_pmm2_arma)
 
 ```{r arma_diagnostics, fig.width=7, fig.height=6}
 # Plot residuals and ACF
-plot(fit_pmm2_arma, main = "ARMA(1,1) Model Diagnostics")
+plot(fit_pmm2_arma)
+title("ARMA(1,1) Model Diagnostics")
 ```
 
 The diagnostic plots help verify:
@@ -324,9 +325,11 @@ Bootstrap methods provide robust confidence intervals for time series parameters
 ```{r ts_bootstrap_inference}
 # Perform bootstrap inference for the ARMA(1,1) model
 boot_results <- ts_pmm2_inference(fit_pmm2_arma,
-                                  n_boot = 500,
+                                  B = 500,
                                   seed = 123,
-                                  verbose = FALSE)
+                                  method = "block",
+                                  block_length = 20,
+                                  parallel = FALSE)
 
 # Display summary with confidence intervals
 summary(boot_results)
@@ -393,7 +396,8 @@ PMM2-fitted models support forecasting:
 # Forecast 10 steps ahead for the ARMA(1,1) model
 forecast_horizon <- 10
 
-predictions <- predict(fit_pmm2_arma, n.ahead = forecast_horizon)
+pred_raw <- predict(fit_pmm2_arma, n.ahead = forecast_horizon)
+predictions <- if (is.list(pred_raw)) as.numeric(pred_raw$pred) else as.numeric(pred_raw)
 
 # Display forecasts
 cat("Forecasts for next", forecast_horizon, "periods:\n")

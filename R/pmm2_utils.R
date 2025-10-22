@@ -159,18 +159,18 @@ solve_pmm2 <- function(b_init, X, y, m2, m3, m4,
     # Form Z - vector of equations
     # Improved handling for multi-variable cases
     if (p > 1) {
-      # Виконуємо crossprod для всіх предикторів, окрім перетину
+      # Vykonuiemo crossprod dlia vsikh predyktoriv, okrim peretynu
       Z_rest <- crossprod(X[, -1, drop=FALSE], Z1)
 
-      # Перевіряємо, чи Z_rest є матрицею (більше ніж 1 предиктор)
+      # Pereviriaiemo, chy Z_rest ie matrytseiu (bilshe nizh 1 predyktor)
       if (is.matrix(Z_rest)) {
         Z_rest <- as.vector(Z_rest)
       }
 
-      # Об'єднуємо результати
+      # Ob'iednuiemo rezultaty
       Z <- c(sum(Z1), Z_rest)
     } else {
-      # Якщо лише перетин, Z - це просто сума
+      # Yakshcho lyshe peretyn, Z - tse prosto suma
       Z <- sum(Z1)
     }
 
@@ -181,14 +181,14 @@ solve_pmm2 <- function(b_init, X, y, m2, m3, m4,
     JZs <- matrix(NA, p, p)
     JZs[1,1] <- sum(JZ11)
 
-    # Перший рядок і перший стовпець Якобіана
+    # Pershyi riadok i pershyi stovpets Yakobiana
     for (ii in 2:p) {
       tmp <- JZ11 * X[,ii]
       JZs[1,ii] <- sum(tmp)
-      JZs[ii,1] <- JZs[1,ii]  # Якобіан симетричний
+      JZs[ii,1] <- JZs[1,ii]  # Yakobian symetrychnyi
     }
 
-    # Решта елементів Якобіана
+    # Reshta elementiv Yakobiana
     for (ii in 2:p) {
       for (jj in 2:p) {
         tmp <- JZ11 * X[,ii] * X[,jj]
@@ -692,10 +692,10 @@ compute_moments <- function(errors) {
   m3 <- mean(errors^3)
   m4 <- mean(errors^4)
 
-  c3 <- m3 / m2^(3/2)  # Коефіцієнт асиметрії
-  c4 <- m4 / m2^2 - 3  # Коефіцієнт ексцесу
+  c3 <- m3 / m2^(3/2)  # Koefitsiient asymetrii
+  c4 <- m4 / m2^2 - 3  # Koefitsiient ekstsesu
 
-  # Теоретичний коефіцієнт зменшення дисперсії
+  # Teoretychnyi koefitsiient zmenshennia dyspersii
   g <- 1 - c3^2 / (2 + c4)
 
   return(list(m2 = m2, m3 = m3, m4 = m4,
@@ -703,11 +703,11 @@ compute_moments <- function(errors) {
               g = g))
 }
 
-#' Обчислити теоретичні коефіцієнти асиметрії, ексцесу та фактор зменшення дисперсії
+#' Obchyslyty teoretychni koefitsiienty asymetrii, ekstsesu ta faktor zmenshennia dyspersii
 #'
-#' @param m2,m3,m4 центральні моменти другого, третього та четвертого порядків
+#' @param m2,m3,m4 tsentralni momenty druhoho, tretoho ta chetvertoho poriadkiv
 #'
-#' @return Список з полями `c3`, `c4` та `g`
+#' @return Spysok z poliamy `c3`, `c4` ta `g`
 #' @export
 pmm2_variance_factor <- function(m2, m3, m4) {
   if (is.na(m2) || m2 <= 0) {
@@ -720,12 +720,12 @@ pmm2_variance_factor <- function(m2, m3, m4) {
   list(c3 = c3, c4 = c4, g = g)
 }
 
-#' Обчислити теоретичні матриці дисперсій для ОМНК та PMM2
+#' Obchyslyty teoretychni matrytsi dyspersii dlia OMNK ta PMM2
 #'
-#' @param X Матриця дизайну із стовпцем одиниць
-#' @param m2,m3,m4 центральні моменти залишків ОМНК
+#' @param X Matrytsia dyzainu iz stovptsem odynyts
+#' @param m2,m3,m4 tsentralni momenty zalyshkiv OMNK
 #'
-#' @return Список з полями `ols`, `pmm2`, `c3`, `c4`, `g`
+#' @return Spysok z poliamy `ols`, `pmm2`, `c3`, `c4`, `g`
 #' @export
 pmm2_variance_matrices <- function(X, m2, m3, m4) {
   X <- as.matrix(X)
@@ -733,7 +733,7 @@ pmm2_variance_matrices <- function(X, m2, m3, m4) {
   V1 <- tryCatch({
     m2 * solve(XtX)
   }, error = function(e) {
-    stop("Не вдається обернути матрицю X'X: ", conditionMessage(e), call. = FALSE)
+    stop("Ne vdaietsia obernuty matrytsiu X'X: ", conditionMessage(e), call. = FALSE)
   })
 
   vf <- pmm2_variance_factor(m2, m3, m4)

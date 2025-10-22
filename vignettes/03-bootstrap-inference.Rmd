@@ -84,7 +84,7 @@ fit_pmm2 <- lm_pmm2(y ~ x, data = dat, verbose = FALSE)
 boot_results <- pmm2_inference(fit_pmm2,
                                formula = y ~ x,
                                data = dat,
-                               n_boot = 1000,
+                               B = 1000,
                                seed = 123)
 
 # Display summary
@@ -201,7 +201,7 @@ se_ols <- summary(fit_ols)$coefficients[, "Std. Error"]
 ci_ols <- confint(fit_ols)
 
 # Bootstrap CIs (from summary)
-boot_summary <- summary(boot_results)
+boot_summary <- boot_results
 
 # Create comparison table
 comparison <- data.frame(
@@ -209,8 +209,8 @@ comparison <- data.frame(
   True = c(beta_0, beta_1),
   PMM2_Estimate = coef(fit_pmm2),
   OLS_SE = se_ols,
-  PMM2_Boot_SE = boot_summary$boot.se,
-  SE_Ratio = boot_summary$boot.se / se_ols
+  PMM2_Boot_SE = boot_summary$Std.Error,
+  SE_Ratio = boot_summary$Std.Error / se_ols
 )
 
 print(comparison, row.names = FALSE, digits = 3)
@@ -222,8 +222,8 @@ print(ci_ols)
 cat("\nPMM2 95% CI (Bootstrap Percentile):\n")
 print(data.frame(
   Parameter = rownames(ci_ols),
-  Lower = boot_summary$ci.lower,
-  Upper = boot_summary$ci.upper
+  Lower = boot_summary$conf.low,
+  Upper = boot_summary$conf.high
 ))
 ```
 
@@ -240,7 +240,7 @@ Bootstrap enables flexible hypothesis testing without normality assumptions.
 ```{r hypothesis_testing}
 # H0: Slope = 0 (no relationship)
 # From bootstrap summary
-boot_summary <- summary(boot_results)
+boot_summary <- boot_results
 
 cat("=== Hypothesis Test: Slope = 0 ===\n\n")
 cat("t-statistic:", boot_summary$t.value[2], "\n")
@@ -278,7 +278,7 @@ fit_multi <- lm_pmm2(y ~ x1 + x2 + x1:x2, data = dat_multi, verbose = FALSE)
 boot_multi <- pmm2_inference(fit_multi,
                              formula = y ~ x1 + x2 + x1:x2,
                              data = dat_multi,
-                             n_boot = 1000,
+                             B = 1000,
                              seed = 456)
 
 # Test H0: beta_x1 = beta_x2
@@ -310,18 +310,17 @@ fit_ar <- ar_pmm2(x, order = 1, method = "pmm2", include.mean = FALSE)
 
 # Bootstrap inference for time series
 boot_ar <- ts_pmm2_inference(fit_ar,
-                             n_boot = 1000,
-                             seed = 789,
-                             verbose = FALSE)
+                             B = 1000,
+                             seed = 789)
 
 # Summary
 summary(boot_ar)
 
 # Check if AR coefficient is significantly different from 0.5
 cat("\n=== Testing H0: phi = 0.5 ===\n")
-boot_summary_ar <- summary(boot_ar)
-ci_lower <- boot_summary_ar$ci.lower[1]
-ci_upper <- boot_summary_ar$ci.upper[1]
+boot_summary_ar <- boot_ar
+ci_lower <- boot_summary_ar$conf.low[1]
+ci_upper <- boot_summary_ar$conf.high[1]
 
 cat("95% CI: [", round(ci_lower, 3), ",", round(ci_upper, 3), "]\n")
 
@@ -352,9 +351,10 @@ fit_arma <- arma_pmm2(x, order = c(1, 1), method = "pmm2", include.mean = FALSE)
 
 # Bootstrap
 boot_arma <- ts_pmm2_inference(fit_arma,
-                               n_boot = 1000,
+                               B = 1000,
                                seed = 999,
-                               verbose = FALSE)
+                               method = "block",
+                               block_length = 20)
 
 # Display results
 summary(boot_arma)
@@ -383,10 +383,10 @@ se_results <- data.frame(B = B_values, SE_Intercept = NA, SE_Slope = NA)
 
 for(i in seq_along(B_values)) {
   boot_temp <- pmm2_inference(fit_pmm2, formula = y ~ x, data = dat,
-                              n_boot = B_values[i], seed = 123)
-  summary_temp <- summary(boot_temp)
-  se_results$SE_Intercept[i] <- summary_temp$boot.se[1]
-  se_results$SE_Slope[i] <- summary_temp$boot.se[2]
+                              B = B_values[i], seed = 123)
+  summary_temp <- boot_temp
+  se_results$SE_Intercept[i] <- summary_temp$Std.Error[1]
+  se_results$SE_Slope[i] <- summary_temp$Std.Error[2]
 }
 
 print(se_results)
@@ -405,7 +405,7 @@ For large datasets or complex models, use parallel computing:
 boot_parallel <- pmm2_inference(fit_pmm2,
                                 formula = y ~ x,
                                 data = dat,
-                                n_boot = 2000,
+                                B = 2000,
                                 seed = 123,
                                 parallel = TRUE,
                                 cores = 4)  # Use 4 CPU cores
@@ -433,9 +433,8 @@ Check if bootstrap replicates converged successfully:
 boot_verbose <- pmm2_inference(fit_pmm2,
                                formula = y ~ x,
                                data = dat,
-                               n_boot = 500,
-                               seed = 321,
-                               verbose = FALSE)
+                               B = 500,
+                               seed = 321)
 
 # Check for failed bootstrap samples
 # (In production code, inspect convergence attribute)
@@ -456,10 +455,11 @@ cat("- Simplifying the model\n")
 # For demonstration, regenerate bootstrap samples
 set.seed(123)
 B <- 1000
+sample_size <- nrow(dat)
 boot_coefs <- matrix(0, nrow = B, ncol = 2)
 
 for(b in 1:B) {
-  res_b <- sample(residuals(fit_pmm2), n, replace = TRUE)
+  res_b <- sample(residuals(fit_pmm2), sample_size, replace = TRUE)
   y_b <- fitted(fit_pmm2) + res_b
   dat_b <- dat
   dat_b$y <- y_b

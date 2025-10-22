@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{get_initial_estimates}
 \alias{get_initial_estimates}
-\title{Отримати початкові оцінки параметрів для моделей часових рядів}
+\title{Otrymaty pochatkovi otsinky parametriv dlia modelei chasovykh riadiv}
 \usage{
 get_initial_estimates(
   model_params,
@@ -12,25 +12,25 @@ get_initial_estimates(
 )
 }
 \arguments{
-\item{model_params}{Перевірені параметри моделі з validate_ts_parameters}
+\item{model_params}{Perevireni parametry modeli z validate_ts_parameters}
 
-\item{initial}{Опціонально надані користувачем початкові оцінки}
+\item{initial}{Optsionalno nadani korystuvachem pochatkovi otsinky}
 
-\item{method}{Метод оцінювання}
+\item{method}{Metod otsiniuvannia}
 
-\item{verbose}{Виводити детальну інформацію}
+\item{verbose}{Vyvodyty detalnu informatsiiu}
 }
 \value{
-Список, що містить:
-\item{b_init}{вектор початкових коефіцієнтів AR/MA}
-\item{x_mean}{оцінене середнє (якщо include.mean=TRUE)}
-\item{innovations}{початкові залишки/інновації}
-\item{x_centered}{центрований (або диференційований + центрований) ряд}
-\item{m2}{другий центральний момент початкових залишків}
-\item{m3}{третій центральний момент початкових залишків}
-\item{m4}{четвертий центральний момент початкових залишків}
+Spysok, shcho mistyt:
+\item{b_init}{vektor pochatkovykh koefitsiientiv AR/MA}
+\item{x_mean}{otsinene serednie (iakshcho include.mean=TRUE)}
+\item{innovations}{pochatkovi zalyshky/innovatsii}
+\item{x_centered}{tsentrovanyi (abo dyferentsiiovanyi + tsentrovanyi) riad}
+\item{m2}{druhyi tsentralnyi moment pochatkovykh zalyshkiv}
+\item{m3}{tretii tsentralnyi moment pochatkovykh zalyshkiv}
+\item{m4}{chetvertyi tsentralnyi moment pochatkovykh zalyshkiv}
 }
 \description{
-Отримати початкові оцінки параметрів для моделей часових рядів
+Otrymaty pochatkovi otsinky parametriv dlia modelei chasovykh riadiv
 }
 \keyword{internal}

@@ -1,22 +1,22 @@
 ################################################################
-## 1. Необхідні пакети й допоміжні функції
+## 1. Neobkhidni pakety i dopomizhni funktsii
 ################################################################
 
 
 required_pkgs <- c("EstemPMM", "dplyr", "ggplot2")
 missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)]
 if (length(missing_pkgs) > 0) {
-  stop("Для цього демо встановіть пакунки: ",
+  stop("Dlia tsoho demo vstanovit pakunky: ",
        paste(missing_pkgs, collapse = ", "), call. = FALSE)
 }
 
 library(EstemPMM)
 library(dplyr)
-library(ggplot2)   # опційно, якщо захочете ggplot-візуалізації
+library(ggplot2)   # optsiino, iakshcho zakhochete ggplot-vizualizatsii
 
-# (Припускаємо, що у вас є функції ar_pmm2, ma_pmm2, arma_pmm2, arima_pmm2)
+# (Prypuskaiemo, shcho u vas ie funktsii ar_pmm2, ma_pmm2, arma_pmm2, arima_pmm2)
 
-# Генерація AR(p), MA(q), ARMA, ARIMA рядів із гамма-інноваціями
+# Heneratsiia AR(p), MA(q), ARMA, ARIMA riadiv iz hamma-innovatsiiamy
 generate_ar <- function(n, ar_coefs, shape_gamma = 2, burn_in = 50) {
   sim_data <- arima.sim(
     model = list(ar = ar_coefs),
@@ -52,7 +52,7 @@ generate_arma <- function(n, ar_coefs, ma_coefs, shape_gamma = 2, burn_in = 50) 
 }
 
 generate_arima <- function(n, ar_coefs, d, ma_coefs, shape_gamma = 2, burn_in = 50) {
-  # Генеруємо стаціонарний ARMA(p,q)
+  # Heneruiemo statsionarnyi ARMA(p,q)
   sim_arma <- arima.sim(
     model = list(ar = ar_coefs, ma = ma_coefs),
     n = n + burn_in,
@@ -61,7 +61,7 @@ generate_arima <- function(n, ar_coefs, d, ma_coefs, shape_gamma = 2, burn_in = 
     }
   )
   sim_arma_clean <- sim_arma[(burn_in+1):(n+burn_in)]
-  # Робимо d-разів інтеграцію
+  # Robymo d-raziv intehratsiiu
   if(d > 0) {
     for(i in seq_len(d)) {
       sim_arma_clean <- cumsum(sim_arma_clean)
@@ -71,22 +71,22 @@ generate_arima <- function(n, ar_coefs, d, ma_coefs, shape_gamma = 2, burn_in = 
 }
 
 ################################################################
-## 2. Універсальна функція fit_model: підгонка і повернення (коефіцієнти, залишки)
+## 2. Universalna funktsiia fit_model: pidhonka i povernennia (koefitsiienty, zalyshky)
 ################################################################
 
 fit_model <- function(series, model_type, method,
                       ar_coefs=NULL, ma_coefs=NULL, d=0, include.mean=FALSE) {
-  # Повертає list(coefs=..., res=..., c3=..., c4=..., g2=...)
+  # Povertaie list(coefs=..., res=..., c3=..., c4=..., g2=...)
 
   if(model_type=="AR") {
     p <- length(ar_coefs)
-    # Оцінка:
+    # Otsinka:
     if(method=="MLE" || method=="ML") {
       fit <- arima(series, order = c(p,0,0), method = "ML", include.mean=include.mean)
       coefs_est <- unname(fit$coef[1:p])
       res <- residuals(fit)
     } else if(method=="OLS") {
-      # Проста регресія
+      # Prosta rehresiia
       n <- length(series)
       X <- matrix(0, nrow=n-p, ncol=p)
       for(i in seq_len(p)) {
@@ -96,7 +96,7 @@ fit_model <- function(series, model_type, method,
       if(nrow(X) == length(y)) {
         b_ols <- lm.fit(X,y)$coefficients
         coefs_est <- as.numeric(b_ols)
-        # Залишки:
+        # Zalyshky:
         res <- y - X %*% b_ols
       } else {
         coefs_est <- rep(NA, p)
@@ -105,9 +105,9 @@ fit_model <- function(series, model_type, method,
     } else if(method=="YW") {
       f_yw <- ar.yw(series, aic=FALSE, order.max=p)
       coefs_est <- f_yw$ar
-      # Залишки:
-      # ar.yw не зберігає напряму *коректні* res, але "f_yw$resid" є
-      # Використаємо:
+      # Zalyshky:
+      # ar.yw ne zberihaie napriamu *korektni* res, ale "f_yw$resid" ie
+      # Vykorystaiemo:
       res <- f_yw$resid
     } else if(method=="PMM2") {
       f_pmm2 <- ar_pmm2(series, order=p, method="pmm2", include.mean=include.mean)
@@ -165,7 +165,7 @@ fit_model <- function(series, model_type, method,
     stop("Unknown model_type in fit_model")
   }
 
-  # Обчислення c3, c4 і g2 за допомогою функції з пакета EstemPMM
+  # Obchyslennia c3, c4 i g2 za dopomohoiu funktsii z paketa EstemPMM
   if (all(is.finite(res))) {
     moments <- EstemPMM::compute_moments(res)
     c3 <- moments$c3
@@ -180,11 +180,11 @@ fit_model <- function(series, model_type, method,
 
 
 ################################################################
-## 3. Основний цикл Монте-Карло
+## 3. Osnovnyi tsykl Monte-Karlo
 ################################################################
 
-W <- 1000 # ількість експериментів
-N <- 100 # Довжина часового ряду
+W <- 1000 # ilkist eksperymentiv
+N <- 100 # Dovzhyna chasovoho riadu
 
 monte_carlo_comparison <- function(R = W,
                                    model_list = list(
@@ -208,7 +208,7 @@ monte_carlo_comparison <- function(R = W,
     d         <- mdl$d
     n         <- mdl$n
 
-    # Істинні коефіцієнти та назви
+    # Istynni koefitsiienty ta nazvy
     if(mtype=="AR") {
       true_coefs  <- ar_params
       param_names <- paste0("ar", seq_along(ar_params))
@@ -235,20 +235,20 @@ monte_carlo_comparison <- function(R = W,
       stop("Unknown model type in model_list: ", mtype)
     }
 
-    # Цикл по R симуляціях
+    # Tsykl po R symuliatsiiakh
     for(rep_i in seq_len(R)) {
       series <- gen_fun()
 
       for(mtd in method_set) {
-        # Викликаємо fit_model
+        # Vyklykaiemo fit_model
         fobj <- fit_model(series, model_type = mtype, method=mtd,
                           ar_coefs=ar_params, ma_coefs=ma_params, d=d,
                           include.mean=FALSE)
         est <- fobj$coefs
-        # Розміри можуть не співпадати, але припустимо, що length(est) = length(true_coefs)
+        # Rozmiry mozhut ne spivpadaty, ale prypustymo, shcho length(est) = length(true_coefs)
 
-        # Зберігаємо в data.frame - один рядок на кожний параметр,
-        # але skewness, kurtosis, g2 однакові для всіх параметрів => дублюємо
+        # Zberihaiemo v data.frame - odyn riadok na kozhnyi parametr,
+        # ale skewness, kurtosis, g2 odnakovi dlia vsikh parametriv => dubliuiemo
         for(i in seq_along(est)) {
           tmp <- data.frame(
             rep       = rep_i,
@@ -270,20 +270,20 @@ monte_carlo_comparison <- function(R = W,
 }
 
 ################################################################
-## 4. Запуск, статистики та візуалізація
+## 4. Zapusk, statystyky ta vizualizatsiia
 ################################################################
 
 set.seed(123)
-mc_results <- monte_carlo_comparison(R = 200)  # Змінюйте R за потреби
+mc_results <- monte_carlo_comparison(R = 200)  # Zminiuite R za potreby
 
-# Обчислимо Bias, MSE
+# Obchyslymo Bias, MSE
 stats_summary <- mc_results %>%
   group_by(model, method, param) %>%
   summarise(
     mean_est = mean(estimate, na.rm=TRUE),
     bias     = mean(estimate - true_value, na.rm=TRUE),
     MSE      = mean((estimate - true_value)^2, na.rm=TRUE),
-    # Середні c3, c4, g2 (по всіх симуляціях)
+    # Seredni c3, c4, g2 (po vsikh symuliatsiiakh)
     mean_c3  = mean(c3, na.rm=TRUE),
     mean_c4  = mean(c4, na.rm=TRUE),
     mean_g2  = mean(g2, na.rm=TRUE),
@@ -293,7 +293,7 @@ stats_summary <- mc_results %>%
 cat("\n===== Summary of Bias, MSE, and mean(g2) =====\n")
 print(stats_summary, n=50)
 
-# 4.1. Порівнюємо з PMM2, але тепер ratio = MSE_PMM2 / MSE
+# 4.1. Porivniuiemo z PMM2, ale teper ratio = MSE_PMM2 / MSE
 pm2_only <- stats_summary %>%
   filter(method == "PMM2") %>%
   rename(MSE_PMM2 = MSE, bias_PMM2 = bias) %>%
@@ -302,8 +302,8 @@ pm2_only <- stats_summary %>%
 stats_rel <- stats_summary %>%
   left_join(pm2_only, by=c("model","param")) %>%
   mutate(
-    MSE_ratio = MSE_PMM2 / MSE,    # Якщо >1 => у PMM2 гірша MSE
-    # (або краще?? Залежить як читаєте)
+    MSE_ratio = MSE_PMM2 / MSE,    # Yakshcho >1 => u PMM2 hirsha MSE
+    # (abo krashche?? Zalezhyt iak chytaiete)
     MSE_diff  = MSE - MSE_PMM2,
     bias_diff = bias - bias_PMM2
   )
@@ -311,7 +311,7 @@ stats_rel <- stats_summary %>%
 cat("\n===== Relative comparison to PMM2 =====\n")
 print(stats_rel, n=50)
 
-# 5. Бокс-плоти оцінок, без «outliers»
+# 5. Boks-ploty otsinok, bez "outliers"
 unique_modpar <- unique(paste(mc_results$model, mc_results$param, sep="_"))
 
 par(mfrow = c(2,2))
@@ -324,14 +324,14 @@ for(mmp in unique_modpar) {
   boxplot(estimate ~ method, data=sub_df,
           main = main_title, ylab = "Estimate", xlab = "Method",
           col = "lightblue", border = "darkblue",
-          outline=FALSE  # ось головний ключ, що не показує «outliers»
+          outline=FALSE  # os holovnyi kliuch, shcho ne pokazuie "outliers"
   )
   abline(h = true_val, col="red", lty=2)
 }
 
-# Якщо хочете подивитись також на g2 (чи c3, c4) - можна побудувати аналогічні бокс-плоти:
+# Yakshcho khochete podyvytys takozh na g2 (chy c3, c4) - mozhna pobuduvaty analohichni boks-ploty:
 # boxplot(g2 ~ method, data=subset(mc_results, model=="MA"), outline=FALSE)
 
 ################################################################
-## Кінець скрипта
+## Kinets skrypta
 ################################################################

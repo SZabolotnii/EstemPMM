@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_common.R
 \name{pmm2_algorithm}
 \alias{pmm2_algorithm}
-\title{Універсальний алгоритм PMM2 для всіх типів моделей}
+\title{Universalnyi alhorytm PMM2 dlia vsikh typiv modelei}
 \usage{
 pmm2_algorithm(
   b_init,
@@ -15,32 +15,36 @@ pmm2_algorithm(
   tol = 1e-06,
   regularize = TRUE,
   reg_lambda = 1e-08,
-  verbose = FALSE
+  verbose = FALSE,
+  poly_terms = NULL
 )
 }
 \arguments{
-\item{b_init}{Початкові оцінки параметрів}
+\item{b_init}{Pochatkovi otsinky parametriv}
 
-\item{X}{Матриця дизайну}
+\item{X}{Matrytsia dyzainu}
 
-\item{y}{Вектор відгуку}
+\item{y}{Vektor vidhuku}
 
-\item{m2, m3, m4}{Центральні моменти}
+\item{m2, m3, m4}{Tsentralni momenty}
 
-\item{max_iter}{Максимальна кількість ітерацій}
+\item{max_iter}{Maksymalna kilkist iteratsii}
 
-\item{tol}{Допуск для збіжності}
+\item{tol}{Dopusk dlia zbizhnosti}
 
-\item{regularize}{Чи додавати регуляризацію}
+\item{regularize}{Chy dodavaty rehuliaryzatsiiu}
 
-\item{reg_lambda}{Параметр регуляризації}
+\item{reg_lambda}{Parametr rehuliaryzatsii}
 
-\item{verbose}{Чи виводити інформацію про прогрес}
+\item{verbose}{Chy vyvodyty informatsiiu pro prohres}
+
+\item{poly_terms}{Poperedno obchysleni koefitsiienty polinoma (spysok z elementamy \code{A}, \code{B}, \code{C});
+dozvoliaie peredavaty vlasni znachennia dlia spetsialnykh stsenariiv, inakshe vony obchysliuiutsia z momentiv}
 }
 \value{
-Список з результатами оцінювання
+Spysok z rezultatamy otsiniuvannia
 }
 \description{
-Універсальний алгоритм PMM2 для всіх типів моделей
+Universalnyi alhorytm PMM2 dlia vsikh typiv modelei
 }
 \keyword{internal}

@@ -2,21 +2,21 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{create_ts_design_matrix}
 \alias{create_ts_design_matrix}
-\title{Створення дизайн-матриці для часових рядів}
+\title{Stvorennia dyzain-matrytsi dlia chasovykh riadiv}
 \usage{
 create_ts_design_matrix(x, model_info, innovations = NULL)
 }
 \arguments{
-\item{x}{Дані часового ряду}
+\item{x}{Dani chasovoho riadu}
 
-\item{model_info}{Список з параметрами моделі}
+\item{model_info}{Spysok z parametramy modeli}
 
-\item{innovations}{Опціональні інновації/залишки для MA компонентів}
+\item{innovations}{Optsionalni innovatsii/zalyshky dlia MA komponentiv}
 }
 \value{
-Список з дизайн-матрицею, змінною відгуку та іншими компонентами
+Spysok z dyzain-matrytseiu, zminnoiu vidhuku ta inshymy komponentamy
 }
 \description{
-Створення дизайн-матриці для часових рядів
+Stvorennia dyzain-matrytsi dlia chasovykh riadiv
 }
 \keyword{internal}

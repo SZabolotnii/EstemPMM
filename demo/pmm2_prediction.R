@@ -7,7 +7,7 @@
 #   - Train/test data splitting
 #   - Model training on training set
 #   - Prediction on unseen test data
-#   - Comparison of prediction errors (MSE, MAE, R²)
+#   - Comparison of prediction errors (MSE, MAE, R^2)
 
 # Check for required package
 if (!requireNamespace("EstemPMM", quietly = TRUE)) {
@@ -44,7 +44,7 @@ full_data <- data.frame(x = x, y = y)
 
 cat("Total sample size:", n, "observations\n")
 cat("True parameters: intercept =", true_beta0, ", slope =", true_beta1, "\n")
-cat("Error distribution: χ²(df=4) - 4 (right-skewed)\n\n")
+cat("Error distribution: chi^2(df=4) - 4 (right-skewed)\n\n")
 
 # Split data into training (80%) and test (20%) sets
 cat("Splitting data: 80% training, 20% test...\n")
@@ -185,7 +185,7 @@ cat("  Summary Table\n")
 cat("==============================================================\n\n")
 
 summary_df <- data.frame(
-  Metric = c("MSE", "MAE", "R²", "MSE Ratio"),
+  Metric = c("MSE", "MAE", "R^2", "MSE Ratio"),
   OLS = c(ols_mse, ols_mae, ols_r2, 1.0),
   PMM2 = c(pmm2_mse, pmm2_mae, pmm2_r2, pmm2_mse/ols_mse),
   Improvement = c(
@@ -205,22 +205,22 @@ cat("==============================================================\n\n")
 if (pmm2_mse < ols_mse) {
   improvement <- (1 - pmm2_mse/ols_mse) * 100
   cat("PMM2 outperforms OLS on out-of-sample prediction:\n")
-  cat("  • MSE reduced by", sprintf("%.2f%%", improvement), "\n")
-  cat("  • This demonstrates PMM2's robustness to non-Gaussian errors\n")
-  cat("  • Better generalization to unseen data\n")
+  cat("  - MSE reduced by", sprintf("%.2f%%", improvement), "\n")
+  cat("  - This demonstrates PMM2's robustness to non-Gaussian errors\n")
+  cat("  - Better generalization to unseen data\n")
 } else {
   cat("OLS and PMM2 show comparable prediction performance:\n")
-  cat("  • This can occur when:\n")
+  cat("  - This can occur when:\n")
   cat("    - Test set happens to have different error characteristics\n")
   cat("    - Sample size is small\n")
   cat("    - Errors are closer to Gaussian in test set\n")
 }
 
 cat("\nKey Observations:\n")
-cat("  • Both methods trained on the same training data\n")
-cat("  • Predictions evaluated on completely unseen test data\n")
-cat("  • PMM2 leverages higher-order moments for better estimation\n")
-cat("  • With skewed errors, PMM2 typically provides better\n")
+cat("  - Both methods trained on the same training data\n")
+cat("  - Predictions evaluated on completely unseen test data\n")
+cat("  - PMM2 leverages higher-order moments for better estimation\n")
+cat("  - With skewed errors, PMM2 typically provides better\n")
 cat("    out-of-sample predictions\n")
 
 cat("\n==============================================================\n")
@@ -231,9 +231,9 @@ cat("This demo illustrates the importance of testing model\n")
 cat("performance on held-out data. PMM2's efficiency gains\n")
 cat("translate to:\n\n")
 
-cat("  • Lower prediction errors on new data\n")
-cat("  • Better model generalization\n")
-cat("  • Improved reliability in production settings\n\n")
+cat("  - Lower prediction errors on new data\n")
+cat("  - Better model generalization\n")
+cat("  - Improved reliability in production settings\n\n")
 
 cat("For production applications with non-Gaussian errors,\n")
 cat("PMM2 offers a principled approach to achieving better\n")

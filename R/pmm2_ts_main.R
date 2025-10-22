@@ -1,33 +1,33 @@
-# pmm2_ts_main.R - Уніфікований модуль для моделей часових рядів з PMM2
+# pmm2_ts_main.R - Unifikovanyi modul dlia modelei chasovykh riadiv z PMM2
 
-#' Підігнати модель часового ряду за допомогою методу PMM2
+#' Pidihnaty model chasovoho riadu za dopomohoiu metodu PMM2
 #'
-#' @param x Числовий вектор даних часового ряду
-#' @param order Специфікація порядку моделі:
-#'        - Для AR моделей: одне ціле число (порядок AR)
-#'        - Для MA моделей: одне ціле число (порядок MA)
-#'        - Для ARMA моделей: вектор c(p, q) (порядки AR та MA)
-#'        - Для ARIMA моделей: вектор c(p, d, q) (порядки AR, диференціювання та MA)
-#' @param model_type Рядок, що визначає тип моделі: "ar", "ma", "arma", або "arima"
-#' @param method Рядок: метод оцінювання, один з "pmm2" (за замовчуванням), "css", "ml", "yw", "ols"
-#' @param max_iter Ціле число: максимальна кількість ітерацій для алгоритму
-#' @param tol Числове: допуск для збіжності
-#' @param include.mean Логічне: чи включати член середнього (перехоплення)
-#' @param initial Список або вектор початкових оцінок параметрів (опціонально)
-#' @param na.action Функція для обробки відсутніх значень, за замовчуванням - na.fail
-#' @param regularize Логічне, додавати малі значення до діагоналі для числової стабільності
-#' @param reg_lambda Параметр регуляризації (якщо regularize=TRUE)
-#' @param verbose Логічне: чи виводити інформацію про прогрес
+#' @param x Chyslovyi vektor danykh chasovoho riadu
+#' @param order Spetsyfikatsiia poriadku modeli:
+#'        - Dlia AR modelei: odne tsile chyslo (poriadok AR)
+#'        - Dlia MA modelei: odne tsile chyslo (poriadok MA)
+#'        - Dlia ARMA modelei: vektor c(p, q) (poriadky AR ta MA)
+#'        - Dlia ARIMA modelei: vektor c(p, d, q) (poriadky AR, dyferentsiiuvannia ta MA)
+#' @param model_type Riadok, shcho vyznachaie typ modeli: "ar", "ma", "arma", abo "arima"
+#' @param method Riadok: metod otsiniuvannia, odyn z "pmm2" (za zamovchuvanniam), "css", "ml", "yw", "ols"
+#' @param max_iter Tsile chyslo: maksymalna kilkist iteratsii dlia alhorytmu
+#' @param tol Chyslove: dopusk dlia zbizhnosti
+#' @param include.mean Lohichne: chy vkliuchaty chlen serednoho (perekhoplennia)
+#' @param initial Spysok abo vektor pochatkovykh otsinok parametriv (optsionalno)
+#' @param na.action Funktsiia dlia obrobky vidsutnikh znachen, za zamovchuvanniam - na.fail
+#' @param regularize Lohichne, dodavaty mali znachennia do diahonali dlia chyslovoi stabilnosti
+#' @param reg_lambda Parametr rehuliaryzatsii (iakshcho regularize=TRUE)
+#' @param verbose Lohichne: chy vyvodyty informatsiiu pro prohres
 #'
 #' @details
-#' Алгоритм PMM2 працює наступним чином:
+#' Alhorytm PMM2 pratsiuie nastupnym chynom:
 #'
-#' 1. Підганяє початкову модель за допомогою стандартного методу (OLS, Юла-Волкера, CSS або ML)
-#' 2. Обчислює центральні моменти (m2, m3, m4) з початкових залишків/інновацій
-#' 3. Використовує ці моменти зі спеціалізованим розв'язувачем (pmm2_algorithm) для знаходження
-#'    робастних оцінок параметрів
+#' 1. Pidhaniaie pochatkovu model za dopomohoiu standartnoho metodu (OLS, Yula-Volkera, CSS abo ML)
+#' 2. Obchysliuie tsentralni momenty (m2, m3, m4) z pochatkovykh zalyshkiv/innovatsii
+#' 3. Vykorystovuie tsi momenty zi spetsializovanym rozv'iazuvachem (pmm2_algorithm) dlia znakhodzhennia
+#'    robastnykh otsinok parametriv
 #'
-#' @return Об'єкт S4 \code{TS2fit} відповідного підкласу
+#' @return Ob'iekt S4 \code{TS2fit} vidpovidnoho pidklasu
 #' @export
 ts_pmm2 <- function(x, order,
                     model_type = c("ar", "ma", "arma", "arima"),
@@ -48,7 +48,7 @@ ts_pmm2 <- function(x, order,
     x <- na.action(x)
   }
 
-  # 1) Перевірка вхідних даних
+  # 1) Perevirka vkhidnykh danykh
   model_params <- validate_ts_parameters(x, order, model_type, include.mean)
 
   if (model_params$model_type == "ma") {
@@ -106,7 +106,7 @@ ts_pmm2 <- function(x, order,
     )
 
     if (is.null(css_fit)) {
-      stop("Не вдалося оцінити ARIMA модель класичним методом")
+      stop("Ne vdalosia otsinyty ARIMA model klasychnym metodom")
     }
 
     coef_names <- names(css_fit$coef)
@@ -217,7 +217,7 @@ ts_pmm2 <- function(x, order,
                order           = list(ar = p, ma = q, d = d)))
   }
 
-  # 2) Отримання початкових оцінок
+  # 2) Otrymannia pochatkovykh otsinok
   init <- get_initial_estimates(model_params, initial, method, verbose)
   b_init      <- init$b_init
   x_mean      <- init$x_mean
@@ -228,7 +228,7 @@ ts_pmm2 <- function(x, order,
   m3          <- init$m3
   m4          <- init$m4
 
-  # 3) Створення дизайн-матриці
+  # 3) Stvorennia dyzain-matrytsi
   dm <- create_ts_design_matrix(
     x = x_centered,
     model_info = list(
@@ -241,9 +241,9 @@ ts_pmm2 <- function(x, order,
     innovations = innovations
   )
 
-  # 4) Якщо метод == "pmm2", використовувати алгоритм PMM2
+  # 4) Yakshcho metod == "pmm2", vykorystovuvaty alhorytm PMM2
   if (method == "pmm2") {
-    if (verbose) cat("Початок оптимізації PMM2...\n")
+    if (verbose) cat("Pochatok optymizatsii PMM2...\n")
 
     model_info <- list(
       ar_order = model_params$ar_order,
@@ -276,17 +276,17 @@ ts_pmm2 <- function(x, order,
     converged <- result$convergence
     iterations <- result$iterations
 
-    # Обчислити кінцеві залишки
+    # Obchyslyty kintsevi zalyshky
     final_res <- compute_ts_residuals(final_coef, model_info)
   } else {
-    # Для інших методів просто використовувати початкові оцінки
+    # Dlia inshykh metodiv prosto vykorystovuvaty pochatkovi otsinky
     final_coef <- b_init
     converged <- TRUE
     iterations <- 0
     final_res <- innovations
   }
 
-  # 5) Створити відповідний об'єкт класу
+  # 5) Stvoryty vidpovidnyi ob'iekt klasu
   if (model_type == "ar") {
     result_class <- "ARPMM2"
   } else if (model_type == "ma") {
@@ -296,10 +296,10 @@ ts_pmm2 <- function(x, order,
   } else if (model_type == "arima") {
     result_class <- "ARIMAPMM2"
   } else {
-    result_class <- "TS2fit"  # Базовий клас за замовчуванням
+    result_class <- "TS2fit"  # Bazovyi klas za zamovchuvanniam
   }
 
-  # Створити та повернути об'єкт відповідного класу
+  # Stvoryty ta povernuty ob'iekt vidpovidnoho klasu
   new(result_class,
       coefficients    = as.numeric(final_coef),
       residuals       = as.numeric(final_res),
@@ -317,7 +317,7 @@ ts_pmm2 <- function(x, order,
                              d = model_params$d))
 }
 
-#' Підігнати AR модель за допомогою PMM2 (обгортка)
+#' Pidihnaty AR model za dopomohoiu PMM2 (obhortka)
 #'
 #' @inheritParams ts_pmm2
 #' @export
@@ -331,7 +331,7 @@ ar_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
           reg_lambda = reg_lambda, verbose = verbose)
 }
 
-#' Підігнати MA модель за допомогою PMM2 (обгортка)
+#' Pidihnaty MA model za dopomohoiu PMM2 (obhortka)
 #'
 #' @inheritParams ts_pmm2
 #' @export
@@ -345,7 +345,7 @@ ma_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
           reg_lambda = reg_lambda, verbose = verbose)
 }
 
-#' Підігнати ARMA модель за допомогою PMM2 (обгортка)
+#' Pidihnaty ARMA model za dopomohoiu PMM2 (obhortka)
 #'
 #' @inheritParams ts_pmm2
 #' @export
@@ -359,7 +359,7 @@ arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2", max_iter = 50, tol = 
           reg_lambda = reg_lambda, verbose = verbose)
 }
 
-#' Підігнати ARIMA модель за допомогою PMM2 (обгортка)
+#' Pidihnaty ARIMA model za dopomohoiu PMM2 (obhortka)
 #'
 #' @inheritParams ts_pmm2
 #' @export
@@ -384,7 +384,7 @@ ma_css_fit <- function(x, q, include_mean = TRUE, verbose = FALSE) {
 
   if (is.null(fit)) {
     if (verbose) {
-      cat("Не вдалось оцінити MA модель через stats::arima: повертаю нульові коефіцієнти\n")
+      cat("Ne vdalos otsinyty MA model cherez stats::arima: povertaiu nulovi koefitsiienty\n")
     }
     coef_css <- rep(0, q)
     intercept <- if (include_mean) mean(x) else 0
@@ -480,7 +480,7 @@ ma_solve_pmm2 <- function(b_init, X, Y, m2, m3, m4,
     J <- t(X) %*% (X * JZ11)
     step <- tryCatch(solve(J, Z), error = function(e) NULL)
     if (is.null(step)) {
-      if (verbose) cat("Система сингулярна на ітерації", iter, "\n")
+      if (verbose) cat("Systema synhuliarna na iteratsii", iter, "\n")
       break
     }
     b_new <- b - step
@@ -512,7 +512,7 @@ arma_build_design <- function(x, residuals, p, q, intercept = 0, include_interce
   n <- length(x)
   max_lag <- max(p, q)
   if (n <= max_lag) {
-    stop("Недостатньо даних для побудови ARMA дизайн-матриці")
+    stop("Nedostatno danykh dlia pobudovy ARMA dyzain-matrytsi")
   }
 
   idx <- seq.int(max_lag + 1L, n)

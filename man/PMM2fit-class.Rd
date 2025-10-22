@@ -3,41 +3,41 @@
 \docType{class}
 \name{PMM2fit-class}
 \alias{PMM2fit-class}
-\title{Клас S4 для зберігання результатів PMM2 регресійної моделі}
+\title{Klas S4 dlia zberihannia rezultativ PMM2 rehresiinoi modeli}
 \description{
-Клас для зберігання результатів оцінювання лінійних моделей за допомогою PMM2
+Klas dlia zberihannia rezultativ otsiniuvannia liniinykh modelei za dopomohoiu PMM2
 }
 \section{Slots}{
 
 \describe{
-\item{\code{coefficients}}{числовий вектор оцінених параметрів}
+\item{\code{coefficients}}{chyslovyi vektor otsinenykh parametriv}
 
-\item{\code{residuals}}{числовий вектор кінцевих залишків}
+\item{\code{residuals}}{chyslovyi vektor kintsevykh zalyshkiv}
 
-\item{\code{m2}}{числовий другий центральний момент початкових залишків}
+\item{\code{m2}}{chyslovyi druhyi tsentralnyi moment pochatkovykh zalyshkiv}
 
-\item{\code{m3}}{числовий третій центральний момент початкових залишків}
+\item{\code{m3}}{chyslovyi tretii tsentralnyi moment pochatkovykh zalyshkiv}
 
-\item{\code{m4}}{числовий четвертий центральний момент початкових залишків}
+\item{\code{m4}}{chyslovyi chetvertyi tsentralnyi moment pochatkovykh zalyshkiv}
 
-\item{\code{convergence}}{логічний або цілий код, що вказує, чи алгоритм збігся}
+\item{\code{convergence}}{lohichnyi abo tsilyi kod, shcho vkazuie, chy alhorytm zbihsia}
 
-\item{\code{iterations}}{числова кількість виконаних ітерацій}
+\item{\code{iterations}}{chyslova kilkist vykonanykh iteratsii}
 
-\item{\code{call}}{оригінальний виклик функції}
+\item{\code{call}}{oryhinalnyi vyklyk funktsii}
 }}
 
-\section{Слоти}{
+\section{Sloty}{
 
 \describe{
-\item{coefficients}{Оцінені коефіцієнти}
-\item{residuals}{Кінцеві залишки}
-\item{m2}{Другий центральний момент}
-\item{m3}{Третій центральний момент}
-\item{m4}{Четвертий центральний момент}
-\item{convergence}{Статус збіжності}
-\item{iterations}{Кількість виконаних ітерацій}
-\item{call}{Оригінальний виклик}
+\item{coefficients}{Otsineni koefitsiienty}
+\item{residuals}{Kintsevi zalyshky}
+\item{m2}{Druhyi tsentralnyi moment}
+\item{m3}{Tretii tsentralnyi moment}
+\item{m4}{Chetvertyi tsentralnyi moment}
+\item{convergence}{Status zbizhnosti}
+\item{iterations}{Kilkist vykonanykh iteratsii}
+\item{call}{Oryhinalnyi vyklyk}
 }
 }
 

@@ -2,19 +2,19 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{compute_ts_residuals}
 \alias{compute_ts_residuals}
-\title{Обчислити кінцеві залишки для моделей часових рядів}
+\title{Obchyslyty kintsevi zalyshky dlia modelei chasovykh riadiv}
 \usage{
 compute_ts_residuals(coefs, model_info)
 }
 \arguments{
-\item{coefs}{Оцінені коефіцієнти}
+\item{coefs}{Otsineni koefitsiienty}
 
-\item{model_info}{Інформація про модель}
+\item{model_info}{Informatsiia pro model}
 }
 \value{
-Вектор залишків
+Vektor zalyshkiv
 }
 \description{
-Обчислити кінцеві залишки для моделей часових рядів
+Obchyslyty kintsevi zalyshky dlia modelei chasovykh riadiv
 }
 \keyword{internal}

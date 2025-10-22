@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm2_classes.R
 \name{summary,TS2fit-method}
 \alias{summary,TS2fit-method}
-\title{Узагальнений метод summary для об'єктів TS2fit}
+\title{Uzahalnenyi metod summary dlia ob'iektiv TS2fit}
 \usage{
 \S4method{summary}{TS2fit}(object, ...)
 }
 \arguments{
-\item{object}{об'єкт класу "TS2fit" або підкласу}
+\item{object}{ob'iekt klasu "TS2fit" abo pidklasu}
 
-\item{...}{додаткові аргументи (не використовуються)}
+\item{...}{dodatkovi arhumenty (ne vykorystovuiutsia)}
 }
 \value{
-Виводить резюме на консоль; повертає об'єкт (невидимо).
+Vyvodyt reziume na konsol; povertaie ob'iekt (nevydymo).
 }
 \description{
-Узагальнений метод summary для об'єктів TS2fit
+Uzahalnenyi metod summary dlia ob'iektiv TS2fit
 }

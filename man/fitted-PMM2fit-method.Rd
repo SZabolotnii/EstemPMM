@@ -2,18 +2,20 @@
 % Please edit documentation in R/pmm2_main.R
 \name{fitted,PMM2fit-method}
 \alias{fitted,PMM2fit-method}
-\title{Витягнути підігнані значення з об'єкта PMM2fit}
+\title{Vytiahnuty pidihnani znachennia z ob'iekta PMM2fit}
 \usage{
 \S4method{fitted}{PMM2fit}(object, data = NULL, ...)
 }
 \arguments{
-\item{object}{Об'єкт PMM2fit}
+\item{object}{Ob'iekt PMM2fit}
 
-\item{...}{Додаткові аргументи (не використовуються)}
+\item{data}{Neobov'iazkove dzherelo dlia rekonstruktsii modeli, yakshcho ob'iekt ne mistyt zberezhenykh danykh}
+
+\item{...}{Dodatkovi arhumenty (ne vykorystovuiutsia)}
 }
 \value{
-Вектор підігнаних значень
+Vektor pidihnanykh znachen
 }
 \description{
-Витягнути підігнані значення з об'єкта PMM2fit
+Vytiahnuty pidihnani znachennia z ob'iekta PMM2fit
 }

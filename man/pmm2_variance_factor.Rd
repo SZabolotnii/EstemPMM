@@ -2,16 +2,16 @@
 % Please edit documentation in R/pmm2_utils.R
 \name{pmm2_variance_factor}
 \alias{pmm2_variance_factor}
-\title{Обчислити теоретичні коефіцієнти асиметрії, ексцесу та фактор зменшення дисперсії}
+\title{Obchyslyty teoretychni koefitsiienty asymetrii, ekstsesu ta faktor zmenshennia dyspersii}
 \usage{
 pmm2_variance_factor(m2, m3, m4)
 }
 \arguments{
-\item{m2, m3, m4}{центральні моменти другого, третього та четвертого порядків}
+\item{m2, m3, m4}{tsentralni momenty druhoho, tretoho ta chetvertoho poriadkiv}
 }
 \value{
-Список з полями \code{c3}, \code{c4} та \code{g}
+Spysok z poliamy \code{c3}, \code{c4} ta \code{g}
 }
 \description{
-Обчислити теоретичні коефіцієнти асиметрії, ексцесу та фактор зменшення дисперсії
+Obchyslyty teoretychni koefitsiienty asymetrii, ekstsesu ta faktor zmenshennia dyspersii
 }

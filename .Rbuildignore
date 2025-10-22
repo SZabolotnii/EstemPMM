@@ -1,2 +1,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.git$
+^\.gitignore$
+^\.Rhistory$
+^\.DS_Store$
+^.*\.DS_Store$
+^\.\.Rcheck$
+^files\.zip$
+^r-cran-development\.zip$
+^articles/.+\.pdf$

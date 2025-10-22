@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm2_ts_methods.R
 \name{coef,TS2fit-method}
 \alias{coef,TS2fit-method}
-\title{Витягнути коефіцієнти з об'єкта TS2fit}
+\title{Vytiahnuty koefitsiienty z ob'iekta TS2fit}
 \usage{
 \S4method{coef}{TS2fit}(object, ...)
 }
 \arguments{
-\item{object}{Об'єкт TS2fit}
+\item{object}{Ob'iekt TS2fit}
 
-\item{...}{Додаткові аргументи (не використовуються)}
+\item{...}{Dodatkovi arhumenty (ne vykorystovuiutsia)}
 }
 \value{
-Іменований вектор коефіцієнтів
+Imenovanyi vektor koefitsiientiv
 }
 \description{
-Витягнути коефіцієнти з об'єкта TS2fit
+Vytiahnuty koefitsiienty z ob'iekta TS2fit
 }

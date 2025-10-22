@@ -2,24 +2,24 @@
 % Please edit documentation in R/pmm2_classes.R
 \name{summary,PMM2fit-method}
 \alias{summary,PMM2fit-method}
-\title{Узагальнений метод summary для об'єктів PMM2fit}
+\title{Uzahalnenyi metod summary dlia ob'iektiv PMM2fit}
 \usage{
 \S4method{summary}{PMM2fit}(object, formula = NULL, data = NULL, B = 100, ...)
 }
 \arguments{
-\item{object}{об'єкт класу "PMM2fit"}
+\item{object}{ob'iekt klasu "PMM2fit"}
 
-\item{formula}{(опціонально) формула, використана для моделі}
+\item{formula}{(optsionalno) formula, vykorystana dlia modeli}
 
-\item{data}{(опціонально) використані дані}
+\item{data}{(optsionalno) vykorystani dani}
 
-\item{B}{кількість бутстреп-реплікацій для статистичного висновку}
+\item{B}{kilkist butstrep-replikatsii dlia statystychnoho vysnovku}
 
-\item{...}{додаткові аргументи (не використовуються)}
+\item{...}{dodatkovi arhumenty (ne vykorystovuiutsia)}
 }
 \value{
-Виводить резюме на консоль; повертає об'єкт (невидимо).
+Vyvodyt reziume na konsol; povertaie ob'iekt (nevydymo).
 }
 \description{
-Узагальнений метод summary для об'єктів PMM2fit
+Uzahalnenyi metod summary dlia ob'iektiv PMM2fit
 }

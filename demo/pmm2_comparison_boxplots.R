@@ -130,12 +130,12 @@ calc_stats <- function(results, param_idx, true_value) {
 
 # Print summary for slope estimates
 cat("==============================================================\n")
-cat("  Summary Statistics: Slope Estimates (β₁ = ", true_beta1, ")\n", sep = "")
+cat("  Summary Statistics: Slope Estimates (beta_1 = ", true_beta1, ")\n", sep = "")
 cat("==============================================================\n\n")
 
-for (error_name in c("Gaussian", "Skewed (χ²)", "Heavy-tail (t)")) {
+for (error_name in c("Gaussian", "Skewed (chi^2)", "Heavy-tail (t)")) {
   results <- if (error_name == "Gaussian") results_gaussian
-             else if (error_name == "Skewed (χ²)") results_skewed
+             else if (error_name == "Skewed (chi^2)") results_skewed
              else results_heavy_tail
 
   stats <- calc_stats(results, 2, true_beta1)  # idx 2 = slope
@@ -158,9 +158,9 @@ cat("==============================================================\n")
 cat("  Residual MSE Comparison\n")
 cat("==============================================================\n\n")
 
-for (error_name in c("Gaussian", "Skewed (χ²)", "Heavy-tail (t)")) {
+for (error_name in c("Gaussian", "Skewed (chi^2)", "Heavy-tail (t)")) {
   results <- if (error_name == "Gaussian") results_gaussian
-             else if (error_name == "Skewed (χ²)") results_skewed
+             else if (error_name == "Skewed (chi^2)") results_skewed
              else results_heavy_tail
 
   ols_mse_mean <- mean(results[, "OLS_MSE"])
@@ -213,7 +213,7 @@ boxplot(results_gaussian[, "OLS_MSE"], results_gaussian[, "PMM2_MSE"],
 # Row 2: Skewed errors (Chi-squared)
 boxplot(results_skewed[, "OLS_b0"], results_skewed[, "PMM2_b0"],
         names = c("OLS", "PMM2"),
-        main = "Intercept (Skewed χ²)",
+        main = "Intercept (Skewed chi^2)",
         ylab = "Estimate",
         col = c(col_ols, col_pmm2),
         horizontal = FALSE)
@@ -221,7 +221,7 @@ abline(h = true_beta0, col = "red", lty = 2, lwd = 2)
 
 boxplot(results_skewed[, "OLS_b1"], results_skewed[, "PMM2_b1"],
         names = c("OLS", "PMM2"),
-        main = "Slope (Skewed χ²)",
+        main = "Slope (Skewed chi^2)",
         ylab = "Estimate",
         col = c(col_ols, col_pmm2),
         horizontal = FALSE)
@@ -229,7 +229,7 @@ abline(h = true_beta1, col = "red", lty = 2, lwd = 2)
 
 boxplot(results_skewed[, "OLS_MSE"], results_skewed[, "PMM2_MSE"],
         names = c("OLS", "PMM2"),
-        main = "Residual MSE (Skewed χ²)",
+        main = "Residual MSE (Skewed chi^2)",
         ylab = "MSE",
         col = c(col_ols, col_pmm2),
         horizontal = FALSE)
@@ -288,7 +288,7 @@ abline(v = true_beta1, col = "red", lty = 2, lwd = 2)
 legend("topright", legend = c("OLS", "PMM2"), col = c("blue", "darkgreen"),
        lty = 1, lwd = 2, cex = 0.8)
 
-plot(density(results_skewed[, "OLS_b1"]), main = "Skewed (χ²) Errors",
+plot(density(results_skewed[, "OLS_b1"]), main = "Skewed (chi^2) Errors",
      xlab = "Slope Estimate", ylab = "Density", col = "blue", lwd = 2,
      xlim = range(c(results_skewed[, "OLS_b1"], results_skewed[, "PMM2_b1"])))
 lines(density(results_skewed[, "PMM2_b1"]), col = "darkgreen", lwd = 2)
@@ -307,7 +307,7 @@ plot(density(results_gaussian[, "OLS_b0"]), main = "Gaussian Errors",
 lines(density(results_gaussian[, "PMM2_b0"]), col = "darkgreen", lwd = 2)
 abline(v = true_beta0, col = "red", lty = 2, lwd = 2)
 
-plot(density(results_skewed[, "OLS_b0"]), main = "Skewed (χ²) Errors",
+plot(density(results_skewed[, "OLS_b0"]), main = "Skewed (chi^2) Errors",
      xlab = "Intercept Estimate", ylab = "Density", col = "blue", lwd = 2,
      xlim = range(c(results_skewed[, "OLS_b0"], results_skewed[, "PMM2_b0"])))
 lines(density(results_skewed[, "PMM2_b0"]), col = "darkgreen", lwd = 2)
@@ -333,7 +333,7 @@ cat("1. For GAUSSIAN errors:\n")
 cat("   - PMM2 and OLS have similar performance (as expected)\n")
 cat("   - Both methods are approximately unbiased\n\n")
 
-cat("2. For SKEWED (χ²) errors:\n")
+cat("2. For SKEWED (chi^2) errors:\n")
 stats_skewed <- calc_stats(results_skewed, 2, true_beta1)
 cat("   - PMM2 reduces slope estimate variance by",
     sprintf("%.1f%%", (1 - stats_skewed$pmm2_sd/stats_skewed$ols_sd) * 100), "\n")
@@ -352,9 +352,9 @@ cat("PMM2 provides substantial efficiency gains (10-30% variance\n")
 cat("reduction) when errors deviate from normality, while maintaining\n")
 cat("similar performance to OLS under Gaussian assumptions.\n\n")
 cat("The boxplots clearly show:\n")
-cat("  • Tighter distributions for PMM2 estimates\n")
-cat("  • Lower variability across Monte Carlo runs\n")
-cat("  • Improved precision without sacrificing bias\n\n")
+cat("  - Tighter distributions for PMM2 estimates\n")
+cat("  - Lower variability across Monte Carlo runs\n")
+cat("  - Improved precision without sacrificing bias\n\n")
 
 cat("Demo completed successfully!\n")
 cat("==============================================================\n\n")

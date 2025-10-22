@@ -1,102 +1,102 @@
-# pmm2_ts_design.R - Функції для роботи з дизайн-матрицями часових рядів
+# pmm2_ts_design.R - Funktsii dlia roboty z dyzain-matrytsiamy chasovykh riadiv
 
-#' Перевірка та підготовка параметрів часового ряду
+#' Perevirka ta pidhotovka parametriv chasovoho riadu
 #'
-#' @param x Дані часового ряду
-#' @param order Специфікація порядку моделі
-#' @param model_type Тип моделі (ar, ma, arma, або arima)
-#' @param include.mean Чи включати середнє/перехоплення
+#' @param x Dani chasovoho riadu
+#' @param order Spetsyfikatsiia poriadku modeli
+#' @param model_type Typ modeli (ar, ma, arma, abo arima)
+#' @param include.mean Chy vkliuchaty serednie/perekhoplennia
 #'
-#' @return Список перевірених параметрів та інформації про модель
+#' @return Spysok perevirenykh parametriv ta informatsii pro model
 #' @keywords internal
 validate_ts_parameters <- function(x, order, model_type, include.mean) {
-  # Перевірка вхідних даних
+  # Perevirka vkhidnykh danykh
   if (missing(x)) {
-    stop("Відсутній аргумент 'x'")
+    stop("Vidsutnii arhument 'x'")
   }
 
-  # Перетворити вхідні дані на числовий вектор
+  # Peretvoryty vkhidni dani na chyslovyi vektor
   x <- as.numeric(x)
 
   if (!is.numeric(x)) {
-    stop("'x' має бути числовим вектором")
+    stop("'x' maie buty chyslovym vektorom")
   }
 
-  # Перевірити на NA та нескінченні значення
+  # Pereviryty na NA ta neskinchenni znachennia
   if (any(is.na(x)) || any(is.infinite(x))) {
-    warning("Виявлено NA або нескінченні значення у вхідному ряді. Вони будуть видалені.")
+    warning("Vyiavleno NA abo neskinchenni znachennia u vkhidnomu riadi. Vony budut vydaleni.")
     x <- x[!is.na(x) & !is.infinite(x)]
     if (length(x) < 10) {
-      stop("Замало валідних спостережень після видалення NA/нескінченних значень")
+      stop("Zamalo validnykh sposterezhen pislia vydalennia NA/neskinchennykh znachen")
     }
   }
 
   if (missing(order)) {
-    stop("Відсутній аргумент 'order'")
+    stop("Vidsutnii arhument 'order'")
   }
 
-  # Розбір параметра order в залежності від model_type
+  # Rozbir parametra order v zalezhnosti vid model_type
   if (model_type == "ar") {
     if (!is.numeric(order) || length(order) != 1)
-      stop("Для AR моделей 'order' має бути одним цілим числом")
+      stop("Dlia AR modelei 'order' maie buty odnym tsilym chyslom")
     ar_order <- as.integer(order)
     ma_order <- 0
     d <- 0
     if (ar_order <= 0)
-      stop("Порядок AR має бути додатним")
+      stop("Poriadok AR maie buty dodatnym")
 
-    # Перевірити, чи достатньо даних
+    # Pereviryty, chy dostatno danykh
     if (length(x) <= ar_order + 1) {
-      stop("Замало спостережень для моделі AR порядку ", ar_order)
+      stop("Zamalo sposterezhen dlia modeli AR poriadku ", ar_order)
     }
   } else if (model_type == "ma") {
     if (!is.numeric(order) || length(order) != 1)
-      stop("Для MA моделей 'order' має бути одним цілим числом")
+      stop("Dlia MA modelei 'order' maie buty odnym tsilym chyslom")
     ar_order <- 0
     ma_order <- as.integer(order)
     d <- 0
     if (ma_order <= 0)
-      stop("Порядок MA має бути додатним")
+      stop("Poriadok MA maie buty dodatnym")
 
-    # Перевірити, чи достатньо даних
+    # Pereviryty, chy dostatno danykh
     if (length(x) <= ma_order + 1) {
-      stop("Замало спостережень для моделі MA порядку ", ma_order)
+      stop("Zamalo sposterezhen dlia modeli MA poriadku ", ma_order)
     }
   } else if (model_type == "arma") {
     if (!is.numeric(order) || length(order) != 2)
-      stop("Для ARMA моделей 'order' має бути вектором довжини 2 (порядок AR, порядок MA)")
+      stop("Dlia ARMA modelei 'order' maie buty vektorom dovzhyny 2 (poriadok AR, poriadok MA)")
     ar_order <- as.integer(order[1])
     ma_order <- as.integer(order[2])
     d <- 0
     if (ar_order < 0 || ma_order < 0)
-      stop("Порядки AR та MA мають бути невід'ємними")
+      stop("Poriadky AR ta MA maiut buty nevid'iemnymy")
     if (ar_order == 0 && ma_order == 0)
-      stop("Принаймні один з порядків AR або MA має бути додатним")
+      stop("Prynaimni odyn z poriadkiv AR abo MA maie buty dodatnym")
 
-    # Перевірити, чи достатньо даних
+    # Pereviryty, chy dostatno danykh
     if (length(x) <= max(ar_order, ma_order) + 1) {
-      stop("Замало спостережень для моделі ARMA порядків (", ar_order, ",", ma_order, ")")
+      stop("Zamalo sposterezhen dlia modeli ARMA poriadkiv (", ar_order, ",", ma_order, ")")
     }
   } else if (model_type == "arima") {
     if (!is.numeric(order) || length(order) != 3)
-      stop("Для ARIMA моделей 'order' має бути вектором довжини 3 (порядок AR, диференціювання, порядок MA)")
+      stop("Dlia ARIMA modelei 'order' maie buty vektorom dovzhyny 3 (poriadok AR, dyferentsiiuvannia, poriadok MA)")
     ar_order <- as.integer(order[1])
     d <- as.integer(order[2])
     ma_order <- as.integer(order[3])
     if (ar_order < 0 || ma_order < 0 || d < 0)
-      stop("Порядки AR, диференціювання та MA мають бути невід'ємними")
+      stop("Poriadky AR, dyferentsiiuvannia ta MA maiut buty nevid'iemnymy")
     if (ar_order == 0 && ma_order == 0 && d == 0)
-      stop("Принаймні один з порядків AR, диференціювання або MA має бути додатним")
+      stop("Prynaimni odyn z poriadkiv AR, dyferentsiiuvannia abo MA maie buty dodatnym")
 
-    # Перевірити, чи достатньо даних після диференціювання
+    # Pereviryty, chy dostatno danykh pislia dyferentsiiuvannia
     if (length(x) <= d + max(ar_order, ma_order) + 1) {
-      stop("Замало спостережень для моделі ARIMA після диференціювання")
+      stop("Zamalo sposterezhen dlia modeli ARIMA pislia dyferentsiiuvannia")
     }
   } else {
-    stop("Невідомий тип моделі: ", model_type)
+    stop("Nevidomyi typ modeli: ", model_type)
   }
 
-  # Зберегти оригінальний ряд
+  # Zberehty oryhinalnyi riad
   orig_x <- as.numeric(x)
 
   list(
@@ -109,16 +109,16 @@ validate_ts_parameters <- function(x, order, model_type, include.mean) {
   )
 }
 
-#' Створення матриці дизайну для AR моделі
+#' Stvorennia matrytsi dyzainu dlia AR modeli
 #'
-#' @param x центрований часовий ряд
-#' @param p порядок AR
-#' @return Матриця дизайну з лаговими значеннями
+#' @param x tsentrovanyi chasovyi riad
+#' @param p poriadok AR
+#' @return Matrytsia dyzainu z lahovymy znachenniamy
 #' @keywords internal
 create_ar_matrix <- function(x, p) {
   n <- length(x)
   if (n <= p) {
-    stop("Недостатньо точок даних для AR порядку p = ", p)
+    stop("Nedostatno tochok danykh dlia AR poriadku p = ", p)
   }
 
   nr <- n - p
@@ -129,14 +129,14 @@ create_ar_matrix <- function(x, p) {
   M
 }
 
-#' Отримати оцінки Юла-Волкера для AR(p)
+#' Otrymaty otsinky Yula-Volkera dlia AR(p)
 #'
-#' @param x числовий вектор
-#' @param p ціле значення порядку AR
-#' @return числовий вектор довжини p (коефіцієнти AR)
+#' @param x chyslovyi vektor
+#' @param p tsile znachennia poriadku AR
+#' @return chyslovyi vektor dovzhyny p (koefitsiienty AR)
 #' @keywords internal
 get_yw_estimates <- function(x, p) {
-  # Це спрощений підхід, який може не обробляти граничні випадки
+  # Tse sproshchenyi pidkhid, iakyi mozhe ne obrobliaty hranychni vypadky
   r <- numeric(p+1)
   n <- length(x)
   xm <- mean(x)
@@ -154,30 +154,30 @@ get_yw_estimates <- function(x, p) {
   phi
 }
 
-#' Створення дизайн-матриці для часових рядів
+#' Stvorennia dyzain-matrytsi dlia chasovykh riadiv
 #'
-#' @param x Дані часового ряду
-#' @param model_info Список з параметрами моделі
-#' @param innovations Опціональні інновації/залишки для MA компонентів
+#' @param x Dani chasovoho riadu
+#' @param model_info Spysok z parametramy modeli
+#' @param innovations Optsionalni innovatsii/zalyshky dlia MA komponentiv
 #'
-#' @return Список з дизайн-матрицею, змінною відгуку та іншими компонентами
+#' @return Spysok z dyzain-matrytseiu, zminnoiu vidhuku ta inshymy komponentamy
 #' @keywords internal
 create_ts_design_matrix <- function(x, model_info, innovations = NULL) {
-  # Витягнення параметрів моделі
+  # Vytiahnennia parametriv modeli
   ar_order <- model_info$ar_order
   ma_order <- model_info$ma_order
   d <- model_info$d
   model_type <- model_info$model_type
   include_mean <- model_info$include.mean
 
-  # Перевірка, чи потрібно диференціювати ряд
+  # Perevirka, chy potribno dyferentsiiuvaty riad
   if (model_type == "arima" && d > 0) {
     x_diff <- diff(x, differences = d)
   } else {
     x_diff <- x
   }
 
-  # Обробка середнього
+  # Obrobka serednoho
   if (include_mean) {
     x_mean <- mean(x_diff, na.rm = TRUE)
     x_centered <- x_diff - x_mean
@@ -186,22 +186,22 @@ create_ts_design_matrix <- function(x, model_info, innovations = NULL) {
     x_centered <- x_diff
   }
 
-  # Обчислення максимального лагу та ефективної довжини даних
+  # Obchyslennia maksymalnoho lahu ta efektyvnoi dovzhyny danykh
   max_lag <- max(ar_order, ma_order)
   n_data <- length(x_centered)
 
   if (n_data <= max_lag) {
-    stop("Недостатньо даних для побудови моделі після диференціювання")
+    stop("Nedostatno danykh dlia pobudovy modeli pislia dyferentsiiuvannia")
   }
 
   n_rows <- n_data - max_lag
   n_cols <- ar_order + ma_order
 
-  # Створення дизайн-матриці з відповідними розмірами
+  # Stvorennia dyzain-matrytsi z vidpovidnymy rozmiramy
   X <- matrix(0, nrow = n_rows, ncol = n_cols)
   y <- x_centered[(max_lag + 1):n_data]
 
-  # Додавання AR компонентів
+  # Dodavannia AR komponentiv
   if (ar_order > 0) {
     col_index <- 1
     for (i in 1:ar_order) {
@@ -210,21 +210,21 @@ create_ts_design_matrix <- function(x, model_info, innovations = NULL) {
     }
   }
 
-  # Додавання MA компонентів, якщо потрібно
+  # Dodavannia MA komponentiv, iakshcho potribno
   if (ma_order > 0) {
-    # Якщо інновації не надані, використовуємо нулі
+    # Yakshcho innovatsii ne nadani, vykorystovuiemo nuli
     if (is.null(innovations)) {
       innovations <- rep(0, n_data)
     }
 
-    # Забезпечення правильної довжини інновацій
+    # Zabezpechennia pravylnoi dovzhyny innovatsii
     if (length(innovations) < n_data) {
       innovations <- c(rep(0, n_data - length(innovations)), innovations)
     } else if (length(innovations) > n_data) {
       innovations <- tail(innovations, n_data)
     }
 
-    # Заповнення MA стовпців
+    # Zapovnennia MA stovptsiv
     col_index <- ar_order + 1
     for (j in 1:ma_order) {
       X[, col_index] <- innovations[(max_lag - j + 1):(n_data - j)]
@@ -232,7 +232,7 @@ create_ts_design_matrix <- function(x, model_info, innovations = NULL) {
     }
   }
 
-  # Повернення результатів у вигляді списку
+  # Povernennia rezultativ u vyhliadi spysku
   list(
     X = X,
     y = y,
@@ -246,21 +246,21 @@ create_ts_design_matrix <- function(x, model_info, innovations = NULL) {
   )
 }
 
-#' Отримати початкові оцінки параметрів для моделей часових рядів
+#' Otrymaty pochatkovi otsinky parametriv dlia modelei chasovykh riadiv
 #'
-#' @param model_params Перевірені параметри моделі з validate_ts_parameters
-#' @param initial Опціонально надані користувачем початкові оцінки
-#' @param method Метод оцінювання
-#' @param verbose Виводити детальну інформацію
+#' @param model_params Perevireni parametry modeli z validate_ts_parameters
+#' @param initial Optsionalno nadani korystuvachem pochatkovi otsinky
+#' @param method Metod otsiniuvannia
+#' @param verbose Vyvodyty detalnu informatsiiu
 #'
-#' @return Список, що містить:
-#'   \item{b_init}{вектор початкових коефіцієнтів AR/MA}
-#'   \item{x_mean}{оцінене середнє (якщо include.mean=TRUE)}
-#'   \item{innovations}{початкові залишки/інновації}
-#'   \item{x_centered}{центрований (або диференційований + центрований) ряд}
-#'   \item{m2}{другий центральний момент початкових залишків}
-#'   \item{m3}{третій центральний момент початкових залишків}
-#'   \item{m4}{четвертий центральний момент початкових залишків}
+#' @return Spysok, shcho mistyt:
+#'   \item{b_init}{vektor pochatkovykh koefitsiientiv AR/MA}
+#'   \item{x_mean}{otsinene serednie (iakshcho include.mean=TRUE)}
+#'   \item{innovations}{pochatkovi zalyshky/innovatsii}
+#'   \item{x_centered}{tsentrovanyi (abo dyferentsiiovanyi + tsentrovanyi) riad}
+#'   \item{m2}{druhyi tsentralnyi moment pochatkovykh zalyshkiv}
+#'   \item{m3}{tretii tsentralnyi moment pochatkovykh zalyshkiv}
+#'   \item{m4}{chetvertyi tsentralnyi moment pochatkovykh zalyshkiv}
 #' @keywords internal
 get_initial_estimates <- function(model_params,
                                   initial = NULL,
@@ -273,14 +273,14 @@ get_initial_estimates <- function(model_params,
   mtype     <- model_params$model_type
   inc_mean  <- model_params$include.mean
 
-  # Можливо диференціювати для ARIMA
+  # Mozhlyvo dyferentsiiuvaty dlia ARIMA
   if (mtype == "arima" && d > 0) {
     x_diff <- diff(x, differences = d)
   } else {
     x_diff <- x
   }
 
-  # Центрувати, якщо потрібно
+  # Tsentruvaty, iakshcho potribno
   if (inc_mean) {
     x_mean <- mean(x_diff, na.rm = TRUE)
     x_centered <- x_diff - x_mean
@@ -290,7 +290,7 @@ get_initial_estimates <- function(model_params,
   }
 
   if (mtype == "ar") {
-    # AR(p): швидкий підхід для початкових значень
+    # AR(p): shvydkyi pidkhid dlia pochatkovykh znachen
     if (is.null(initial)) {
       if (method == "yw") {
         b_init <- get_yw_estimates(x_centered, ar_order)
@@ -302,17 +302,17 @@ get_initial_estimates <- function(model_params,
       }
     } else {
       if (length(initial) != ar_order) {
-        stop("Довжина 'initial' має відповідати порядку AR")
+        stop("Dovzhyna 'initial' maie vidpovidaty poriadku AR")
       }
       b_init <- initial
     }
-    # Інновації з початкової підгонки
+    # Innovatsii z pochatkovoi pidhonky
     X <- create_ar_matrix(x_centered, ar_order)
     y <- x_centered[(ar_order + 1):length(x_centered)]
     innovations <- as.numeric(y - X %*% b_init)
 
   } else if (mtype %in% c("ma", "arma", "arima")) {
-    # Використовувати stats::arima для початкового припущення або надані користувачем
+    # Vykorystovuvaty stats::arima dlia pochatkovoho prypushchennia abo nadani korystuvachem
     arima_order <- c(ar_order, ifelse(mtype=="arima", d, 0), ma_order)
     if (is.null(initial)) {
       init_fit <- NULL
@@ -329,7 +329,7 @@ get_initial_estimates <- function(model_params,
         }
       }
       if(is.null(init_fit)) {
-        if(verbose) cat("Усі стандартні методи не спрацювали; використовуються спрощені значення.\n")
+        if(verbose) cat("Usi standartni metody ne spratsiuvaly; vykorystovuiutsia sproshcheni znachennia.\n")
         init_fit <- list(
           coef = numeric(ar_order + ma_order),
           residuals = if(mtype=="arima") x_diff else x_centered
@@ -357,19 +357,19 @@ get_initial_estimates <- function(model_params,
       b_init <- c(ar_init, ma_init)
 
     } else {
-      # Надано initial
+      # Nadano initial
       if(is.list(initial)) {
         if(ar_order>0 && is.null(initial$ar)) {
-          stop("Відсутній 'ar' у списку initial, але ar_order>0")
+          stop("Vidsutnii 'ar' u spysku initial, ale ar_order>0")
         }
         if(ma_order>0 && is.null(initial$ma)) {
-          stop("Відсутній 'ma' у списку initial, але ma_order>0")
+          stop("Vidsutnii 'ma' u spysku initial, ale ma_order>0")
         }
         ar_init <- if(ar_order>0) initial$ar else numeric(0)
         ma_init <- if(ma_order>0) initial$ma else numeric(0)
       } else {
         if(length(initial) != (ar_order+ma_order)) {
-          stop("Довжина 'initial' має відповідати сумі порядків AR та MA")
+          stop("Dovzhyna 'initial' maie vidpovidaty sumi poriadkiv AR ta MA")
         }
         ar_init <- if(ar_order>0) initial[1:ar_order] else numeric(0)
         ma_init <- if(ma_order>0) initial[(ar_order+1):(ar_order+ma_order)] else numeric(0)
@@ -381,7 +381,7 @@ get_initial_estimates <- function(model_params,
                      fixed=b_init,
                      include.mean=inc_mean && (mtype!="arima"))
       }, error=function(e) {
-        if(verbose) cat("Помилка з наданими користувачем початковими значеннями:",e$message,"\n")
+        if(verbose) cat("Pomylka z nadanymy korystuvachem pochatkovymy znachenniamy:",e$message,"\n")
         list(residuals = if(mtype=="arima") x_diff else x_centered)
       })
       innovations <- as.numeric(init_fit$residuals)
@@ -389,14 +389,14 @@ get_initial_estimates <- function(model_params,
   }
 
   if(anyNA(b_init)) {
-    warning("NA в початкових параметрах замінені на 0.")
+    warning("NA v pochatkovykh parametrakh zamineni na 0.")
     b_init[is.na(b_init)] <- 0
   }
 
-  # Обчислення моментів
+  # Obchyslennia momentiv
   moments <- compute_moments(innovations)
 
-  # Повернення результатів
+  # Povernennia rezultativ
   list(
     b_init      = b_init,
     x_mean      = x_mean,
@@ -409,22 +409,22 @@ get_initial_estimates <- function(model_params,
   )
 }
 
-#' Оновити інновації MA моделі
+#' Onovyty innovatsii MA modeli
 #'
-#' @param x центрований часовий ряд
-#' @param ma_coef вектор коефіцієнтів MA
-#' @return вектор інновацій
+#' @param x tsentrovanyi chasovyi riad
+#' @param ma_coef vektor koefitsiientiv MA
+#' @return vektor innovatsii
 #' @keywords internal
 update_ma_innovations <- function(x, ma_coef) {
   n <- length(x)
   q <- length(ma_coef)
 
-  # Ініціалізувати інновації як нулі
+  # Initsializuvaty innovatsii iak nuli
   innovations <- numeric(n)
 
-  # Ітеративно обчислити інновації
+  # Iteratyvno obchyslyty innovatsii
   for(t in 1:n) {
-    # Обчислити очікуване значення на основі попередніх інновацій
+    # Obchyslyty ochikuvane znachennia na osnovi poperednikh innovatsii
     expected <- 0
     for(j in 1:q) {
       if(t - j > 0) {
@@ -432,20 +432,20 @@ update_ma_innovations <- function(x, ma_coef) {
       }
     }
 
-    # Обчислити поточну інновацію
+    # Obchyslyty potochnu innovatsiiu
     innovations[t] <- x[t] - expected
   }
 
-  # Перевірити на неконечні значення
+  # Pereviryty na nekonechni znachennia
   if(any(is.infinite(innovations)) || any(is.na(innovations))) {
-    warning("Виявлено неконечні інновації в update_ma_innovations. Використовуємо регуляризовані значення.")
-    # Замінити проблемні значення на середнє або 0
+    warning("Vyiavleno nekonechni innovatsii v update_ma_innovations. Vykorystovuiemo rehuliaryzovani znachennia.")
+    # Zaminyty problemni znachennia na serednie abo 0
     bad_idx <- is.infinite(innovations) | is.na(innovations)
     if(sum(!bad_idx) > 0) {
-      # Якщо є дійсні значення, використовуємо їх середнє
+      # Yakshcho ie diisni znachennia, vykorystovuiemo ikh serednie
       innovations[bad_idx] <- mean(innovations[!bad_idx])
     } else {
-      # Інакше використовуємо 0
+      # Inakshe vykorystovuiemo 0
       innovations[bad_idx] <- 0
     }
   }
@@ -453,14 +453,14 @@ update_ma_innovations <- function(x, ma_coef) {
   return(innovations)
 }
 
-#' Обчислити кінцеві залишки для моделей часових рядів
+#' Obchyslyty kintsevi zalyshky dlia modelei chasovykh riadiv
 #'
-#' @param coefs Оцінені коефіцієнти
-#' @param model_info Інформація про модель
-#' @return Вектор залишків
+#' @param coefs Otsineni koefitsiienty
+#' @param model_info Informatsiia pro model
+#' @return Vektor zalyshkiv
 #' @keywords internal
 compute_ts_residuals <- function(coefs, model_info) {
-  # Витягнути параметри моделі
+  # Vytiahnuty parametry modeli
   x           <- model_info$x
   ar_order    <- model_info$ar_order
   ma_order    <- model_info$ma_order
@@ -469,7 +469,7 @@ compute_ts_residuals <- function(coefs, model_info) {
   include.mean <- model_info$include.mean
   verbose_flag <- isTRUE(model_info$verbose)
 
-  # Розділити коефіцієнти на AR та MA частини
+  # Rozdilyty koefitsiienty na AR ta MA chastyny
   if (ar_order > 0) {
     ar_coefs <- coefs[1:ar_order]
   } else {
@@ -482,10 +482,10 @@ compute_ts_residuals <- function(coefs, model_info) {
     ma_coefs <- numeric(0)
   }
 
-  # Для більш надійного обчислення залишків використовуємо arima з фіксованими параметрами
+  # Dlia bilsh nadiinoho obchyslennia zalyshkiv vykorystovuiemo arima z fiksovanymy parametramy
   arima_order <- c(ar_order, ifelse(model_type == "arima", d, 0), ma_order)
 
-  # Підготувати фіксовані параметри для arima
+  # Pidhotuvaty fiksovani parametry dlia arima
   fixed_params <- c(ar_coefs, ma_coefs)
   include_intercept <- include.mean && !(model_info$model_type == "arima" && model_info$d > 0)
 
@@ -503,18 +503,18 @@ compute_ts_residuals <- function(coefs, model_info) {
     )
   }
 
-  # Обчислити залишки з фіксованими параметрами
+  # Obchyslyty zalyshky z fiksovanymy parametramy
   final_fit <- tryCatch({
     stats::arima(model_info$original_x,
                 order = arima_order,
                 fixed = fixed_params,
                 include.mean = include_intercept)
   }, error = function(e) {
-    if (verbose_flag) cat("Помилка при обчисленні кінцевих залишків:", e$message, "\n")
+    if (verbose_flag) cat("Pomylka pry obchyslenni kintsevykh zalyshkiv:", e$message, "\n")
     list(residuals = rep(NA, length(model_info$original_x)))
   })
 
-  # Витягнути залишки та забезпечити правильну довжину
+  # Vytiahnuty zalyshky ta zabezpechyty pravylnu dovzhynu
   final_res <- as.numeric(final_fit$residuals)
 
   if (length(final_res) < length(model_info$original_x)) {

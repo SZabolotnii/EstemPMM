@@ -1,11 +1,11 @@
-# Симуляції Монте-Карло для оцінки ефективності PMM2
-# Частина 1: Моделювання та порівняння методів на різних розподілах похибок
+# Symuliatsii Monte-Karlo dlia otsinky efektyvnosti PMM2
+# Chastyna 1: Modeliuvannia ta porivniannia metodiv na riznykh rozpodilakh pokhybok
 
-# Перевірка наявності та підключення необхідних пакунків
+# Perevirka naiavnosti ta pidkliuchennia neobkhidnykh pakunkiv
 required_pkgs <- c("EstemPMM", "ggplot2", "gridExtra", "dplyr", "parallel")
 missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)]
 if (length(missing_pkgs) > 0) {
-  stop("Для цього демо встановіть пакунки: ",
+  stop("Dlia tsoho demo vstanovit pakunky: ",
        paste(missing_pkgs, collapse = ", "), call. = FALSE)
 }
 
@@ -16,73 +16,73 @@ library(dplyr)
 library(parallel)
 
 #############################################################
-# Допоміжні функції для симуляцій Монте-Карло
+# Dopomizhni funktsii dlia symuliatsii Monte-Karlo
 #############################################################
 
-# Функція для генерації даних з різними розподілами помилок
+# Funktsiia dlia heneratsii danykh z riznymy rozpodilamy pomylok
 generate_data <- function(n, distribution, a0, a1, ...) {
   x <- rnorm(n, mean = 0, sd = 1)
 
-  # Генерація помилок з заданим розподілом
+  # Heneratsiia pomylok z zadanym rozpodilom
   errors <- switch(distribution,
                    "gaussian" = rnorm(n, mean = 0, sd = 1),
                    "t" = rt(n, df = 3),
                    "gamma" = {
-                     # Параметризована гамма для нульової середньої
+                     # Parametryzovana hamma dlia nulovoi serednoi
                      alpha <- 2
                      beta <- 1/sqrt(alpha)
                      rgamma(n, shape = alpha, scale = beta) - alpha*beta
                    },
                    "exponential" = {
-                     # Експоненційна зі зсувом для нульової середньої
+                     # Eksponentsiina zi zsuvom dlia nulovoi serednoi
                      lambda <- 1
                      rexp(n, rate = lambda) - 1/lambda
                    },
                    "chi-squared" = {
-                     # Хі-квадрат зі зсувом для нульової середньої
+                     # Khi-kvadrat zi zsuvom dlia nulovoi serednoi
                      df <- 3
                      rchisq(n, df = df) - df
                    },
                    "lognormal" = {
-                     # Логнормальна зі зсувом для нульової середньої
+                     # Lohnormalna zi zsuvom dlia nulovoi serednoi
                      sigma <- 0.5
                      exp(rnorm(n, mean = -sigma^2/2, sd = sigma)) - 1
                    })
 
-  # Обчислення значень y
+  # Obchyslennia znachen y
   y <- a0 + a1 * x + errors
 
   return(data.frame(x = x, y = y, errors = errors))
 }
 
-# Функція для порівняння методів PMM2 та OLS
+# Funktsiia dlia porivniannia metodiv PMM2 ta OLS
 compare_methods <- function(data, true_a0, true_a1) {
-  # Підгонка OLS
+  # Pidhonka OLS
   ols_fit <- lm(y ~ x, data = data)
 
-  # Підгонка PMM2
+  # Pidhonka PMM2
   pmm2_fit <- lm_pmm2(y ~ x, data = data, verbose = FALSE)
 
-  # Обчислення залишків
+  # Obchyslennia zalyshkiv
   ols_resid <- residuals(ols_fit)
   pmm2_resid <- pmm2_fit@residuals
 
-  # Обчислення MSE
+  # Obchyslennia MSE
   ols_mse <- mean(ols_resid^2)
   pmm2_mse <- mean(pmm2_resid^2)
 
-  # Обчислення AIC
+  # Obchyslennia AIC
   ols_aic <- AIC(ols_fit)
   pmm2_aic <- AIC(pmm2_fit)
 
-  # Обчислення зміщення оцінок
+  # Obchyslennia zmishchennia otsinok
   ols_bias_a0 <- coef(ols_fit)[1] - true_a0
   ols_bias_a1 <- coef(ols_fit)[2] - true_a1
 
   pmm2_bias_a0 <- pmm2_fit@coefficients[1] - true_a0
   pmm2_bias_a1 <- pmm2_fit@coefficients[2] - true_a1
 
-  # Моменти розподілу помилок
+  # Momenty rozpodilu pomylok
   moments <- EstemPMM::compute_moments(data$errors)
 
   return(list(
@@ -99,14 +99,14 @@ compare_methods <- function(data, true_a0, true_a1) {
   ))
 }
 
-# Функція для проведення симуляцій Монте-Карло
+# Funktsiia dlia provedennia symuliatsii Monte-Karlo
 monte_carlo <- function(n_sim, n_samples, distribution, true_a0, true_a1, parallel = FALSE) {
 
   run_sim <- function(i) {
     data <- generate_data(n_samples, distribution, true_a0, true_a1)
     results <- compare_methods(data, true_a0, true_a1)
 
-    # Зберегти тільки важливі результати для економії пам'яті
+    # Zberehty tilky vazhlyvi rezultaty dlia ekonomii pam'iati
     return(list(
       ols_coef = results$ols_coef,
       pmm2_coef = results$pmm2_coef,
@@ -116,12 +116,12 @@ monte_carlo <- function(n_sim, n_samples, distribution, true_a0, true_a1, parall
     ))
   }
 
-  # Використання паралельних обчислень, якщо вказано
+  # Vykorystannia paralelnykh obchyslen, iakshcho vkazano
   if (parallel && requireNamespace("parallel", quietly = TRUE)) {
     n_cores <- parallel::detectCores() - 1
     results <- parallel::mclapply(1:n_sim, function(i) run_sim(i), mc.cores = n_cores)
   } else {
-    # Ініціалізація прогрес-бару
+    # Initsializatsiia prohres-baru
     pb <- txtProgressBar(min = 0, max = n_sim, style = 3)
 
     results <- vector("list", n_sim)
@@ -132,7 +132,7 @@ monte_carlo <- function(n_sim, n_samples, distribution, true_a0, true_a1, parall
     close(pb)
   }
 
-  # Обчислення статистик по результатам
+  # Obchyslennia statystyk po rezultatam
   ols_a0 <- sapply(results, function(x) x$ols_coef[1])
   ols_a1 <- sapply(results, function(x) x$ols_coef[2])
 
@@ -144,7 +144,7 @@ monte_carlo <- function(n_sim, n_samples, distribution, true_a0, true_a1, parall
 
   mse_ratio <- sapply(results, function(x) x$mse_ratio)
 
-  # Генерація одноразового набору даних для обчислення моментів
+  # Heneratsiia odnorazovoho naboru danykh dlia obchyslennia momentiv
   data <- generate_data(10000, distribution, true_a0, true_a1)
   moments <- EstemPMM::compute_moments(data$errors)
 
@@ -175,65 +175,65 @@ monte_carlo <- function(n_sim, n_samples, distribution, true_a0, true_a1, parall
   ))
 }
 
-# Функція для візуалізації результатів Монте-Карло
+# Funktsiia dlia vizualizatsii rezultativ Monte-Karlo
 plot_monte_carlo_results <- function(mc_results, distribution_name, true_a0, true_a1) {
-  # Розподіл оцінок a0
+  # Rozpodil otsinok a0
   p1 <- ggplot() +
     geom_density(aes(x = mc_results$ols_a0, fill = "OLS"), alpha = 0.5) +
     geom_density(aes(x = mc_results$pmm2_a0, fill = "PMM2"), alpha = 0.5) +
     geom_vline(xintercept = true_a0, linetype = "dashed") +
-    labs(title = paste("Розподіл оцінок a0 -", distribution_name),
-         x = "a0", y = "Густина") +
+    labs(title = paste("Rozpodil otsinok a0 -", distribution_name),
+         x = "a0", y = "Hustyna") +
     scale_fill_manual(values = c("OLS" = "blue", "PMM2" = "red"),
-                      name = "Метод") +
+                      name = "Metod") +
     theme_minimal()
 
-  # Розподіл оцінок a1
+  # Rozpodil otsinok a1
   p2 <- ggplot() +
     geom_density(aes(x = mc_results$ols_a1, fill = "OLS"), alpha = 0.5) +
     geom_density(aes(x = mc_results$pmm2_a1, fill = "PMM2"), alpha = 0.5) +
     geom_vline(xintercept = true_a1, linetype = "dashed") +
-    labs(title = paste("Розподіл оцінок a1 -", distribution_name),
-         x = "a1", y = "Густина") +
+    labs(title = paste("Rozpodil otsinok a1 -", distribution_name),
+         x = "a1", y = "Hustyna") +
     scale_fill_manual(values = c("OLS" = "blue", "PMM2" = "red"),
-                      name = "Метод") +
+                      name = "Metod") +
     theme_minimal()
 
-  # QQ-графіки
+  # QQ-hrafiky
   p3 <- ggplot() +
     geom_qq(aes(sample = mc_results$ols_a0 - true_a0, color = "OLS")) +
     geom_qq(aes(sample = mc_results$pmm2_a0 - true_a0, color = "PMM2")) +
     geom_qq_line(aes(sample = mc_results$ols_a0 - true_a0)) +
-    labs(title = paste("QQ-графік для a0 -", distribution_name),
-         x = "Теоретичні квантилі", y = "Вибіркові квантилі") +
+    labs(title = paste("QQ-hrafik dlia a0 -", distribution_name),
+         x = "Teoretychni kvantyli", y = "Vybirkovi kvantyli") +
     scale_color_manual(values = c("OLS" = "blue", "PMM2" = "red"),
-                       name = "Метод") +
+                       name = "Metod") +
     theme_minimal()
 
   p4 <- ggplot() +
     geom_qq(aes(sample = mc_results$ols_a1 - true_a1, color = "OLS")) +
     geom_qq(aes(sample = mc_results$pmm2_a1 - true_a1, color = "PMM2")) +
     geom_qq_line(aes(sample = mc_results$ols_a1 - true_a1)) +
-    labs(title = paste("QQ-графік для a1 -", distribution_name),
-         x = "Теоретичні квантилі", y = "Вибіркові квантилі") +
+    labs(title = paste("QQ-hrafik dlia a1 -", distribution_name),
+         x = "Teoretychni kvantyli", y = "Vybirkovi kvantyli") +
     scale_color_manual(values = c("OLS" = "blue", "PMM2" = "red"),
-                       name = "Метод") +
+                       name = "Metod") +
     theme_minimal()
 
-  # Відображення статистик
+  # Vidobrazhennia statystyk
   stats_text <- paste(
-    paste("Асиметрія (c3):", round(mc_results$c3, 4)),
-    paste("Ексцес (c4):", round(mc_results$c4, 4)),
-    paste("Теоретичний коефіцієнт g:", round(mc_results$theoretical_g, 4)),
-    paste("Фактичний коефіцієнт (MSE):", round(mc_results$mse_ratio_mean, 4)),
-    paste("Середнє значення a0 (OLS):", round(mc_results$ols_a0_mean, 4),
-          "±", round(mc_results$ols_a0_sd, 4)),
-    paste("Середнє значення a0 (PMM2):", round(mc_results$pmm2_a0_mean, 4),
-          "±", round(mc_results$pmm2_a0_sd, 4)),
-    paste("Середнє значення a1 (OLS):", round(mc_results$ols_a1_mean, 4),
-          "±", round(mc_results$ols_a1_sd, 4)),
-    paste("Середнє значення a1 (PMM2):", round(mc_results$pmm2_a1_mean, 4),
-          "±", round(mc_results$pmm2_a1_sd, 4)),
+    paste("Asymetriia (c3):", round(mc_results$c3, 4)),
+    paste("Ekstses (c4):", round(mc_results$c4, 4)),
+    paste("Teoretychnyi koefitsiient g:", round(mc_results$theoretical_g, 4)),
+    paste("Faktychnyi koefitsiient (MSE):", round(mc_results$mse_ratio_mean, 4)),
+    paste("Serednie znachennia a0 (OLS):", round(mc_results$ols_a0_mean, 4),
+          "+/-", round(mc_results$ols_a0_sd, 4)),
+    paste("Serednie znachennia a0 (PMM2):", round(mc_results$pmm2_a0_mean, 4),
+          "+/-", round(mc_results$pmm2_a0_sd, 4)),
+    paste("Serednie znachennia a1 (OLS):", round(mc_results$ols_a1_mean, 4),
+          "+/-", round(mc_results$ols_a1_sd, 4)),
+    paste("Serednie znachennia a1 (PMM2):", round(mc_results$pmm2_a1_mean, 4),
+          "+/-", round(mc_results$pmm2_a1_sd, 4)),
     sep = "\n"
   )
 
@@ -241,39 +241,39 @@ plot_monte_carlo_results <- function(mc_results, distribution_name, true_a0, tru
     annotate("text", x = 0, y = 0.5, label = stats_text, hjust = 0) +
     theme_void() +
     xlim(0, 1) + ylim(0, 1) +
-    labs(title = paste("Статистика -", distribution_name))
+    labs(title = paste("Statystyka -", distribution_name))
 
-  # Об'єднання графіків
+  # Ob'iednannia hrafikiv
   grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
 }
 
 #############################################################
-# Налаштування та запуск симуляцій
+# Nalashtuvannia ta zapusk symuliatsii
 #############################################################
 
 set.seed(42)
 
-# Параметри симуляцій
-n_sim <- 1000       # Кількість симуляцій Монте-Карло
-n_samples <- 100    # Розмір вибірки в кожній симуляції
-true_a0 <- 2        # Справжнє значення a0
-true_a1 <- 1.5      # Справжнє значення a1
+# Parametry symuliatsii
+n_sim <- 1000       # Kilkist symuliatsii Monte-Karlo
+n_samples <- 100    # Rozmir vybirky v kozhnii symuliatsii
+true_a0 <- 2        # Spravzhnie znachennia a0
+true_a1 <- 1.5      # Spravzhnie znachennia a1
 
-# Для швидкого демонстраційного запуску можна використати:
-# n_sim <- 100      # Менша кількість симуляцій для швидшого запуску
-# n_samples <- 50   # Менший розмір вибірки
+# Dlia shvydkoho demonstratsiinoho zapusku mozhna vykorystaty:
+# n_sim <- 100      # Mensha kilkist symuliatsii dlia shvydshoho zapusku
+# n_samples <- 50   # Menshyi rozmir vybirky
 
-# Список розподілів для тестування
+# Spysok rozpodiliv dlia testuvannia
 distributions <- c("gaussian", "t", "gamma", "exponential", "chi-squared", "lognormal")
-distribution_names <- c("Нормальний", "Стьюдента (df=3)", "Гамма (a=2)",
-                        "Експоненційний", "Хі-квадрат (df=3)", "Логнормальний")
+distribution_names <- c("Normalnyi", "Stiudenta (df=3)", "Hamma (a=2)",
+                        "Eksponentsiinyi", "Khi-kvadrat (df=3)", "Lohnormalnyi")
 
-# Функція для виконання всіх симуляцій
+# Funktsiia dlia vykonannia vsikh symuliatsii
 run_all_simulations <- function() {
   results <- list()
 
   for(i in 1:length(distributions)) {
-    cat("\nВиконується симуляція для розподілу:", distribution_names[i], "\n")
+    cat("\nVykonuietsia symuliatsiia dlia rozpodilu:", distribution_names[i], "\n")
 
     mc_results <- monte_carlo(n_sim, n_samples,
                               distributions[i],
@@ -282,30 +282,30 @@ run_all_simulations <- function() {
 
     results[[distributions[i]]] <- mc_results
 
-    # Візуалізація результатів
+    # Vizualizatsiia rezultativ
     plot_monte_carlo_results(mc_results, distribution_names[i], true_a0, true_a1)
 
-    # Вивід результатів у консоль
-    cat("\nРезультати для розподілу:", distribution_names[i], "\n")
-    cat("Асиметрія (c3):", round(mc_results$c3, 4), "\n")
-    cat("Ексцес (c4):", round(mc_results$c4, 4), "\n")
-    cat("Теоретичний коефіцієнт g:", round(mc_results$theoretical_g, 4), "\n")
-    cat("Фактичний коефіцієнт (MSE):", round(mc_results$mse_ratio_mean, 4), "\n")
-    cat("Покращення ефективності:",
+    # Vyvid rezultativ u konsol
+    cat("\nRezultaty dlia rozpodilu:", distribution_names[i], "\n")
+    cat("Asymetriia (c3):", round(mc_results$c3, 4), "\n")
+    cat("Ekstses (c4):", round(mc_results$c4, 4), "\n")
+    cat("Teoretychnyi koefitsiient g:", round(mc_results$theoretical_g, 4), "\n")
+    cat("Faktychnyi koefitsiient (MSE):", round(mc_results$mse_ratio_mean, 4), "\n")
+    cat("Pokrashchennia efektyvnosti:",
         round((1 - mc_results$mse_ratio_mean) * 100, 2), "%\n")
 
     cat("a0 (OLS):", round(mc_results$ols_a0_mean, 4),
-        "±", round(mc_results$ols_a0_sd, 4), "\n")
+        "+/-", round(mc_results$ols_a0_sd, 4), "\n")
     cat("a0 (PMM2):", round(mc_results$pmm2_a0_mean, 4),
-        "±", round(mc_results$pmm2_a0_sd, 4), "\n")
+        "+/-", round(mc_results$pmm2_a0_sd, 4), "\n")
 
     cat("a1 (OLS):", round(mc_results$ols_a1_mean, 4),
-        "±", round(mc_results$ols_a1_sd, 4), "\n")
+        "+/-", round(mc_results$ols_a1_sd, 4), "\n")
     cat("a1 (PMM2):", round(mc_results$pmm2_a1_mean, 4),
-        "±", round(mc_results$pmm2_a1_sd, 4), "\n")
+        "+/-", round(mc_results$pmm2_a1_sd, 4), "\n")
   }
 
-  # Створення підсумкового порівняння всіх розподілів
+  # Stvorennia pidsumkovoho porivniannia vsikh rozpodiliv
   summary_table <- data.frame(
     Distribution = distribution_names,
     Skewness = sapply(results, function(x) round(x$c3, 4)),
@@ -316,22 +316,22 @@ run_all_simulations <- function() {
       round((1 - x$mse_ratio_mean) * 100, 2))
   )
 
-  cat("\n\nПідсумок всіх симуляцій:\n")
+  cat("\n\nPidsumok vsikh symuliatsii:\n")
   print(summary_table)
 
-  # Візуалізація порівняння ефективності
+  # Vizualizatsiia porivniannia efektyvnosti
   p <- ggplot(summary_table, aes(x = reorder(Distribution, -Improvement))) +
-    geom_bar(aes(y = Improvement, fill = "Фактичне"), stat = "identity",
+    geom_bar(aes(y = Improvement, fill = "Faktychne"), stat = "identity",
              alpha = 0.7, position = position_dodge()) +
-    geom_point(aes(y = (1 - Theoretical_g) * 100, color = "Теоретичне"),
+    geom_point(aes(y = (1 - Theoretical_g) * 100, color = "Teoretychne"),
                size = 3) +
-    labs(title = "Порівняння ефективності PMM2 відносно OLS",
-         x = "Розподіл помилок",
-         y = "Покращення ефективності (%)") +
-    scale_fill_manual(values = c("Фактичне" = "steelblue"),
-                      name = "Покращення") +
-    scale_color_manual(values = c("Теоретичне" = "red"),
-                       name = "Покращення") +
+    labs(title = "Porivniannia efektyvnosti PMM2 vidnosno OLS",
+         x = "Rozpodil pomylok",
+         y = "Pokrashchennia efektyvnosti (%)") +
+    scale_fill_manual(values = c("Faktychne" = "steelblue"),
+                      name = "Pokrashchennia") +
+    scale_color_manual(values = c("Teoretychne" = "red"),
+                       name = "Pokrashchennia") +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
@@ -340,5 +340,5 @@ run_all_simulations <- function() {
   return(list(results = results, summary = summary_table))
 }
 
-# Щоб запустити всі симуляції, викличте вручну:
+# Shchob zapustyty vsi symuliatsii, vyklychte vruchnu:
 # run_all_simulations()

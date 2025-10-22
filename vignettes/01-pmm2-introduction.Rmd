@@ -162,7 +162,7 @@ To rigorously compare estimator efficiency, we use **bootstrap inference**:
 ```{r bootstrap_inference}
 # Perform bootstrap inference
 boot_results <- pmm2_inference(fit_pmm2, formula = y ~ x, data = dat,
-                               n_boot = 500, verbose = FALSE)
+                               B = 500)
 
 # Display summary with confidence intervals
 summary(boot_results)
@@ -245,7 +245,8 @@ PMM2 provides standard diagnostic methods:
 
 ```{r diagnostics, fig.width=7, fig.height=6}
 # Generate diagnostic plots
-plot(fit_pmm2_multi, main = "PMM2 Diagnostics")
+plot(fit_pmm2_multi)
+title("PMM2 Diagnostics")
 ```
 
 The diagnostic plots include:

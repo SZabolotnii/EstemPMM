@@ -122,7 +122,7 @@ if (nrow(boot_results) == 0) {
     probs = c(0.025, 0.975)
   )
 
-  cat("Bootstrapped mean slope (β₁):\n")
+  cat("Bootstrapped mean slope (beta_1):\n")
   cat("  OLS:  ", sprintf("%.4f", boot_means["ols_b1"]),
       " (SD =", sprintf("%.4f", boot_sd["ols_b1"]), ")\n")
   cat("  PMM2: ", sprintf("%.4f", boot_means["pmm2_b1"]),
@@ -192,11 +192,11 @@ cat("PMM2 Efficiency Indicator:\n")
 cat("  g coefficient:", sprintf("%.4f", moments$g), "\n")
 
 if (abs(moments$c3) > 0.5) {
-  cat("  → Residuals show SIGNIFICANT skewness\n")
-  cat("  → PMM2 expected to improve efficiency\n")
+  cat("  -> Residuals show SIGNIFICANT skewness\n")
+  cat("  -> PMM2 expected to improve efficiency\n")
 } else {
-  cat("  → Residuals close to symmetric\n")
-  cat("  → PMM2 and OLS similar performance expected\n")
+  cat("  -> Residuals close to symmetric\n")
+  cat("  -> PMM2 and OLS similar performance expected\n")
 }
 
 cat("\n")
@@ -367,10 +367,10 @@ cat("==============================================================\n\n")
 cat("This real-world example demonstrates PMM2 application to\n")
 cat("the Auto MPG dataset. The analysis reveals:\n\n")
 
-cat("• PMM2 provides a robust alternative to OLS\n")
-cat("• Particularly useful when residual diagnostics show\n")
+cat("- PMM2 provides a robust alternative to OLS\n")
+cat("- Particularly useful when residual diagnostics show\n")
 cat("  departures from normality (skewness, heavy tails)\n")
-cat("• Model comparison through MSE and AIC helps select\n")
+cat("- Model comparison through MSE and AIC helps select\n")
 cat("  the most appropriate method for your data\n\n")
 
 cat("For more detailed statistical inference (confidence intervals,\n")

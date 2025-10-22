@@ -1,35 +1,37 @@
-# pmm2_common.R - Спільні утиліти для всіх PMM2 моделей
+# pmm2_common.R - Spilni utylity dlia vsikh PMM2 modelei
 
 
-#' Універсальний алгоритм PMM2 для всіх типів моделей
+#' Universalnyi alhorytm PMM2 dlia vsikh typiv modelei
 #'
-#' @param b_init Початкові оцінки параметрів
-#' @param X Матриця дизайну
-#' @param y Вектор відгуку
-#' @param m2,m3,m4 Центральні моменти
-#' @param max_iter Максимальна кількість ітерацій
-#' @param tol Допуск для збіжності
-#' @param regularize Чи додавати регуляризацію
-#' @param reg_lambda Параметр регуляризації
-#' @param verbose Чи виводити інформацію про прогрес
-#'
-#' @return Список з результатами оцінювання
+#' @param b_init Pochatkovi otsinky parametriv
+#' @param X Matrytsia dyzainu
+#' @param y Vektor vidhuku
+#' @param m2,m3,m4 Tsentralni momenty
+#' @param max_iter Maksymalna kilkist iteratsii
+#' @param tol Dopusk dlia zbizhnosti
+#' @param regularize Chy dodavaty rehuliaryzatsiiu
+#' @param reg_lambda Parametr rehuliaryzatsii
+#' @param verbose Chy vyvodyty informatsiiu pro prohres
+#' @param poly_terms Poperedno obchysleni koefitsiienty polinoma (spysok z elementamy \code{A}, \code{B}, \code{C});
+#'   dozvoliaie peredavaty vlasni znachennia dlia spetsialnykh stsenariiv, inakshe vony obchysliuiutsia z momentiv
+#' 
+#' @return Spysok z rezultatamy otsiniuvannia
 #' @keywords internal
 pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
                            max_iter = 50, tol = 1e-6,
                            regularize = TRUE, reg_lambda = 1e-8,
                            verbose = FALSE,
                            poly_terms = NULL) {
-  # Поточні оцінки параметрів
+  # Potochni otsinky parametriv
   b_cur <- b_init
   converged <- FALSE
   iterations <- 0
 
-  # Обчислити коефіцієнти PMM2 полінома
-  # Виведення відповідає рівнянню (10) зі статті:
+  # Obchyslyty koefitsiienty PMM2 polinoma
+  # Vyvedennia vidpovidaie rivnianniu (10) zi statti:
   # A = c3 * sigma^3, B = (c4 + 3) * sigma^4 - sigma^4 - 2 c3 * sigma^3 * y,
   # C = c3 * y^2 * sigma^3 - ((c4 + 3) * sigma^4 - sigma^4) * y - sigma^2 * c3 * sigma^3.
-  # Підстановка σ^2 = m2, m3 = c3 σ^3, m4 = (c4 + 3) σ^4 дає наведені нижче формули.
+  # Pidstanovka sigma^2 = m2, m3 = c3 sigma^3, m4 = (c4 + 3) sigma^4 daie navedeni nyzhche formuly.
   if (is.null(poly_terms)) {
     A <- m3
     B <- m4 - m2^2 - 2 * m3 * y
@@ -39,36 +41,36 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     B <- poly_terms$B
     C <- poly_terms$C
     if (length(B) != nrow(X) || length(C) != nrow(X)) {
-      stop("poly_terms$B та poly_terms$C повинні мати довжину, що дорівнює кількості рядків X")
+      stop("poly_terms$B ta poly_terms$C povynni maty dovzhynu, shcho dorivniuie kilkosti riadkiv X")
     }
   }
 
-  # Відстежувати історію збіжності, якщо verbose
+  # Vidstezhuvaty istoriiu zbizhnosti, iakshcho verbose
   if (verbose) {
     conv_history <- numeric(max_iter)
   }
 
-  # Основний цикл ітерацій
+  # Osnovnyi tsykl iteratsii
   for (iter in seq_len(max_iter)) {
     iterations <- iter
 
-    # Обчислити прогнозовані значення
+    # Obchyslyty prohnozovani znachennia
     y_pred <- as.vector(X %*% b_cur)
 
-    # Обчислити Z1 = A*y_pred^2 + B*y_pred + C
+    # Obchyslyty Z1 = A*y_pred^2 + B*y_pred + C
     Z1 <- A*(y_pred^2) + B*y_pred + C
 
-    # Сформувати вектор Z для кожного параметра
+    # Sformuvaty vektor Z dlia kozhnoho parametra
     p <- length(b_cur)
     Z <- numeric(p)
     for (r in 1:p) {
       Z[r] <- sum(Z1 * X[, r])
     }
 
-    # Обчислити похідну JZ11 = 2*A*y_pred + B
+    # Obchyslyty pokhidnu JZ11 = 2*A*y_pred + B
     JZ11 <- 2 * A * y_pred + B
 
-    # Сформувати матрицю Якобіана
+    # Sformuvaty matrytsiu Yakobiana
     JZs <- matrix(0, p, p)
     for (i in 1:p) {
       for (j in 1:p) {
@@ -76,65 +78,65 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
       }
     }
 
-    # Додати регуляризацію, якщо потрібно
+    # Dodaty rehuliaryzatsiiu, iakshcho potribno
     if (regularize) {
       diag(JZs) <- diag(JZs) + reg_lambda
     }
 
-    # Розв'язати систему JZs * delta = Z
+    # Rozv'iazaty systemu JZs * delta = Z
     delta <- tryCatch({
       solve(JZs, Z)
     }, error = function(e) {
       if (verbose) {
-        cat("Помилка при розв'язанні лінійної системи:", conditionMessage(e), "\n")
-        cat("Додаємо сильнішу регуляризацію\n")
+        cat("Pomylka pry rozv'iazanni liniinoi systemy:", conditionMessage(e), "\n")
+        cat("Dodaiemo sylnishu rehuliaryzatsiiu\n")
       }
       diag(JZs) <- diag(JZs) + 1e-4
       solve(JZs, Z)
     })
 
-    # Оновити параметри
+    # Onovyty parametry
     b_new <- b_cur - delta
     diff_par <- sqrt(sum((b_new - b_cur)^2))
 
-    # Зберегти історію збіжності, якщо verbose
+    # Zberehty istoriiu zbizhnosti, iakshcho verbose
     if (verbose) {
       conv_history[iter] <- diff_par
       if (iter %% 5 == 0 || iter == 1) {
-        cat("Ітерація", iter, ": Зміна параметрів =",
+        cat("Iteratsiia", iter, ": Zmina parametriv =",
             formatC(diff_par, digits = 8), "\n")
       }
     }
 
     b_cur <- b_new
 
-    # Перевірити збіжність
+    # Pereviryty zbizhnist
     if (diff_par < tol) {
       converged <- TRUE
-      if (verbose) cat("Збіжність досягнута після", iter, "ітерацій\n")
+      if (verbose) cat("Zbizhnist dosiahnuta pislia", iter, "iteratsii\n")
       break
     }
   }
 
-  # Попередження, якщо досягнуто максимальну кількість ітерацій без збіжності
+  # Poperedzhennia, iakshcho dosiahnuto maksymalnu kilkist iteratsii bez zbizhnosti
   if (!converged && verbose) {
-    cat("Попередження: Алгоритм не збігся після", max_iter, "ітерацій\n")
+    cat("Poperedzhennia: Alhorytm ne zbihsia pislia", max_iter, "iteratsii\n")
   }
 
-  # Обчислити кінцеві залишки
+  # Obchyslyty kintsevi zalyshky
   final_res <- as.numeric(y - X %*% b_cur)
 
-  # Побудувати історію збіжності, якщо verbose
+  # Pobuduvaty istoriiu zbizhnosti, iakshcho verbose
   if (verbose && iterations > 1) {
     if (requireNamespace("graphics", quietly = TRUE)) {
       graphics::plot(1:iterations, conv_history[1:iterations], type = "b",
-                     xlab = "Ітерація", ylab = "Зміна параметрів",
-                     main = "Історія збіжності")
+                     xlab = "Iteratsiia", ylab = "Zmina parametriv",
+                     main = "Istoriia zbizhnosti")
       graphics::abline(h = tol, col = "red", lty = 2)
     }
   }
 
-  # Повернути результати
+  # Povernuty rezultaty
   list(
     b = as.numeric(b_cur),
     convergence = converged,

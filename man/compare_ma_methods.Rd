@@ -2,19 +2,19 @@
 % Please edit documentation in R/pmm2_ts_methods.R
 \name{compare_ma_methods}
 \alias{compare_ma_methods}
-\title{Порівняти методи MA}
+\title{Porivniaty metody MA}
 \usage{
 compare_ma_methods(x, order = 1, include.mean = TRUE, pmm2_args = list())
 }
 \arguments{
-\item{x}{Числовий вектор даних часового ряду}
+\item{x}{Chyslovyi vektor danykh chasovoho riadu}
 
-\item{order}{Специфікація порядку моделі (див. ts_pmm2 для формату)}
+\item{order}{Spetsyfikatsiia poriadku modeli (dyv. ts_pmm2 dlia formatu)}
 
-\item{include.mean}{Логічне, чи включати член перехоплення}
+\item{include.mean}{Lohichne, chy vkliuchaty chlen perekhoplennia}
 
-\item{pmm2_args}{Список додаткових аргументів для передачі в ts_pmm2()}
+\item{pmm2_args}{Spysok dodatkovykh arhumentiv dlia peredachi v ts_pmm2()}
 }
 \description{
-Порівняти методи MA
+Porivniaty metody MA
 }

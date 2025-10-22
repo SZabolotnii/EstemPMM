@@ -3,27 +3,27 @@
 \docType{class}
 \name{BasePMM2-class}
 \alias{BasePMM2-class}
-\title{Базовий клас S4 для зберігання результатів PMM2 моделей}
+\title{Bazovyi klas S4 dlia zberihannia rezultativ PMM2 modelei}
 \description{
-Базовий клас S4 для зберігання результатів PMM2 моделей
+Bazovyi klas S4 dlia zberihannia rezultativ PMM2 modelei
 }
 \section{Slots}{
 
 \describe{
-\item{\code{coefficients}}{числовий вектор оцінених параметрів}
+\item{\code{coefficients}}{chyslovyi vektor otsinenykh parametriv}
 
-\item{\code{residuals}}{числовий вектор кінцевих залишків}
+\item{\code{residuals}}{chyslovyi vektor kintsevykh zalyshkiv}
 
-\item{\code{m2}}{числовий другий центральний момент початкових залишків}
+\item{\code{m2}}{chyslovyi druhyi tsentralnyi moment pochatkovykh zalyshkiv}
 
-\item{\code{m3}}{числовий третій центральний момент початкових залишків}
+\item{\code{m3}}{chyslovyi tretii tsentralnyi moment pochatkovykh zalyshkiv}
 
-\item{\code{m4}}{числовий четвертий центральний момент початкових залишків}
+\item{\code{m4}}{chyslovyi chetvertyi tsentralnyi moment pochatkovykh zalyshkiv}
 
-\item{\code{convergence}}{логічний або цілий код, що вказує, чи алгоритм збігся}
+\item{\code{convergence}}{lohichnyi abo tsilyi kod, shcho vkazuie, chy alhorytm zbihsia}
 
-\item{\code{iterations}}{числова кількість виконаних ітерацій}
+\item{\code{iterations}}{chyslova kilkist vykonanykh iteratsii}
 
-\item{\code{call}}{оригінальний виклик функції}
+\item{\code{call}}{oryhinalnyi vyklyk funktsii}
 }}
 

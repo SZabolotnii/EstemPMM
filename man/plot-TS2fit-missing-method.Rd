@@ -2,22 +2,22 @@
 % Please edit documentation in R/pmm2_ts_methods.R
 \name{plot,TS2fit,missing-method}
 \alias{plot,TS2fit,missing-method}
-\title{Побудувати діагностичні графіки для об'єктів TS2fit}
+\title{Pobuduvaty diahnostychni hrafiky dlia ob'iektiv TS2fit}
 \usage{
 \S4method{plot}{TS2fit,missing}(x, y, which = c(1:4), ...)
 }
 \arguments{
-\item{x}{Об'єкт TS2fit}
+\item{x}{Ob'iekt TS2fit}
 
-\item{y}{Не використовується (для сумісності методу S4)}
+\item{y}{Ne vykorystovuietsia (dlia sumisnosti metodu S4)}
 
-\item{which}{Цілочисельний вектор, що вказує, які графіки виробляти}
+\item{which}{Tsilochyselnyi vektor, shcho vkazuie, iaki hrafiky vyrobliaty}
 
-\item{...}{додаткові аргументи, передані функціям побудови графіків}
+\item{...}{dodatkovi arhumenty, peredani funktsiiam pobudovy hrafikiv}
 }
 \value{
-Невидимо повертає x
+Nevydymo povertaie x
 }
 \description{
-Побудувати діагностичні графіки для об'єктів TS2fit
+Pobuduvaty diahnostychni hrafiky dlia ob'iektiv TS2fit
 }

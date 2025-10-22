@@ -8,6 +8,7 @@ Authors@R:
            email = "zabolotniua@gmail.com", 
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0242-2234"))
+Author: Serhii Zabolotnii [aut, cre]
 Maintainer: Serhii Zabolotnii <zabolotniua@gmail.com>
 Description: 
     Implements the Polynomial Maximization Method (PMM) for parameter estimation

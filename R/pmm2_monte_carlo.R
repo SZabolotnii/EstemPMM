@@ -1,42 +1,42 @@
-# pmm2_monte_carlo.R - Monte Carlo порівняння точності методів PMM2
+# pmm2_monte_carlo.R - Monte Carlo porivniannia tochnosti metodiv PMM2
 
 .pmm2_default_burn_in <- 100L
 
-#' Monte Carlo порівняння методів оцінювання PMM2
+#' Monte Carlo porivniannia metodiv otsiniuvannia PMM2
 #'
-#' Функція генерує часові ряди для заданих моделей, багаторазово оцінює
-#' параметри різними методами і порівнює їх точність за критерієм MSE.
-#' Додатково виводяться теоретичні та емпіричні характеристики розподілу
-#' інновацій (асиметрія, ексцес, теоретичний виграш PMM2).
+#' Funktsiia heneruie chasovi riady dlia zadanykh modelei, bahatorazovo otsiniuie
+#' parametry riznymy metodamy i porivniuie ikh tochnist za kryteriiem MSE.
+#' Dodatkovo vyvodiatsia teoretychni ta empirychni kharakterystyky rozpodilu
+#' innovatsii (asymetriia, ekstses, teoretychnyi vyhrash PMM2).
 #'
-#' @param model_specs Список специфікацій моделей. Кожен елемент має містити:
+#' @param model_specs Spysok spetsyfikatsii modelei. Kozhen element maie mistyty:
 #'   \describe{
-#'     \item{model}{"ar", "ma" або "arma"}
-#'     \item{order}{порядок (для AR/MA) або вектор c(p, q) для ARMA}
-#'     \item{theta}{числовий вектор істинних параметрів; для ARMA список
+#'     \item{model}{"ar", "ma" abo "arma"}
+#'     \item{order}{poriadok (dlia AR/MA) abo vektor c(p, q) dlia ARMA}
+#'     \item{theta}{chyslovyi vektor istynnykh parametriv; dlia ARMA spysok
 #'                  `list(ar = ..., ma = ...)`}
-#'     \item{label}{(опційно) назва моделі у звіті}
-#'     \item{innovations}{(опційно) опис розподілу інновацій:
+#'     \item{label}{(optsiino) nazva modeli u zviti}
+#'     \item{innovations}{(optsiino) opys rozpodilu innovatsii:
 #'           \code{list(type = \"gamma\", shape = 2)},
-#'           \code{list(type = \"student_t\", df = 5)}, тощо. Можна також
-#'           передати довільну функцію генерації через \code{generator}.}
+#'           \code{list(type = \"student_t\", df = 5)}, toshcho. Mozhna takozh
+#'           peredaty dovilnu funktsiiu heneratsii cherez \code{generator}.}
 #'   }
-#' @param methods Вектор методів оцінювання (наприклад, `c("css","pmm2")`).
-#'                Перший метод вважається базовим для розрахунку відносного MSE.
-#' @param n Розмір вибірки для симуляції.
-#' @param n_sim Кількість Монте Карло експериментів.
-#' @param innovations Функція або опис розподілу, які використовуються за
-#'                    замовчуванням для всіх моделей (якщо не вказано у spec).
-#' @param seed Початкове зерно генератора випадкових чисел (опційно).
-#' @param include.mean Логічний прапорець: чи включати перехоплення під час оцінювання.
-#' @param progress Логічний прапорець: друкувати прогрес Монте Карло.
-#' @param verbose Чи друкувати діагностичні повідомлення при збоях.
+#' @param methods Vektor metodiv otsiniuvannia (napryklad, `c("css","pmm2")`).
+#'                Pershyi metod vvazhaietsia bazovym dlia rozrakhunku vidnosnoho MSE.
+#' @param n Rozmir vybirky dlia symuliatsii.
+#' @param n_sim Kilkist Monte Karlo eksperymentiv.
+#' @param innovations Funktsiia abo opys rozpodilu, iaki vykorystovuiutsia za
+#'                    zamovchuvanniam dlia vsikh modelei (iakshcho ne vkazano u spec).
+#' @param seed Pochatkove zerno heneratora vypadkovykh chysel (optsiino).
+#' @param include.mean Lohichnyi praporets: chy vkliuchaty perekhoplennia pid chas otsiniuvannia.
+#' @param progress Lohichnyi praporets: drukuvaty prohres Monte Karlo.
+#' @param verbose Chy drukuvaty diahnostychni povidomlennia pry zboiakh.
 #'
-#' @return Список з трьома компонентами:
+#' @return Spysok z troma komponentamy:
 #'   \describe{
-#'     \item{parameter_results}{MSE та відносний MSE для кожного параметра}
-#'     \item{summary}{Усереднений MSE по параметрах для кожної моделі/методу}
-#'     \item{gain}{Порівняння теоретичного та емпіричного виграшу PMM2}
+#'     \item{parameter_results}{MSE ta vidnosnyi MSE dlia kozhnoho parametra}
+#'     \item{summary}{Userednenyi MSE po parametrakh dlia kozhnoi modeli/metodu}
+#'     \item{gain}{Porivniannia teoretychnoho ta empirychnoho vyhrashu PMM2}
 #'   }
 #'
 #' @export
@@ -50,16 +50,16 @@ pmm2_monte_carlo_compare <- function(model_specs,
                                      progress = interactive(),
                                      verbose = FALSE) {
   if (missing(model_specs) || length(model_specs) == 0L) {
-    stop("model_specs має містити принаймні одну модель")
+    stop("model_specs maie mistyty prynaimni odnu model")
   }
   if (missing(n) || n <= 0) {
-    stop("n має бути додатним")
+    stop("n maie buty dodatnym")
   }
   if (missing(n_sim) || n_sim <= 0) {
-    stop("n_sim має бути додатним")
+    stop("n_sim maie buty dodatnym")
   }
   if (length(methods) < 2L) {
-    warning("Передано менше двох методів; відносний MSE розраховується відносно першого")
+    warning("Peredano menshe dvokh metodiv; vidnosnyi MSE rozrakhovuietsia vidnosno pershoho")
   }
   if (!is.null(seed)) {
     set.seed(seed)
@@ -117,7 +117,7 @@ compare_single_spec <- function(spec,
       simulate_series(spec, n, innov_info),
       error = function(e) {
         if (verbose) {
-          message("Помилка генерації серії: ", conditionMessage(e))
+          message("Pomylka heneratsii serii: ", conditionMessage(e))
         }
         NULL
       }
@@ -136,7 +136,7 @@ compare_single_spec <- function(spec,
         fit_and_extract(series_obj$series, spec, method, include.mean),
         error = function(e) {
           if (verbose) {
-            message("Помилка оцінювання (", label, ", метод=", method,
+            message("Pomylka otsiniuvannia (", label, ", metod=", method,
                     "): ", conditionMessage(e))
           }
           rep(NA_real_, n_params)
@@ -267,7 +267,7 @@ simulate_series <- function(spec, n, innov_info) {
                      n = n,
                      rand.gen = rand_gen)
   } else {
-    stop("Невідомий тип моделі: ", model_type)
+    stop("Nevidomyi typ modeli: ", model_type)
   }
 
   list(
@@ -357,7 +357,7 @@ resolve_innovation_spec <- function(spec_innovations, default_innovations) {
   }
 
   if (!is.list(descriptor)) {
-    stop("Опис інновацій має бути функцією або списком.")
+    stop("Opys innovatsii maie buty funktsiieiu abo spyskom.")
   }
 
   if (!is.null(descriptor$generator)) {
@@ -399,7 +399,7 @@ innovation_generator_from_type <- function(descriptor) {
   if (type %in% c("student_t", "t")) {
     df <- descriptor$df %||% 6
     if (df <= 2) {
-      stop("df для student_t має бути > 2")
+      stop("df dlia student_t maie buty > 2")
     }
     scale <- sqrt(df / (df - 2))
     return(function(n) stats::rt(n, df = df) / scale)
@@ -446,7 +446,7 @@ innovation_generator_from_type <- function(descriptor) {
     })
   }
 
-  stop("Непідтримуваний тип інновацій: ", descriptor$type)
+  stop("Nepidtrymuvanyi typ innovatsii: ", descriptor$type)
 }
 
 innovation_theoretical_moments <- function(descriptor) {

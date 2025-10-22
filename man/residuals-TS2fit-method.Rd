@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm2_ts_methods.R
 \name{residuals,TS2fit-method}
 \alias{residuals,TS2fit-method}
-\title{Витягнути залишки з об'єкта TS2fit}
+\title{Vytiahnuty zalyshky z ob'iekta TS2fit}
 \usage{
 \S4method{residuals}{TS2fit}(object, ...)
 }
 \arguments{
-\item{object}{Об'єкт TS2fit}
+\item{object}{Ob'iekt TS2fit}
 
-\item{...}{Додаткові аргументи (не використовуються)}
+\item{...}{Dodatkovi arhumenty (ne vykorystovuiutsia)}
 }
 \value{
-Вектор залишків (інновацій)
+Vektor zalyshkiv (innovatsii)
 }
 \description{
-Витягнути залишки з об'єкта TS2fit
+Vytiahnuty zalyshky z ob'iekta TS2fit
 }

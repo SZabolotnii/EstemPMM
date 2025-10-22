@@ -2,19 +2,19 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{get_yw_estimates}
 \alias{get_yw_estimates}
-\title{Отримати оцінки Юла-Волкера для AR(p)}
+\title{Otrymaty otsinky Yula-Volkera dlia AR(p)}
 \usage{
 get_yw_estimates(x, p)
 }
 \arguments{
-\item{x}{числовий вектор}
+\item{x}{chyslovyi vektor}
 
-\item{p}{ціле значення порядку AR}
+\item{p}{tsile znachennia poriadku AR}
 }
 \value{
-числовий вектор довжини p (коефіцієнти AR)
+chyslovyi vektor dovzhyny p (koefitsiienty AR)
 }
 \description{
-Отримати оцінки Юла-Волкера для AR(p)
+Otrymaty otsinky Yula-Volkera dlia AR(p)
 }
 \keyword{internal}

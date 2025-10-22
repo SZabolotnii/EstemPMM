@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_inference.R
 \name{ts_pmm2_inference}
 \alias{ts_pmm2_inference}
-\title{Бутстреп-висновок для моделей часових рядів PMM2}
+\title{Butstrep-vysnovok dlia modelei chasovykh riadiv PMM2}
 \usage{
 ts_pmm2_inference(
   object,
@@ -17,27 +17,27 @@ ts_pmm2_inference(
 )
 }
 \arguments{
-\item{object}{об'єкт класу TS2fit}
+\item{object}{ob'iekt klasu TS2fit}
 
-\item{x}{(опціонально) оригінальний часовий ряд; якщо NULL, використовує object@original_series}
+\item{x}{(optsionalno) oryhinalnyi chasovyi riad; iakshcho NULL, vykorystovuie object@original_series}
 
-\item{B}{кількість бутстреп-реплікацій}
+\item{B}{kilkist butstrep-replikatsii}
 
-\item{seed}{(опціонально) для відтворюваності}
+\item{seed}{(optsionalno) dlia vidtvoriuvanosti}
 
-\item{block_length}{довжина блоку для блокового бутстрепу; якщо NULL, використовує евристичне значення}
+\item{block_length}{dovzhyna bloku dlia blokovoho butstrepu; iakshcho NULL, vykorystovuie evrystychne znachennia}
 
-\item{method}{тип бутстрепу: "residual" або "block"}
+\item{method}{typ butstrepu: "residual" abo "block"}
 
-\item{parallel}{логічне, чи використовувати паралельні обчислення}
+\item{parallel}{lohichne, chy vykorystovuvaty paralelni obchyslennia}
 
-\item{cores}{кількість ядер для паралельних обчислень}
+\item{cores}{kilkist iader dlia paralelnykh obchyslen}
 
-\item{debug}{логічне, чи виводити додаткову діагностичну інформацію}
+\item{debug}{lohichne, chy vyvodyty dodatkovu diahnostychnu informatsiiu}
 }
 \value{
-data.frame з стовпцями: Estimate, Std.Error, t.value, p.value
+data.frame z stovptsiamy: Estimate, Std.Error, t.value, p.value
 }
 \description{
-Бутстреп-висновок для моделей часових рядів PMM2
+Butstrep-vysnovok dlia modelei chasovykh riadiv PMM2
 }

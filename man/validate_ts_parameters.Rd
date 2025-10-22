@@ -2,23 +2,23 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{validate_ts_parameters}
 \alias{validate_ts_parameters}
-\title{Перевірка та підготовка параметрів часового ряду}
+\title{Perevirka ta pidhotovka parametriv chasovoho riadu}
 \usage{
 validate_ts_parameters(x, order, model_type, include.mean)
 }
 \arguments{
-\item{x}{Дані часового ряду}
+\item{x}{Dani chasovoho riadu}
 
-\item{order}{Специфікація порядку моделі}
+\item{order}{Spetsyfikatsiia poriadku modeli}
 
-\item{model_type}{Тип моделі (ar, ma, arma, або arima)}
+\item{model_type}{Typ modeli (ar, ma, arma, abo arima)}
 
-\item{include.mean}{Чи включати середнє/перехоплення}
+\item{include.mean}{Chy vkliuchaty serednie/perekhoplennia}
 }
 \value{
-Список перевірених параметрів та інформації про модель
+Spysok perevirenykh parametriv ta informatsii pro model
 }
 \description{
-Перевірка та підготовка параметрів часового ряду
+Perevirka ta pidhotovka parametriv chasovoho riadu
 }
 \keyword{internal}

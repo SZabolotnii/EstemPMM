@@ -3,53 +3,53 @@
 \docType{class}
 \name{TS2fit-class}
 \alias{TS2fit-class}
-\title{Базовий клас S4 для зберігання результатів PMM2 моделей часових рядів}
+\title{Bazovyi klas S4 dlia zberihannia rezultativ PMM2 modelei chasovykh riadiv}
 \description{
-Базовий клас для зберігання результатів оцінювання моделей часових рядів за допомогою PMM2
+Bazovyi klas dlia zberihannia rezultativ otsiniuvannia modelei chasovykh riadiv za dopomohoiu PMM2
 }
 \section{Slots}{
 
 \describe{
-\item{\code{coefficients}}{числовий вектор оцінених параметрів}
+\item{\code{coefficients}}{chyslovyi vektor otsinenykh parametriv}
 
-\item{\code{residuals}}{числовий вектор кінцевих залишків}
+\item{\code{residuals}}{chyslovyi vektor kintsevykh zalyshkiv}
 
-\item{\code{m2}}{числовий другий центральний момент початкових залишків}
+\item{\code{m2}}{chyslovyi druhyi tsentralnyi moment pochatkovykh zalyshkiv}
 
-\item{\code{m3}}{числовий третій центральний момент початкових залишків}
+\item{\code{m3}}{chyslovyi tretii tsentralnyi moment pochatkovykh zalyshkiv}
 
-\item{\code{m4}}{числовий четвертий центральний момент початкових залишків}
+\item{\code{m4}}{chyslovyi chetvertyi tsentralnyi moment pochatkovykh zalyshkiv}
 
-\item{\code{convergence}}{логічний або цілий код, що вказує, чи алгоритм збігся}
+\item{\code{convergence}}{lohichnyi abo tsilyi kod, shcho vkazuie, chy alhorytm zbihsia}
 
-\item{\code{iterations}}{числова кількість виконаних ітерацій}
+\item{\code{iterations}}{chyslova kilkist vykonanykh iteratsii}
 
-\item{\code{call}}{оригінальний виклик функції}
+\item{\code{call}}{oryhinalnyi vyklyk funktsii}
 
-\item{\code{model_type}}{символьний рядок, що вказує тип моделі}
+\item{\code{model_type}}{symvolnyi riadok, shcho vkazuie typ modeli}
 
-\item{\code{intercept}}{числове значення перехоплення}
+\item{\code{intercept}}{chyslove znachennia perekhoplennia}
 
-\item{\code{original_series}}{числовий вектор оригінального часового ряду}
+\item{\code{original_series}}{chyslovyi vektor oryhinalnoho chasovoho riadu}
 
-\item{\code{order}}{список параметрів порядку}
+\item{\code{order}}{spysok parametriv poriadku}
 }}
 
-\section{Слоти}{
+\section{Sloty}{
 
 \describe{
-\item{coefficients}{Оцінені коефіцієнти}
-\item{residuals}{Кінцеві залишки}
-\item{m2}{Другий центральний момент}
-\item{m3}{Третій центральний момент}
-\item{m4}{Четвертий центральний момент}
-\item{convergence}{Статус збіжності}
-\item{iterations}{Кількість виконаних ітерацій}
-\item{call}{Оригінальний виклик}
-\item{model_type}{Тип моделі}
-\item{intercept}{Перехоплення}
-\item{original_series}{Оригінальний часовий ряд}
-\item{order}{Порядки моделі}
+\item{coefficients}{Otsineni koefitsiienty}
+\item{residuals}{Kintsevi zalyshky}
+\item{m2}{Druhyi tsentralnyi moment}
+\item{m3}{Tretii tsentralnyi moment}
+\item{m4}{Chetvertyi tsentralnyi moment}
+\item{convergence}{Status zbizhnosti}
+\item{iterations}{Kilkist vykonanykh iteratsii}
+\item{call}{Oryhinalnyi vyklyk}
+\item{model_type}{Typ modeli}
+\item{intercept}{Perekhoplennia}
+\item{original_series}{Oryhinalnyi chasovyi riad}
+\item{order}{Poriadky modeli}
 }
 }
 
