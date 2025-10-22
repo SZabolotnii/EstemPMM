@@ -79,15 +79,21 @@ demo("pmm_ts_examples")
 
 ---
 
-#### `pmm2_real_data`
+#### `pmm2_real_data` (SIMPLIFIED)
 Application to real-world Auto MPG dataset.
 
 - **Analysis includes:**
   - Linear regression: MPG ~ acceleration
   - Comparison of OLS vs PMM2
-  - Residual diagnostics
-  - Bootstrap confidence intervals
-  - Visualization with ggplot2
+  - Residual diagnostics and moment analysis
+  - Visual comparison with base R graphics
+  - Interpretation guide for real-world applications
+
+- **NEW: Simplified version**
+  - No external dependencies (no ggplot2)
+  - Faster execution (1-2 minutes)
+  - Focus on core analysis
+  - Refers to vignettes for advanced topics (bootstrap)
 
 **Run with:**
 ```r
@@ -96,18 +102,27 @@ demo("pmm2_real_data")
 
 ---
 
-#### `pmm2_prediction`
-Prediction accuracy comparison with train/test splits and cross-validation.
+#### `pmm2_prediction` (SIMPLIFIED)
+Prediction accuracy comparison using train/test split.
 
-- **Experiments:**
-  1. Simple 80/20 train-test split
-  2. k-fold cross-validation
-  3. Linear and quadratic models
+- **Demonstrates:**
+  - 80/20 train-test data split
+  - Model training on training set
+  - Out-of-sample prediction on test data
+  - Performance metrics: MSE, MAE, R²
 
-- **Metrics:**
-  - MSE, MAE, R²
-  - Out-of-sample prediction errors
-  - Visual comparisons
+- **Visualizations:**
+  - Training vs test data
+  - Prediction errors boxplot
+  - Predicted vs actual scatter plot
+  - Model comparison summary table
+
+- **NEW: Simplified version**
+  - Removed k-fold cross-validation (too complex)
+  - Removed multiple experiments
+  - Faster execution (1-2 minutes)
+  - Focus on core prediction concepts
+  - No external dependencies
 
 **Run with:**
 ```r
@@ -163,21 +178,6 @@ demo("pmm2_simMC_ts")
 
 ---
 
-#### `pmm2_demo_runner`
-Interactive menu-driven demonstration system.
-
-- **Options:**
-  1. Monte Carlo simulations
-  2. Real data analysis
-  3. Prediction accuracy evaluation
-  4. Quick test
-
-**Run with:**
-```r
-demo("pmm2_demo_runner")
-```
-
-**Note:** This demo sources other files and may not work correctly after package installation. Use individual demos instead.
 
 ---
 
@@ -186,19 +186,22 @@ demo("pmm2_demo_runner")
 For new users, we recommend the following sequence:
 
 1. **Start here:** `test_pmm` (30 seconds)
-   Get familiar with basic syntax
+   Get familiar with basic syntax - NO DEPENDENCIES ✨
 
 2. **See the benefits:** `pmm2_comparison_boxplots` (2-3 minutes) ⭐
-   Understand PMM2's efficiency gains visually
+   Understand PMM2's efficiency gains visually - NO DEPENDENCIES ✨
 
-3. **Linear models:** `pmm2_real_data` (2-3 minutes)
-   See PMM2 applied to real data
+3. **Real data:** `pmm2_real_data` (1-2 minutes)
+   See PMM2 applied to Auto MPG dataset - SIMPLIFIED, NO DEPENDENCIES ✨
 
-4. **Time series:** `pmm_ts_examples` (1-2 minutes)
+4. **Prediction:** `pmm2_prediction` (1-2 minutes)
+   Learn train/test validation - SIMPLIFIED, NO DEPENDENCIES ✨
+
+5. **Time series:** `pmm_ts_examples` (1-2 minutes)
    Learn AR, MA, ARMA, ARIMA modeling
 
-5. **Deep dive:** `pmm2_simulation` (5-10 minutes)
-   Explore Monte Carlo evidence
+6. **Deep dive:** `pmm2_simulation` (5-10 minutes)
+   Explore Monte Carlo evidence (requires ggplot2)
 
 ---
 
@@ -207,19 +210,23 @@ For new users, we recommend the following sequence:
 ### Core Requirement
 - `EstemPMM` package (obviously!)
 
-### Optional Packages (for enhanced visualizations)
+### External Dependencies
 
-Some demos use additional packages for better graphics:
+**Most demos now use BASE R GRAPHICS ONLY!** ✨
 
-- `ggplot2` - Advanced plotting
-- `gridExtra` - Multi-panel layouts
-- `dplyr` - Data manipulation
-- `reshape2` - Data reshaping
-- `parallel` - Parallel computing for faster simulations
+The following simplified demos have **NO external dependencies**:
+- `test_pmm` - Base R only
+- `pmm2_comparison_boxplots` - Base R only ⭐
+- `pmm2_real_data` - Base R only (SIMPLIFIED)
+- `pmm2_prediction` - Base R only (SIMPLIFIED)
 
-**Installation:**
+**Advanced demos** may require optional packages:
+- `pmm2_simulation` - Uses `ggplot2`, `gridExtra`, `dplyr`, `parallel`
+- `pmm2_simMC_ts` - Uses `dplyr`, `ggplot2`
+
+**Installation (if needed for advanced demos):**
 ```r
-install.packages(c("ggplot2", "gridExtra", "dplyr", "reshape2"))
+install.packages(c("ggplot2", "gridExtra", "dplyr"))
 ```
 
 **Note:** Demos will check for these packages and provide clear error messages if missing.
