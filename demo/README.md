@@ -58,19 +58,27 @@ demo("test_pmm")
 
 ### Intermediate Demos (1-5 minutes)
 
-#### `pmm_ts_examples`
+#### `pmm_ts_examples` (SIMPLIFIED & INTERACTIVE)
 Comprehensive time series modeling with PMM2.
 
 - **Models covered:**
-  - AR(2) with heavy-tailed errors (Student-t)
-  - MA(2) with normal innovations
-  - ARMA(1,1) with mixture distributions
-  - ARIMA(1,1,1) with asymmetric errors
+  - AR(1) with skewed innovations (gamma distribution)
+  - MA(1) with heavy-tailed innovations (Student-t)
+  - ARMA(1,1) with contaminated innovations (outliers)
+  - ARIMA(1,1,1) with integrated series (chi-squared)
 
 - **Features:**
-  - Comparison of CSS vs PMM2 estimates
-  - Forecasting with PMM2 models
-  - Efficiency visualization (skewness vs kurtosis)
+  - Side-by-side comparison: CSS vs PMM2
+  - Interactive progression through examples (press Enter)
+  - Comprehensive visualizations (ACF, PACF, Q-Q plots, boxplots)
+  - True vs estimated coefficients
+  - Residual diagnostics
+
+- **NEW: Simplified version**
+  - No external dependencies (base R graphics only)
+  - Clear educational progression
+  - Self-contained examples
+  - Duration: 2-3 minutes (interactive)
 
 **Run with:**
 ```r
@@ -197,8 +205,8 @@ For new users, we recommend the following sequence:
 4. **Prediction:** `pmm2_prediction` (1-2 minutes)
    Learn train/test validation - SIMPLIFIED, NO DEPENDENCIES ✨
 
-5. **Time series:** `pmm_ts_examples` (1-2 minutes)
-   Learn AR, MA, ARMA, ARIMA modeling
+5. **Time series:** `pmm_ts_examples` (2-3 minutes) ⭐
+   Learn AR, MA, ARMA, ARIMA modeling - INTERACTIVE, NO DEPENDENCIES ✨
 
 6. **Deep dive:** `pmm2_simulation` (5-10 minutes)
    Explore Monte Carlo evidence (requires ggplot2)
@@ -217,6 +225,7 @@ For new users, we recommend the following sequence:
 The following simplified demos have **NO external dependencies**:
 - `test_pmm` - Base R only
 - `pmm2_comparison_boxplots` - Base R only ⭐
+- `pmm_ts_examples` - Base R only (SIMPLIFIED, INTERACTIVE) ✨
 - `pmm2_real_data` - Base R only (SIMPLIFIED)
 - `pmm2_prediction` - Base R only (SIMPLIFIED)
 

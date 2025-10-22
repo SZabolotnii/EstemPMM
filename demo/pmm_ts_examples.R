@@ -1,256 +1,360 @@
-# pmm_ts_examples.R
+# Demo: Time Series Modeling with PMM2
+#
+# Purpose: Demonstrate PMM2 for AR, MA, ARMA, and ARIMA models
+# Duration: 1-2 minutes
+#
+# This demo shows:
+#   - AR(1) and AR(2) models
+#   - MA(1) model
+#   - ARMA(1,1) model
+#   - ARIMA(1,1,1) model
+#   - Comparison with classical methods (CSS)
+#   - Visual diagnostics
 
-#' Examples of applying the PMM2 method for time series analysis
-#'
-#' This script demonstrates the use of functions from the EstemPMM package
-#' for modeling time series with non-Gaussian distributions
-
-# Load package
-library(EstemPMM)
-
-#' Demonstration of PMM2 for analyzing AR, MA, ARMA, and ARIMA models
-#' with different types of distributions
-run_ts_examples <- function() {
-  # Set seed for reproducibility
-  set.seed(123)
-
-  cat("\n============ PMM2 DEMONSTRATION FOR TIME SERIES ============\n\n")
-
-  # 1. AR(2) model with t-distribution (heavy tails)
-  cat("1. AR(2) model with t-distributed innovations\n")
-  ar_coef <- c(0.7, -0.3)
-  n <- 300
-
-  tryCatch({
-    ar_series <- as.numeric(arima.sim(model = list(ar = ar_coef), n = n,
-                                      rand.gen = function(n) rt(n, df=3)))
-
-    # Compare AR model estimation methods
-    ar_comparison <- compare_ar_methods(ar_series, order = 2)
-
-    # Output results
-    cat("\nComparison of estimated AR(2) model coefficients:\n")
-    print(ar_comparison$coefficients)
-
-    cat("\nResidual statistics:\n")
-    print(ar_comparison$residual_stats)
-
-    # Create plot
-    par(mfrow=c(2,2))
-    plot(ar_comparison$pmm2)
-
-    # Store for later prediction
-    ar_model <- ar_comparison$pmm2
-
-  }, error = function(e) {
-    cat("\nError in AR model analysis:", conditionMessage(e), "\n")
-    ar_model <<- NULL
-  })
-
-  # 2. MA(2) model with normal distribution (for stability)
-  cat("\n\n2. MA(2) model with normally distributed innovations\n")
-
-  tryCatch({
-    ma_coef <- c(0.6, -0.2)
-    # Use normal innovations for stability
-    normal_innov <- rnorm(n)
-    ma_series <- as.numeric(arima.sim(model = list(ma = ma_coef), n = n,
-                                      innov = normal_innov))
-
-    # Compare MA model estimation methods
-    ma_comparison <- compare_ma_methods(ma_series, order = 2)
-
-    # Output results
-    cat("\nComparison of estimated MA(2) model coefficients:\n")
-    print(ma_comparison$coefficients)
-
-    cat("\nResidual statistics:\n")
-    print(ma_comparison$residual_stats)
-
-    # Create plot
-    par(mfrow=c(2,2))
-    plot(ma_comparison$pmm2)
-
-    # Store for later prediction
-    ma_model <- ma_comparison$pmm2
-
-  }, error = function(e) {
-    cat("\nError in MA model analysis:", conditionMessage(e), "\n")
-    ma_model <<- NULL
-  })
-
-  # 3. ARMA(1,1) model with mixture of normal distributions
-  cat("\n\n3. ARMA(1,1) model with mixture of normal distributions\n")
-
-  tryCatch({
-    # Generate innovations as mixture of two normal distributions
-    mix_innov <- numeric(n)
-    for(i in 1:n) {
-      # 70% from N(0,1) and 30% from N(3,2)
-      mix_innov[i] <- ifelse(runif(1) < 0.7, rnorm(1), rnorm(1, mean=3, sd=2))
-    }
-    # Center for zero mean
-    mix_innov <- mix_innov - mean(mix_innov)
-
-    # Create ARMA series
-    arma_series <- as.numeric(arima.sim(model = list(ar = 0.7, ma = 0.4), n = n,
-                                        innov = mix_innov))
-
-    # Compare ARMA model estimation methods
-    arma_comparison <- compare_arma_methods(arma_series, order = c(1, 1))
-
-    # Output results
-    cat("\nComparison of estimated ARMA(1,1) model coefficients:\n")
-    print(arma_comparison$coefficients)
-
-    cat("\nResidual statistics:\n")
-    print(arma_comparison$residual_stats)
-
-    # Create plot
-    par(mfrow=c(2,2))
-    plot(arma_comparison$pmm2)
-
-    # Store for later prediction
-    arma_model <- arma_comparison$pmm2
-
-  }, error = function(e) {
-    cat("\nError in ARMA model analysis:", conditionMessage(e), "\n")
-    arma_model <<- NULL
-  })
-
-  # 4. ARIMA(1,1,1) model with asymmetric distribution
-  cat("\n\n4. ARIMA(1,1,1) model with asymmetric distribution\n")
-
-  tryCatch({
-    # Generate ARMA series with normal errors (for stability)
-    arma_base <- as.numeric(arima.sim(model = list(ar = 0.7, ma = 0.4), n = n))
-
-    # Transform to non-stationary series through integration (cumulative sum)
-    arima_series <- as.numeric(cumsum(arma_base))
-
-    # Compare ARIMA model estimation methods
-    arima_comparison <- compare_arima_methods(arima_series, order = c(1, 1, 1))
-
-    # Output results
-    cat("\nComparison of estimated ARIMA(1,1,1) model coefficients:\n")
-    print(arima_comparison$coefficients)
-
-    cat("\nResidual statistics:\n")
-    print(arima_comparison$residual_stats)
-
-    # Create plot
-    par(mfrow=c(3,2))
-    plot(arima_comparison$pmm2, which=1:6)
-
-    # Store for later prediction
-    arima_model <- arima_comparison$pmm2
-
-  }, error = function(e) {
-    cat("\nError in ARIMA model analysis:", conditionMessage(e), "\n")
-    arima_model <<- NULL
-  })
-
-  # 5. Forecasting
-  cat("\n\n5. Forecasting with PMM2 models\n")
-
-  # AR forecast
-  if(exists("ar_model") && !is.null(ar_model)) {
-    tryCatch({
-      ar_forecast <- predict(ar_model, n.ahead = 10)
-      cat("AR(2) forecast for 10 steps ahead:\n")
-      print(ar_forecast)
-    }, error = function(e) {
-      cat("Error in AR forecast:", conditionMessage(e), "\n")
-    })
-  } else {
-    cat("AR model not available for forecasting\n")
-  }
-
-  # MA forecast
-  if(exists("ma_model") && !is.null(ma_model)) {
-    tryCatch({
-      ma_forecast <- predict(ma_model, n.ahead = 10)
-      cat("\nMA(2) forecast for 10 steps ahead:\n")
-      print(ma_forecast)
-    }, error = function(e) {
-      cat("Error in MA forecast:", conditionMessage(e), "\n")
-    })
-  } else {
-    cat("\nMA model not available for forecasting\n")
-  }
-
-  # ARMA forecast
-  if(exists("arma_model") && !is.null(arma_model)) {
-    tryCatch({
-      arma_forecast <- predict(arma_model, n.ahead = 10)
-      cat("\nARMA(1,1) forecast for 10 steps ahead:\n")
-      print(arma_forecast)
-    }, error = function(e) {
-      cat("Error in ARMA forecast:", conditionMessage(e), "\n")
-    })
-  } else {
-    cat("\nARMA model not available for forecasting\n")
-  }
-
-  # ARIMA forecast
-  if(exists("arima_model") && !is.null(arima_model)) {
-    tryCatch({
-      arima_forecast <- predict(arima_model, n.ahead = 10)
-      cat("\nARIMA(1,1,1) forecast for 10 steps ahead:\n")
-      print(arima_forecast)
-    }, error = function(e) {
-      cat("Error in ARIMA forecast:", conditionMessage(e), "\n")
-    })
-  } else {
-    cat("\nARIMA model not available for forecasting\n")
-  }
-
-  # 6. PMM2 efficiency plot for different skewness and kurtosis values
-  cat("\n\n6. PMM2 efficiency as a function of skewness and kurtosis\n")
-
-  tryCatch({
-    # Create grid of skewness and kurtosis values
-    skewness_values <- seq(0, 2, by=0.2)  # from 0 to 2
-    kurtosis_values <- seq(0, 6, by=0.5)   # from 0 to 6
-
-    # Calculate PMM2 efficiency coefficient
-    g2_values <- matrix(0, length(skewness_values), length(kurtosis_values))
-
-    for(i in 1:length(skewness_values)) {
-      for(j in 1:length(kurtosis_values)) {
-        g2 <- 1 - (skewness_values[i]^2) / (2 + kurtosis_values[j])
-        # Limit values between 0 and 1
-        g2_values[i, j] <- max(0, min(1, g2))
-      }
-    }
-
-    # Visualize the relationship
-    filled.contour(
-      skewness_values,
-      kurtosis_values,
-      g2_values,
-      color.palette = colorRampPalette(c("red", "yellow", "green")),
-      xlab = "Skewness (γ₃)",
-      ylab = "Kurtosis (γ₄)",
-      main = "Ratio of PMM2 to classical estimator variances (g²)",
-      key.title = title("g²")
-    )
-
-    # Add line corresponding to equality γ₄ + 2 = γ₃²
-    contour(skewness_values, kurtosis_values,
-            outer(skewness_values^2, rep(1, length(kurtosis_values))) -
-              outer(rep(1, length(skewness_values)), kurtosis_values) - 2,
-            levels = 0, add = TRUE, lwd = 2, col = "black", lty = 2)
-
-    cat("Plot created. Red color indicates high PMM2 efficiency,\n")
-    cat("while blue indicates nearly equivalent efficiency to classical methods.\n")
-    cat("Dashed line shows the boundary of permissible values γ₄ + 2 ≥ γ₃²\n")
-  }, error = function(e) {
-    cat("Error in efficiency plot:", conditionMessage(e), "\n")
-  })
-
-  cat("\n============ END OF DEMONSTRATION ============\n")
+# Check for required package
+if (!requireNamespace("EstemPMM", quietly = TRUE)) {
+  stop("Please install EstemPMM package first", call. = FALSE)
 }
 
-# Run demonstration
-run_ts_examples()
+library(EstemPMM)
+
+cat("\n")
+cat("==============================================================\n")
+cat("  PMM2 for Time Series Models\n")
+cat("==============================================================\n\n")
+
+set.seed(2025)
+
+# Helper function to compare methods
+compare_ts_fit <- function(series, fit_pmm2, fit_css, model_name, true_coef = NULL) {
+  cat("\n")
+  cat("--------------------------------------------------------------\n")
+  cat(" ", model_name, "\n")
+  cat("--------------------------------------------------------------\n\n")
+
+  if (!is.null(true_coef)) {
+    cat("True coefficients:\n")
+    print(true_coef)
+    cat("\n")
+  }
+
+  cat("CSS estimates:\n")
+  print(coef(fit_css))
+
+  cat("\nPMM2 estimates:\n")
+  print(coef(fit_pmm2))
+
+  # Residual comparison
+  css_resid <- fit_css@residuals
+  pmm2_resid <- fit_pmm2@residuals
+
+  cat("\nResidual MSE:\n")
+  cat("  CSS:  ", sprintf("%.4f", mean(css_resid^2, na.rm = TRUE)), "\n")
+  cat("  PMM2: ", sprintf("%.4f", mean(pmm2_resid^2, na.rm = TRUE)), "\n")
+
+  # Moments
+  moments_css <- compute_moments(css_resid[is.finite(css_resid)])
+  cat("\nResidual moments (CSS):\n")
+  cat("  Skewness (c3):", sprintf("%.4f", moments_css$c3), "\n")
+  cat("  Kurtosis (c4):", sprintf("%.4f", moments_css$c4), "\n")
+
+  if (abs(moments_css$c3) > 0.3) {
+    cat("  → Non-Gaussian residuals detected\n")
+    cat("  → PMM2 expected to improve efficiency\n")
+  }
+}
+
+#===============================================================
+# 1. AR(1) MODEL
+#===============================================================
+
+cat("\n")
+cat("==============================================================\n")
+cat("  Example 1: AR(1) Model\n")
+cat("==============================================================\n\n")
+
+# Generate AR(1) with skewed innovations
+n <- 300
+phi1 <- 0.7
+
+# Skewed innovations (gamma distribution)
+innovations_ar1 <- rgamma(n, shape = 2, rate = 2) - 1
+
+# Generate AR(1) series
+ar1_series <- numeric(n)
+ar1_series[1] <- innovations_ar1[1]
+for (i in 2:n) {
+  ar1_series[i] <- phi1 * ar1_series[i-1] + innovations_ar1[i]
+}
+
+cat("Generated AR(1) series with φ =", phi1, "\n")
+cat("Sample size:", n, "observations\n")
+cat("Innovation distribution: Gamma (right-skewed)\n\n")
+
+# Fit models
+cat("Fitting models...\n")
+fit_ar1_pmm2 <- ar_pmm2(ar1_series, order = 1, method = "pmm2", include.mean = FALSE)
+fit_ar1_css <- ar_pmm2(ar1_series, order = 1, method = "css", include.mean = FALSE)
+
+compare_ts_fit(ar1_series, fit_ar1_pmm2, fit_ar1_css,
+               "AR(1) Model", true_coef = phi1)
+
+# Plot
+par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
+
+# Time series plot
+plot(ar1_series, type = "l", main = "AR(1) Series",
+     xlab = "Time", ylab = "Value", col = "steelblue")
+
+# ACF
+acf(ar1_series, main = "ACF of AR(1) Series", lag.max = 20)
+
+# Residuals comparison
+boxplot(list(CSS = fit_ar1_css@residuals, PMM2 = fit_ar1_pmm2@residuals),
+        main = "Residuals: CSS vs PMM2",
+        col = c("lightblue", "lightgreen"))
+abline(h = 0, col = "red", lty = 2)
+
+# Q-Q plot of residuals
+qqnorm(fit_ar1_pmm2@residuals, main = "Q-Q Plot (PMM2 Residuals)",
+       pch = 16, col = rgb(0, 0, 1, 0.5))
+qqline(fit_ar1_pmm2@residuals, col = "red", lwd = 2)
+
+par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
+
+cat("\nPress <Enter> to continue to MA(1) example...")
+readline()
+
+#===============================================================
+# 2. MA(1) MODEL
+#===============================================================
+
+cat("\n")
+cat("==============================================================\n")
+cat("  Example 2: MA(1) Model\n")
+cat("==============================================================\n\n")
+
+# Generate MA(1) with heavy-tailed innovations
+theta1 <- 0.6
+
+# Heavy-tailed innovations (t-distribution)
+innovations_ma1 <- rt(n, df = 4)
+
+# Generate MA(1) series
+ma1_series <- numeric(n)
+ma1_series[1] <- innovations_ma1[1]
+for (i in 2:n) {
+  ma1_series[i] <- innovations_ma1[i] + theta1 * innovations_ma1[i-1]
+}
+
+cat("Generated MA(1) series with θ =", theta1, "\n")
+cat("Sample size:", n, "observations\n")
+cat("Innovation distribution: Student-t (df=4, heavy tails)\n\n")
+
+# Fit models
+cat("Fitting models...\n")
+fit_ma1_pmm2 <- ma_pmm2(ma1_series, order = 1, method = "pmm2", include.mean = FALSE)
+fit_ma1_css <- ma_pmm2(ma1_series, order = 1, method = "css", include.mean = FALSE)
+
+compare_ts_fit(ma1_series, fit_ma1_pmm2, fit_ma1_css,
+               "MA(1) Model", true_coef = theta1)
+
+# Plot
+par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
+
+plot(ma1_series, type = "l", main = "MA(1) Series",
+     xlab = "Time", ylab = "Value", col = "darkgreen")
+
+acf(ma1_series, main = "ACF of MA(1) Series", lag.max = 20)
+
+pacf(ma1_series, main = "PACF of MA(1) Series", lag.max = 20)
+
+# Coefficient comparison
+coef_comparison <- rbind(
+  True = theta1,
+  CSS = coef(fit_ma1_css),
+  PMM2 = coef(fit_ma1_pmm2)
+)
+barplot(coef_comparison, beside = TRUE, main = "MA(1) Coefficient Estimates",
+        col = c("gray", "lightblue", "lightgreen"),
+        legend.text = TRUE, args.legend = list(x = "topright", cex = 0.8))
+abline(h = theta1, col = "red", lty = 2, lwd = 2)
+
+par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
+
+cat("\nPress <Enter> to continue to ARMA(1,1) example...")
+readline()
+
+#===============================================================
+# 3. ARMA(1,1) MODEL
+#===============================================================
+
+cat("\n")
+cat("==============================================================\n")
+cat("  Example 3: ARMA(1,1) Model\n")
+cat("==============================================================\n\n")
+
+# Generate ARMA(1,1) with mixed innovations
+phi_arma <- 0.5
+theta_arma <- 0.4
+
+# Mixed distribution: 80% normal + 20% contamination
+innovations_arma <- ifelse(runif(n) < 0.8,
+                           rnorm(n),
+                           rnorm(n, mean = 0, sd = 3))
+
+# Generate ARMA(1,1) series
+arma11_series <- arima.sim(n = n,
+                           model = list(ar = phi_arma, ma = theta_arma),
+                           innov = innovations_arma)
+
+cat("Generated ARMA(1,1) series\n")
+cat("  AR coefficient (φ):", phi_arma, "\n")
+cat("  MA coefficient (θ):", theta_arma, "\n")
+cat("Sample size:", n, "observations\n")
+cat("Innovation distribution: Contaminated normal (outliers)\n\n")
+
+# Fit models
+cat("Fitting models...\n")
+fit_arma_pmm2 <- arma_pmm2(arma11_series, order = c(1, 1),
+                           method = "pmm2", include.mean = FALSE)
+fit_arma_css <- arma_pmm2(arma11_series, order = c(1, 1),
+                          method = "css", include.mean = FALSE)
+
+compare_ts_fit(arma11_series, fit_arma_pmm2, fit_arma_css,
+               "ARMA(1,1) Model",
+               true_coef = c(ar1 = phi_arma, ma1 = theta_arma))
+
+# Plot
+par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
+
+plot(arma11_series, type = "l", main = "ARMA(1,1) Series",
+     xlab = "Time", ylab = "Value", col = "purple")
+
+acf(arma11_series, main = "ACF", lag.max = 20)
+
+pacf(arma11_series, main = "PACF", lag.max = 20)
+
+# Residual histogram
+hist(fit_arma_pmm2@residuals, breaks = 30, probability = TRUE,
+     main = "PMM2 Residuals", xlab = "Residuals",
+     col = "lightgreen", border = "white")
+lines(density(fit_arma_pmm2@residuals), col = "darkgreen", lwd = 2)
+
+par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
+
+cat("\nPress <Enter> to continue to ARIMA(1,1,1) example...")
+readline()
+
+#===============================================================
+# 4. ARIMA(1,1,1) MODEL
+#===============================================================
+
+cat("\n")
+cat("==============================================================\n")
+cat("  Example 4: ARIMA(1,1,1) Model (with differencing)\n")
+cat("==============================================================\n\n")
+
+# Generate ARIMA(1,1,1) - integrated series
+phi_arima <- 0.4
+theta_arima <- 0.3
+
+# Skewed innovations
+innovations_arima <- rchisq(n, df = 5) - 5
+
+# Generate stationary ARMA first
+arma_stationary <- arima.sim(n = n,
+                             model = list(ar = phi_arima, ma = theta_arima),
+                             innov = innovations_arima)
+
+# Integrate to create non-stationary series
+arima111_series <- cumsum(arma_stationary)
+
+cat("Generated ARIMA(1,1,1) series\n")
+cat("  AR coefficient (φ):", phi_arima, "\n")
+cat("  MA coefficient (θ):", theta_arima, "\n")
+cat("  Differencing order (d): 1\n")
+cat("Sample size:", n, "observations\n")
+cat("Innovation distribution: Chi-squared (skewed)\n\n")
+
+# Fit models
+cat("Fitting models...\n")
+fit_arima_pmm2 <- arima_pmm2(arima111_series, order = c(1, 1, 1),
+                             method = "pmm2", include.mean = FALSE)
+fit_arima_css <- arima_pmm2(arima111_series, order = c(1, 1, 1),
+                            method = "css", include.mean = FALSE)
+
+compare_ts_fit(arima111_series, fit_arima_pmm2, fit_arima_css,
+               "ARIMA(1,1,1) Model",
+               true_coef = c(ar1 = phi_arima, ma1 = theta_arima))
+
+# Plot
+par(mfrow = c(2, 3), mar = c(4, 4, 3, 1))
+
+# Original series (non-stationary)
+plot(arima111_series, type = "l", main = "Original Series (Non-stationary)",
+     xlab = "Time", ylab = "Value", col = "red")
+
+# Differenced series (stationary)
+diff_series <- diff(arima111_series)
+plot(diff_series, type = "l", main = "After Differencing (Stationary)",
+     xlab = "Time", ylab = "Δ Value", col = "blue")
+
+# ACF of original
+acf(arima111_series, main = "ACF (Original)", lag.max = 20)
+
+# ACF of differenced
+acf(diff_series, main = "ACF (Differenced)", lag.max = 20)
+
+# PACF of differenced
+pacf(diff_series, main = "PACF (Differenced)", lag.max = 20)
+
+# Residuals
+boxplot(list(CSS = fit_arima_css@residuals, PMM2 = fit_arima_pmm2@residuals),
+        main = "Residuals Comparison",
+        col = c("lightblue", "lightgreen"))
+abline(h = 0, col = "red", lty = 2)
+
+par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
+
+#===============================================================
+# SUMMARY
+#===============================================================
+
+cat("\n")
+cat("==============================================================\n")
+cat("  Summary\n")
+cat("==============================================================\n\n")
+
+cat("This demo illustrated PMM2 application to various time\n")
+cat("series models:\n\n")
+
+cat("1. AR(1) - Autoregressive with skewed innovations\n")
+cat("   → PMM2 provides more efficient estimates\n\n")
+
+cat("2. MA(1) - Moving average with heavy-tailed innovations\n")
+cat("   → PMM2 handles outliers better than CSS\n\n")
+
+cat("3. ARMA(1,1) - Combined model with contaminated innovations\n")
+cat("   → PMM2 robust to mixed distributions\n\n")
+
+cat("4. ARIMA(1,1,1) - Integrated series with skewed innovations\n")
+cat("   → PMM2 works with differenced data\n\n")
+
+cat("Key Observations:\n")
+cat("• When innovations are non-Gaussian (skewed, heavy-tailed),\n")
+cat("  PMM2 typically provides:\n")
+cat("    - Lower residual variance\n")
+cat("    - More accurate coefficient estimates\n")
+cat("    - Better model fit\n\n")
+
+cat("• For approximately Gaussian innovations, PMM2 and CSS\n")
+cat("  perform similarly (as expected)\n\n")
+
+cat("For more advanced analysis:\n")
+cat("  • Monte Carlo simulations: demo('pmm2_simMC_ts')\n")
+cat("  • Bootstrap inference: vignette('03-bootstrap-inference')\n")
+cat("  • Detailed methodology: vignette('02-pmm2-time-series')\n\n")
+
+cat("Demo completed successfully!\n")
+cat("==============================================================\n\n")
