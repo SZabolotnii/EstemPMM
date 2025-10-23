@@ -1,4 +1,4 @@
-# pmm2_package.R - Holovnyi fail paketu z zalezhnostiamy ta importamy
+# pmm2_package.R - Main package file with dependencies and imports
 
 #' @importFrom methods is new slotNames
 #' @importFrom graphics abline hist legend lines par plot
@@ -6,85 +6,85 @@
 #' @importFrom utils head tail
 NULL
 
-#' PMM2: Polinomialnyi metod maksymizatsii dlia robastnoi rehresii ta chasovykh riadiv
+#' EstemPMM: Polynomial Maximization Method for Robust Regression and Time Series
 #'
-#' Paket PMM2 proponuie robastni metody dlia otsiniuvannia parametriv liniinykh
-#' modelei ta modelei chasovykh riadiv, robastnykh do nehausivskykh pomylok.
+#' The EstemPMM package provides robust methods for estimating parameters of linear
+#' models and time series models that are robust to non-Gaussian errors.
 #'
-#' @section Funktsii liniinoi rehresii:
+#' @section Linear Regression Functions:
 #'
-#' \code{\link{lm_pmm2}} - Pidhonka liniinoi modeli za dopomohoiu PMM2
+#' \code{\link{lm_pmm2}} - Fit linear models using PMM2
 #'
-#' \code{\link{compare_with_ols}} - Porivniannia PMM2 z OLS
+#' \code{\link{compare_with_ols}} - Compare PMM2 with OLS
 #'
-#' @section Funktsii chasovykh riadiv:
+#' @section Time Series Functions:
 #'
-#' \code{\link{ts_pmm2}} - Zahalna funktsiia dlia pidhonky modelei chasovykh riadiv za dopomohoiu PMM2
+#' \code{\link{ts_pmm2}} - General function for fitting time series models using PMM2
 #'
-#' \code{\link{ar_pmm2}} - Pidhonka AR modelei
+#' \code{\link{ar_pmm2}} - Fit AR models
 #'
-#' \code{\link{ma_pmm2}} - Pidhonka MA modelei
+#' \code{\link{ma_pmm2}} - Fit MA models
 #'
-#' \code{\link{arma_pmm2}} - Pidhonka ARMA modelei
+#' \code{\link{arma_pmm2}} - Fit ARMA models
 #'
-#' \code{\link{arima_pmm2}} - Pidhonka ARIMA modelei
+#' \code{\link{arima_pmm2}} - Fit ARIMA models
 #'
-#' \code{\link{compare_ts_methods}} - Porivniannia PMM2 z klasychnymy metodamy
+#' \code{\link{compare_ts_methods}} - Compare PMM2 with classical methods
 #'
-#' @section Statystychnyi vysnovok:
+#' @section Statistical Inference:
 #'
-#' \code{\link{pmm2_inference}} - Butstrep-vysnovok dlia liniinykh modelei
+#' \code{\link{pmm2_inference}} - Bootstrap inference for linear models
 #'
-#' \code{\link{ts_pmm2_inference}} - Butstrep-vysnovok dlia modelei chasovykh riadiv
+#' \code{\link{ts_pmm2_inference}} - Bootstrap inference for time series models
 #'
-#' @section Utylity:
+#' @section Utilities:
 #'
-#' \code{\link{pmm_skewness}} - Obchyslennia asymetrii
+#' \code{\link{pmm_skewness}} - Compute skewness
 #'
-#' \code{\link{pmm_kurtosis}} - Obchyslennia ekstsesu
+#' \code{\link{pmm_kurtosis}} - Compute kurtosis
 #'
-#' \code{\link{compute_moments}} - Obchyslennia momentiv ta kumuliantiv
+#' \code{\link{compute_moments}} - Compute moments and cumulants
 #' @keywords internal
 "_PACKAGE"
 
-#' Klas S4 PMM2fit
+#' S4 Class PMM2fit
 #'
-#' Klas dlia zberihannia rezultativ otsiniuvannia liniinykh modelei za dopomohoiu PMM2
+#' Class for storing results of linear model estimation using PMM2
 #'
-#' @section Sloty:
+#' @section Slots:
 #' \describe{
-#'   \item{coefficients}{Otsineni koefitsiienty}
-#'   \item{residuals}{Kintsevi zalyshky}
-#'   \item{m2}{Druhyi tsentralnyi moment}
-#'   \item{m3}{Tretii tsentralnyi moment}
-#'   \item{m4}{Chetvertyi tsentralnyi moment}
-#'   \item{convergence}{Status zbizhnosti}
-#'   \item{iterations}{Kilkist vykonanykh iteratsii}
-#'   \item{call}{Oryhinalnyi vyklyk}
+#'   \item{coefficients}{Estimated coefficients}
+#'   \item{residuals}{Final residuals}
+#'   \item{m2}{Second central moment}
+#'   \item{m3}{Third central moment}
+#'   \item{m4}{Fourth central moment}
+#'   \item{convergence}{Convergence status}
+#'   \item{iterations}{Number of iterations performed}
+#'   \item{call}{Original call}
 #' }
 #'
 #' @docType class
 #' @name PMM2fit-class
 NULL
 
-#' Klas S4 TS2fit
+#' S4 Class TS2fit
 #'
-#' Bazovyi klas dlia zberihannia rezultativ otsiniuvannia modelei chasovykh riadiv za dopomohoiu PMM2
+#' Base class for storing results of time series model estimation using PMM2
 #'
-#' @section Sloty:
+#' @section Slots:
 #' \describe{
-#'   \item{coefficients}{Otsineni koefitsiienty}
-#'   \item{residuals}{Kintsevi zalyshky}
-#'   \item{m2}{Druhyi tsentralnyi moment}
-#'   \item{m3}{Tretii tsentralnyi moment}
-#'   \item{m4}{Chetvertyi tsentralnyi moment}
-#'   \item{convergence}{Status zbizhnosti}
-#'   \item{iterations}{Kilkist vykonanykh iteratsii}
-#'   \item{call}{Oryhinalnyi vyklyk}
-#'   \item{model_type}{Typ modeli}
-#'   \item{intercept}{Perekhoplennia}
-#'   \item{original_series}{Oryhinalnyi chasovyi riad}
-#'   \item{order}{Poriadky modeli}
+#'   \item{coefficients}{Estimated coefficients}
+#'   \item{residuals}{Final residuals}
+#'   \item{m2}{Second central moment}
+#'   \item{m3}{Third central moment}
+#'   \item{m4}{Fourth central moment}
+#'   \item{convergence}{Convergence status}
+#'   \item{iterations}{Number of iterations performed}
+#'   \item{call}{Original call}
+#'   \item{model_type}{Model type}
+#'   \item{intercept}{Intercept}
+#'   \item{original_series}{Original time series}
+#'   \item{order}{Model orders}
 #' }
 #'
 #' @docType class
