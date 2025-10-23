@@ -78,6 +78,13 @@ library(devtools)
 check(cran = TRUE)
 ```
 
+### 6. Pre-build cleanup (required)
+
+- Update `DESCRIPTION` with the new version number before calling `R CMD build` (e.g., 0.1.1) so the resulting tarball matches the intended release.
+- Remove generated artifacts from previous vignette builds: delete the contents of `inst/doc/` (they will be regenerated automatically).
+- Delete `demo/README.md` or move its content elsewhere—`demo/` may only contain `.R`/`.Rout` files and an optional `00Index`.
+- Verify that only portable file names remain (ASCII letters/digits plus `_` or `.`, no spaces) to avoid "invalid file names" warnings during `R CMD check`.
+
 ## Files Already Modified
 
 The following files have been updated for CRAN compliance:
