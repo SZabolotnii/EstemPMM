@@ -8,3 +8,5 @@ r-cran-development.zip
 .DS_Store
 
 # articles/
+
+inst/doc/

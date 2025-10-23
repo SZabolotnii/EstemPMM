@@ -1,5 +1,13 @@
 # EstemPMM News
 
+# Version 0.1.1 (2025-10-22)
+
+### Maintenance
+
+- Оновлено `DESCRIPTION` (свіжа дата релізу, список Suggests для пакетів, що використовуються в демо).
+- Налаштовано збірку вінігретів через `R CMD build`, попередньо генеровані HTML/R-файли більше не версіонуються (ігноруються в `.Rbuildignore`/`.gitignore`).
+- Перевірено пакет за допомогою `R CMD check --as-cran` (тепер без WARNING після встановлення `qpdf`).
+
 ## Version 0.1.0 (2025-01-15)
 
 ### Initial Release: PMM2 Foundation
