@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_monte_carlo.R
 \name{pmm2_monte_carlo_compare}
 \alias{pmm2_monte_carlo_compare}
-\title{Monte Carlo porivniannia metodiv otsiniuvannia PMM2}
+\title{Monte Carlo comparison of PMM2 estimation methods}
 \usage{
 pmm2_monte_carlo_compare(
   model_specs,
@@ -17,48 +17,48 @@ pmm2_monte_carlo_compare(
 )
 }
 \arguments{
-\item{model_specs}{Spysok spetsyfikatsii modelei. Kozhen element maie mistyty:
+\item{model_specs}{List of model specifications. Each element must contain:
 \describe{
-\item{model}{"ar", "ma" abo "arma"}
-\item{order}{poriadok (dlia AR/MA) abo vektor c(p, q) dlia ARMA}
-\item{theta}{chyslovyi vektor istynnykh parametriv; dlia ARMA spysok
+\item{model}{"ar", "ma" or "arma"}
+\item{order}{order (for AR/MA) or vector c(p, q) for ARMA}
+\item{theta}{numeric vector of true parameters; for ARMA a list
 \code{list(ar = ..., ma = ...)}}
-\item{label}{(optsiino) nazva modeli u zviti}
-\item{innovations}{(optsiino) opys rozpodilu innovatsii:
-\code{list(type = \"gamma\", shape = 2)},
-\code{list(type = \"student_t\", df = 5)}, toshcho. Mozhna takozh
-peredaty dovilnu funktsiiu heneratsii cherez \code{generator}.}
+\item{label}{(optional) model name in report}
+\item{innovations}{(optional) description of innovation distribution:
+\code{list(type = "gamma", shape = 2)},
+\code{list(type = "student_t", df = 5)}, etc. Can also
+pass an arbitrary generation function via \code{generator}.}
 }}
 
-\item{methods}{Vektor metodiv otsiniuvannia (napryklad, \code{c("css","pmm2")}).
-Pershyi metod vvazhaietsia bazovym dlia rozrakhunku vidnosnoho MSE.}
+\item{methods}{Vector of estimation methods (e.g., \code{c("css","pmm2")}).
+The first method is considered baseline for relative MSE calculation.}
 
-\item{n}{Rozmir vybirky dlia symuliatsii.}
+\item{n}{Sample size for simulation.}
 
-\item{n_sim}{Kilkist Monte Karlo eksperymentiv.}
+\item{n_sim}{Number of Monte Carlo experiments.}
 
-\item{innovations}{Funktsiia abo opys rozpodilu, iaki vykorystovuiutsia za
-zamovchuvanniam dlia vsikh modelei (iakshcho ne vkazano u spec).}
+\item{innovations}{Function or distribution description, used by
+default for all models (if not specified in spec).}
 
-\item{seed}{Pochatkove zerno heneratora vypadkovykh chysel (optsiino).}
+\item{seed}{Initial seed for random number generator (optional).}
 
-\item{include.mean}{Lohichnyi praporets: chy vkliuchaty perekhoplennia pid chas otsiniuvannia.}
+\item{include.mean}{Logical flag: whether to include intercept during estimation.}
 
-\item{progress}{Lohichnyi praporets: drukuvaty prohres Monte Karlo.}
+\item{progress}{Logical flag: print Monte Carlo progress.}
 
-\item{verbose}{Chy drukuvaty diahnostychni povidomlennia pry zboiakh.}
+\item{verbose}{Whether to print diagnostic messages on failures.}
 }
 \value{
-Spysok z troma komponentamy:
+List with three components:
 \describe{
-\item{parameter_results}{MSE ta vidnosnyi MSE dlia kozhnoho parametra}
-\item{summary}{Userednenyi MSE po parametrakh dlia kozhnoi modeli/metodu}
-\item{gain}{Porivniannia teoretychnoho ta empirychnoho vyhrashu PMM2}
+\item{parameter_results}{MSE and relative MSE for each parameter}
+\item{summary}{Averaged MSE over parameters for each model/method}
+\item{gain}{Comparison of theoretical and empirical PMM2 gain}
 }
 }
 \description{
-Funktsiia heneruie chasovi riady dlia zadanykh modelei, bahatorazovo otsiniuie
-parametry riznymy metodamy i porivniuie ikh tochnist za kryteriiem MSE.
-Dodatkovo vyvodiatsia teoretychni ta empirychni kharakterystyky rozpodilu
-innovatsii (asymetriia, ekstses, teoretychnyi vyhrash PMM2).
+Function generates time series for given models, repeatedly estimates
+parameters using different methods and compares their accuracy by MSE criterion.
+Additionally outputs theoretical and empirical characteristics of the innovation
+distribution (skewness, excess kurtosis, theoretical gain of PMM2).
 }

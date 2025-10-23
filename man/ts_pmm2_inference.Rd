@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_inference.R
 \name{ts_pmm2_inference}
 \alias{ts_pmm2_inference}
-\title{Butstrep-vysnovok dlia modelei chasovykh riadiv PMM2}
+\title{Bootstrap inference for PMM2 time series models}
 \usage{
 ts_pmm2_inference(
   object,
@@ -17,27 +17,27 @@ ts_pmm2_inference(
 )
 }
 \arguments{
-\item{object}{ob'iekt klasu TS2fit}
+\item{object}{object of class TS2fit}
 
-\item{x}{(optsionalno) oryhinalnyi chasovyi riad; iakshcho NULL, vykorystovuie object@original_series}
+\item{x}{(optional) original time series; if NULL, uses object@original_series}
 
-\item{B}{kilkist butstrep-replikatsii}
+\item{B}{number of bootstrap replications}
 
-\item{seed}{(optsionalno) dlia vidtvoriuvanosti}
+\item{seed}{(optional) for reproducibility}
 
-\item{block_length}{dovzhyna bloku dlia blokovoho butstrepu; iakshcho NULL, vykorystovuie evrystychne znachennia}
+\item{block_length}{block length for block bootstrap; if NULL, uses heuristic value}
 
-\item{method}{typ butstrepu: "residual" abo "block"}
+\item{method}{bootstrap type: "residual" or "block"}
 
-\item{parallel}{lohichne, chy vykorystovuvaty paralelni obchyslennia}
+\item{parallel}{logical, whether to use parallel computing}
 
-\item{cores}{kilkist iader dlia paralelnykh obchyslen}
+\item{cores}{number of cores for parallel computing}
 
-\item{debug}{lohichne, chy vyvodyty dodatkovu diahnostychnu informatsiiu}
+\item{debug}{logical, whether to output additional diagnostic information}
 }
 \value{
-data.frame z stovptsiamy: Estimate, Std.Error, t.value, p.value
+data.frame with columns: Estimate, Std.Error, t.value, p.value
 }
 \description{
-Butstrep-vysnovok dlia modelei chasovykh riadiv PMM2
+Bootstrap inference for PMM2 time series models
 }

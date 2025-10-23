@@ -2,19 +2,19 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{update_ma_innovations}
 \alias{update_ma_innovations}
-\title{Onovyty innovatsii MA modeli}
+\title{Update MA model innovations}
 \usage{
 update_ma_innovations(x, ma_coef)
 }
 \arguments{
-\item{x}{tsentrovanyi chasovyi riad}
+\item{x}{Centered time series}
 
-\item{ma_coef}{vektor koefitsiientiv MA}
+\item{ma_coef}{Vector of MA coefficients}
 }
 \value{
-vektor innovatsii
+Vector of innovations
 }
 \description{
-Onovyty innovatsii MA modeli
+Update MA model innovations
 }
 \keyword{internal}

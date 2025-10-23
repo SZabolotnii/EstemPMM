@@ -2,22 +2,22 @@
 % Please edit documentation in R/pmm2_main.R
 \name{plot,PMM2fit,missing-method}
 \alias{plot,PMM2fit,missing-method}
-\title{Pobuduvaty diahnostychni hrafiky dlia ob'iekta PMM2fit}
+\title{Plot diagnostic plots for PMM2fit object}
 \usage{
 \S4method{plot}{PMM2fit,missing}(x, y, which = 1:4, ...)
 }
 \arguments{
-\item{x}{Ob'iekt PMM2fit}
+\item{x}{PMM2fit object}
 
-\item{y}{Ne vykorystovuietsia (sumisnist z generic)}
+\item{y}{Not used (compatibility with generic)}
 
-\item{which}{Nabir hrafikiv dlia vidobrazhennia (znachennia 1-4)}
+\item{which}{Set of plots to display (values 1-4)}
 
-\item{...}{Dodatkovi arhumenty, shcho peredaiutsia hrafichnym funktsiiam}
+\item{...}{Additional arguments passed to plotting functions}
 }
 \value{
-Nevydymo povertaie vkhidnyi ob'iekt
+Invisibly returns the input object
 }
 \description{
-Pobuduvaty diahnostychni hrafiky dlia ob'iekta PMM2fit
+Plot diagnostic plots for PMM2fit object
 }

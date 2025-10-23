@@ -2,22 +2,22 @@
 % Please edit documentation in R/pmm2_main.R
 \name{predict,PMM2fit-method}
 \alias{predict,PMM2fit-method}
-\title{Metod prohnozuvannia dlia ob'iektiv PMM2fit}
+\title{Prediction method for PMM2fit objects}
 \usage{
 \S4method{predict}{PMM2fit}(object, newdata = NULL, debug = FALSE, ...)
 }
 \arguments{
-\item{object}{Ob'iekt PMM2fit}
+\item{object}{PMM2fit object}
 
-\item{newdata}{Novyi freim danykh dlia prohnozuvannia}
+\item{newdata}{New data frame for prediction}
 
-\item{debug}{Lohichne znachennia, chy vyvodyty debah-informatsiiu}
+\item{debug}{Logical value, whether to output debug information}
 
-\item{...}{dodatkovi arhumenty (ne vykorystovuiutsia)}
+\item{...}{additional arguments (not used)}
 }
 \value{
-Vektor prohnoziv
+Vector of predictions
 }
 \description{
-Metod prohnozuvannia dlia ob'iektiv PMM2fit
+Prediction method for PMM2fit objects
 }

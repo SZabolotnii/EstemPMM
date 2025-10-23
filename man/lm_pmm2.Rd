@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_main.R
 \name{lm_pmm2}
 \alias{lm_pmm2}
-\title{pmm2: Holovna funktsiia dlia PMM2 (S=2)}
+\title{PMM2: Main function for PMM2 (S=2)}
 \usage{
 lm_pmm2(
   formula,
@@ -17,53 +17,53 @@ lm_pmm2(
 )
 }
 \arguments{
-\item{formula}{Formula R dlia modeli}
+\item{formula}{R formula for the model}
 
-\item{data}{data.frame, shcho mistyt zminni u formuli}
+\item{data}{data.frame containing variables in the formula}
 
-\item{max_iter}{tsile: maksymalna kilkist iteratsii dlia alhorytmu}
+\item{max_iter}{integer: maximum number of iterations for the algorithm}
 
-\item{tol}{chyslove: dopusk dlia zbizhnosti}
+\item{tol}{numeric: tolerance for convergence}
 
-\item{regularize}{lohichne: dodaty male znachennia do diahonali dlia chyslovoi stabilnosti}
+\item{regularize}{logical: add small value to diagonal for numerical stability}
 
-\item{reg_lambda}{chyslove: parametr rehuliaryzatsii (iakshcho regularize=TRUE)}
+\item{reg_lambda}{numeric: regularization parameter (if regularize=TRUE)}
 
-\item{na.action}{funktsiia dlia obrobky vidsutnikh znachen, za zamovchuvanniam - na.fail}
+\item{na.action}{function for handling missing values, default is na.fail}
 
-\item{weights}{optsionalnyi vektor vah (poky ne realizovano)}
+\item{weights}{optional weight vector (not yet implemented)}
 
-\item{verbose}{lohichne: chy vyvodyty informatsiiu pro prohres}
+\item{verbose}{logical: whether to print progress information}
 }
 \value{
-Ob'iekt S4 \code{PMM2fit}
+S4 object of class \code{PMM2fit}
 }
 \description{
-Pidhaniaie liniinu model za dopomohoiu metodu maksymizatsii polinomiv (poriadok 2),
-iakyi ie robastnym shchodo nehausivskykh pomylok.
+Fits a linear model using the Polynomial Maximization Method (order 2),
+which is robust to non-Gaussian errors.
 }
 \details{
-Alhorytm PMM2 pratsiuie nastupnym chynom:
+The PMM2 algorithm works as follows:
 \enumerate{
-\item Pidhaniaie zvychainu rehresiiu naimenshykh kvadrativ (OLS) dlia otrymannia pochatkovykh otsinok
-\item Obchysliuie tsentralni momenty (m2, m3, m4) iz zalyshkiv OLS
-\item Iteratyvno pokrashchuie otsinky parametriv za dopomohoiu pidkhodu na osnovi hradiienta
+\item Fits ordinary least squares (OLS) regression to obtain initial estimates
+\item Computes central moments (m2, m3, m4) from OLS residuals
+\item Iteratively improves parameter estimates using a gradient-based approach
 }
 
-PMM2 osoblyvo korysnyi, koly termy pomylok ne ie hausivskymy.
+PMM2 is especially useful when error terms are not Gaussian.
 }
 \examples{
 \dontrun{
-# Heneruvaty dani vybirky z t-rozpodilenymy pomylkamy
+# Generate sample data with t-distributed errors
 n <- 100
 x <- rnorm(n)
 y <- 2 + 3*x + rt(n, df=3)
 dat <- data.frame(y=y, x=x)
 
-# Pidihnaty model za dopomohoiu PMM2
+# Fit model using PMM2
 fit <- lm_pmm2(y ~ x, data=dat)
 
-# Reziume ta statystychnyi vysnovok
+# Summary and statistical inference
 summary(fit, formula=y~x, data=dat)
 }
 }

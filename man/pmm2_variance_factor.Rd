@@ -2,16 +2,16 @@
 % Please edit documentation in R/pmm2_utils.R
 \name{pmm2_variance_factor}
 \alias{pmm2_variance_factor}
-\title{Obchyslyty teoretychni koefitsiienty asymetrii, ekstsesu ta faktor zmenshennia dyspersii}
+\title{Calculate theoretical skewness, kurtosis coefficients and variance reduction factor}
 \usage{
 pmm2_variance_factor(m2, m3, m4)
 }
 \arguments{
-\item{m2, m3, m4}{tsentralni momenty druhoho, tretoho ta chetvertoho poriadkiv}
+\item{m2, m3, m4}{central moments of second, third and fourth orders}
 }
 \value{
-Spysok z poliamy \code{c3}, \code{c4} ta \code{g}
+List with fields \code{c3}, \code{c4} and \code{g}
 }
 \description{
-Obchyslyty teoretychni koefitsiienty asymetrii, ekstsesu ta faktor zmenshennia dyspersii
+Calculate theoretical skewness, kurtosis coefficients and variance reduction factor
 }

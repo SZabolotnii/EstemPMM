@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_common.R
 \name{pmm2_algorithm}
 \alias{pmm2_algorithm}
-\title{Universalnyi alhorytm PMM2 dlia vsikh typiv modelei}
+\title{Universal PMM2 algorithm for all model types}
 \usage{
 pmm2_algorithm(
   b_init,
@@ -20,31 +20,31 @@ pmm2_algorithm(
 )
 }
 \arguments{
-\item{b_init}{Pochatkovi otsinky parametriv}
+\item{b_init}{Initial parameter estimates}
 
-\item{X}{Matrytsia dyzainu}
+\item{X}{Design matrix}
 
-\item{y}{Vektor vidhuku}
+\item{y}{Response vector}
 
-\item{m2, m3, m4}{Tsentralni momenty}
+\item{m2, m3, m4}{Central moments}
 
-\item{max_iter}{Maksymalna kilkist iteratsii}
+\item{max_iter}{Maximum number of iterations}
 
-\item{tol}{Dopusk dlia zbizhnosti}
+\item{tol}{Tolerance for convergence}
 
-\item{regularize}{Chy dodavaty rehuliaryzatsiiu}
+\item{regularize}{Whether to add regularization}
 
-\item{reg_lambda}{Parametr rehuliaryzatsii}
+\item{reg_lambda}{Regularization parameter}
 
-\item{verbose}{Chy vyvodyty informatsiiu pro prohres}
+\item{verbose}{Whether to print progress information}
 
-\item{poly_terms}{Poperedno obchysleni koefitsiienty polinoma (spysok z elementamy \code{A}, \code{B}, \code{C});
-dozvoliaie peredavaty vlasni znachennia dlia spetsialnykh stsenariiv, inakshe vony obchysliuiutsia z momentiv}
+\item{poly_terms}{Pre-computed polynomial coefficients (list with elements \code{A}, \code{B}, \code{C});
+allows passing custom values for special scenarios, otherwise they are computed from moments}
 }
 \value{
-Spysok z rezultatamy otsiniuvannia
+List with estimation results
 }
 \description{
-Universalnyi alhorytm PMM2 dlia vsikh typiv modelei
+Universal PMM2 algorithm for all model types
 }
 \keyword{internal}

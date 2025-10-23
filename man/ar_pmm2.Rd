@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_ts_main.R
 \name{ar_pmm2}
 \alias{ar_pmm2}
-\title{Pidihnaty AR model za dopomohoiu PMM2 (obhortka)}
+\title{Fit an AR model using PMM2 (wrapper)}
 \usage{
 ar_pmm2(
   x,
@@ -19,32 +19,32 @@ ar_pmm2(
 )
 }
 \arguments{
-\item{x}{Chyslovyi vektor danykh chasovoho riadu}
+\item{x}{Numeric vector of time series data}
 
-\item{order}{Spetsyfikatsiia poriadku modeli:
-- Dlia AR modelei: odne tsile chyslo (poriadok AR)
-- Dlia MA modelei: odne tsile chyslo (poriadok MA)
-- Dlia ARMA modelei: vektor c(p, q) (poriadky AR ta MA)
-- Dlia ARIMA modelei: vektor c(p, d, q) (poriadky AR, dyferentsiiuvannia ta MA)}
+\item{order}{Model order specification:
+- For AR models: a single integer (AR order)
+- For MA models: a single integer (MA order)
+- For ARMA models: vector c(p, q) (AR and MA orders)
+- For ARIMA models: vector c(p, d, q) (AR, differencing, and MA orders)}
 
-\item{method}{Riadok: metod otsiniuvannia, odyn z "pmm2" (za zamovchuvanniam), "css", "ml", "yw", "ols"}
+\item{method}{String: estimation method, one of "pmm2" (default), "css", "ml", "yw", "ols"}
 
-\item{max_iter}{Tsile chyslo: maksymalna kilkist iteratsii dlia alhorytmu}
+\item{max_iter}{Integer: maximum number of iterations for the algorithm}
 
-\item{tol}{Chyslove: dopusk dlia zbizhnosti}
+\item{tol}{Numeric: tolerance for convergence}
 
-\item{include.mean}{Lohichne: chy vkliuchaty chlen serednoho (perekhoplennia)}
+\item{include.mean}{Logical: whether to include a mean (intercept) term}
 
-\item{initial}{Spysok abo vektor pochatkovykh otsinok parametriv (optsionalno)}
+\item{initial}{List or vector of initial parameter estimates (optional)}
 
-\item{na.action}{Funktsiia dlia obrobky vidsutnikh znachen, za zamovchuvanniam - na.fail}
+\item{na.action}{Function for handling missing values, default is na.fail}
 
-\item{regularize}{Lohichne, dodavaty mali znachennia do diahonali dlia chyslovoi stabilnosti}
+\item{regularize}{Logical, add small values to diagonal for numerical stability}
 
-\item{reg_lambda}{Parametr rehuliaryzatsii (iakshcho regularize=TRUE)}
+\item{reg_lambda}{Regularization parameter (if regularize=TRUE)}
 
-\item{verbose}{Lohichne: chy vyvodyty informatsiiu pro prohres}
+\item{verbose}{Logical: whether to print progress information}
 }
 \description{
-Pidihnaty AR model za dopomohoiu PMM2 (obhortka)
+Fit an AR model using PMM2 (wrapper)
 }

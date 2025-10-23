@@ -2,17 +2,17 @@
 % Please edit documentation in R/pmm2_main.R
 \name{fitted_values}
 \alias{fitted_values}
-\title{Dopomizhna funktsiia dlia vytiahnennia pidihnanykh znachen}
+\title{Helper function for extracting fitted values}
 \usage{
 fitted_values(object, data = NULL)
 }
 \arguments{
-\item{object}{Ob'iekt PMM2fit}
+\item{object}{PMM2fit object}
 }
 \value{
-Vektor pidihnanykh znachen
+Vector of fitted values
 }
 \description{
-Dopomizhna funktsiia dlia vytiahnennia pidihnanykh znachen
+Helper function for extracting fitted values
 }
 \keyword{internal}

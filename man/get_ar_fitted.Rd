@@ -2,17 +2,17 @@
 % Please edit documentation in R/pmm2_ts_methods.R
 \name{get_ar_fitted}
 \alias{get_ar_fitted}
-\title{Otrymaty pidihnani znachennia dlia AR modeli}
+\title{Get fitted values for AR model}
 \usage{
 get_ar_fitted(object)
 }
 \arguments{
-\item{object}{Ob'iekt TS2fit z model_type="ar"}
+\item{object}{TS2fit object with model_type="ar"}
 }
 \value{
-Vektor pidihnanykh znachen
+Vector of fitted values
 }
 \description{
-Otrymaty pidihnani znachennia dlia AR modeli
+Get fitted values for AR model
 }
 \keyword{internal}

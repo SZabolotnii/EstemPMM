@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm2_ts_methods.R
 \name{fitted,TS2fit-method}
 \alias{fitted,TS2fit-method}
-\title{Vytiahnuty pidihnani znachennia z ob'iekta TS2fit}
+\title{Extract fitted values from TS2fit object}
 \usage{
 \S4method{fitted}{TS2fit}(object, ...)
 }
 \arguments{
-\item{object}{Ob'iekt TS2fit}
+\item{object}{TS2fit object}
 
-\item{...}{Dodatkovi arhumenty (ne vykorystovuiutsia)}
+\item{...}{Additional arguments (not used)}
 }
 \value{
-Vektor pidihnanykh znachen
+Vector of fitted values
 }
 \description{
-Vytiahnuty pidihnani znachennia z ob'iekta TS2fit
+Extract fitted values from TS2fit object
 }

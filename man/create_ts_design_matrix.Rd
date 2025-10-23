@@ -2,21 +2,21 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{create_ts_design_matrix}
 \alias{create_ts_design_matrix}
-\title{Stvorennia dyzain-matrytsi dlia chasovykh riadiv}
+\title{Create design matrix for time series}
 \usage{
 create_ts_design_matrix(x, model_info, innovations = NULL)
 }
 \arguments{
-\item{x}{Dani chasovoho riadu}
+\item{x}{Time series data}
 
-\item{model_info}{Spysok z parametramy modeli}
+\item{model_info}{List with model parameters}
 
-\item{innovations}{Optsionalni innovatsii/zalyshky dlia MA komponentiv}
+\item{innovations}{Optional innovations/residuals for MA components}
 }
 \value{
-Spysok z dyzain-matrytseiu, zminnoiu vidhuku ta inshymy komponentamy
+List with design matrix, response variable, and other components
 }
 \description{
-Stvorennia dyzain-matrytsi dlia chasovykh riadiv
+Create design matrix for time series
 }
 \keyword{internal}

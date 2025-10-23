@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm2_inference.R
 \name{plot_pmm2_bootstrap}
 \alias{plot_pmm2_bootstrap}
-\title{Pobuduvaty hrafiky butstrep-rozpodiliv dlia pidhonky PMM2}
+\title{Plot bootstrap distributions for PMM2 fit}
 \usage{
 plot_pmm2_bootstrap(object, coefficients = NULL)
 }
 \arguments{
-\item{object}{Rezultat z pmm2_inference}
+\item{object}{Result from pmm2_inference}
 
-\item{coefficients}{Yaki koefitsiienty pobuduvaty, za zamovchuvanniam usi}
+\item{coefficients}{Which coefficients to plot, defaults to all}
 }
 \value{
-Nevydymo povertaie informatsiiu pro histohramu
+Invisibly returns histogram information
 }
 \description{
-Pobuduvaty hrafiky butstrep-rozpodiliv dlia pidhonky PMM2
+Plot bootstrap distributions for PMM2 fit
 }

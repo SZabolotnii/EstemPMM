@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_inference.R
 \name{pmm2_inference}
 \alias{pmm2_inference}
-\title{Butstrep-vysnovok dlia pidhonky PMM2}
+\title{Bootstrap inference for PMM2 fit}
 \usage{
 pmm2_inference(
   object,
@@ -15,23 +15,23 @@ pmm2_inference(
 )
 }
 \arguments{
-\item{object}{ob'iekt klasu PMM2fit}
+\item{object}{object of class PMM2fit}
 
-\item{formula}{ta sama formula, shcho vykorystovuvalasia spochatku}
+\item{formula}{the same formula that was used initially}
 
-\item{data}{freim danykh, shcho vykorystovuvavsia spochatku}
+\item{data}{data frame that was used initially}
 
-\item{B}{kilkist butstrep-replikatsii}
+\item{B}{number of bootstrap replications}
 
-\item{seed}{(optsionalno) dlia vidtvoriuvanosti}
+\item{seed}{(optional) for reproducibility}
 
-\item{parallel}{lohichne, chy vykorystovuvaty paralelni obchyslennia}
+\item{parallel}{logical, whether to use parallel computing}
 
-\item{cores}{kilkist iader dlia vykorystannia pry paralelnykh obchyslenniakh, za zamovchuvanniam - avtovyznachennia}
+\item{cores}{number of cores to use for parallel computing, defaults to auto-detect}
 }
 \value{
-data.frame z stovptsiamy: Estimate, Std.Error, t.value, p.value
+data.frame with columns: Estimate, Std.Error, t.value, p.value
 }
 \description{
-Butstrep-vysnovok dlia pidhonky PMM2
+Bootstrap inference for PMM2 fit
 }

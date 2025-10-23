@@ -2,19 +2,19 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{get_yw_estimates}
 \alias{get_yw_estimates}
-\title{Otrymaty otsinky Yula-Volkera dlia AR(p)}
+\title{Get Yule-Walker estimates for AR(p)}
 \usage{
 get_yw_estimates(x, p)
 }
 \arguments{
-\item{x}{chyslovyi vektor}
+\item{x}{Numeric vector}
 
-\item{p}{tsile znachennia poriadku AR}
+\item{p}{Integer value of AR order}
 }
 \value{
-chyslovyi vektor dovzhyny p (koefitsiienty AR)
+Numeric vector of length p (AR coefficients)
 }
 \description{
-Otrymaty otsinky Yula-Volkera dlia AR(p)
+Get Yule-Walker estimates for AR(p)
 }
 \keyword{internal}

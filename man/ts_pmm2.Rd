@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_ts_main.R
 \name{ts_pmm2}
 \alias{ts_pmm2}
-\title{Pidihnaty model chasovoho riadu za dopomohoiu metodu PMM2}
+\title{Fit a time series model using the PMM2 method}
 \usage{
 ts_pmm2(
   x,
@@ -20,46 +20,46 @@ ts_pmm2(
 )
 }
 \arguments{
-\item{x}{Chyslovyi vektor danykh chasovoho riadu}
+\item{x}{Numeric vector of time series data}
 
-\item{order}{Spetsyfikatsiia poriadku modeli:
-- Dlia AR modelei: odne tsile chyslo (poriadok AR)
-- Dlia MA modelei: odne tsile chyslo (poriadok MA)
-- Dlia ARMA modelei: vektor c(p, q) (poriadky AR ta MA)
-- Dlia ARIMA modelei: vektor c(p, d, q) (poriadky AR, dyferentsiiuvannia ta MA)}
+\item{order}{Model order specification:
+- For AR models: a single integer (AR order)
+- For MA models: a single integer (MA order)
+- For ARMA models: vector c(p, q) (AR and MA orders)
+- For ARIMA models: vector c(p, d, q) (AR, differencing, and MA orders)}
 
-\item{model_type}{Riadok, shcho vyznachaie typ modeli: "ar", "ma", "arma", abo "arima"}
+\item{model_type}{String specifying the model type: "ar", "ma", "arma", or "arima"}
 
-\item{method}{Riadok: metod otsiniuvannia, odyn z "pmm2" (za zamovchuvanniam), "css", "ml", "yw", "ols"}
+\item{method}{String: estimation method, one of "pmm2" (default), "css", "ml", "yw", "ols"}
 
-\item{max_iter}{Tsile chyslo: maksymalna kilkist iteratsii dlia alhorytmu}
+\item{max_iter}{Integer: maximum number of iterations for the algorithm}
 
-\item{tol}{Chyslove: dopusk dlia zbizhnosti}
+\item{tol}{Numeric: tolerance for convergence}
 
-\item{include.mean}{Lohichne: chy vkliuchaty chlen serednoho (perekhoplennia)}
+\item{include.mean}{Logical: whether to include a mean (intercept) term}
 
-\item{initial}{Spysok abo vektor pochatkovykh otsinok parametriv (optsionalno)}
+\item{initial}{List or vector of initial parameter estimates (optional)}
 
-\item{na.action}{Funktsiia dlia obrobky vidsutnikh znachen, za zamovchuvanniam - na.fail}
+\item{na.action}{Function for handling missing values, default is na.fail}
 
-\item{regularize}{Lohichne, dodavaty mali znachennia do diahonali dlia chyslovoi stabilnosti}
+\item{regularize}{Logical, add small values to diagonal for numerical stability}
 
-\item{reg_lambda}{Parametr rehuliaryzatsii (iakshcho regularize=TRUE)}
+\item{reg_lambda}{Regularization parameter (if regularize=TRUE)}
 
-\item{verbose}{Lohichne: chy vyvodyty informatsiiu pro prohres}
+\item{verbose}{Logical: whether to print progress information}
 }
 \value{
-Ob'iekt S4 \code{TS2fit} vidpovidnoho pidklasu
+An S4 object \code{TS2fit} of the corresponding subclass
 }
 \description{
-Pidihnaty model chasovoho riadu za dopomohoiu metodu PMM2
+Fit a time series model using the PMM2 method
 }
 \details{
-Alhorytm PMM2 pratsiuie nastupnym chynom:
+The PMM2 algorithm works as follows:
 \enumerate{
-\item Pidhaniaie pochatkovu model za dopomohoiu standartnoho metodu (OLS, Yula-Volkera, CSS abo ML)
-\item Obchysliuie tsentralni momenty (m2, m3, m4) z pochatkovykh zalyshkiv/innovatsii
-\item Vykorystovuie tsi momenty zi spetsializovanym rozv'iazuvachem (pmm2_algorithm) dlia znakhodzhennia
-robastnykh otsinok parametriv
+\item Fits an initial model using a standard method (OLS, Yule-Walker, CSS or ML)
+\item Computes central moments (m2, m3, m4) from initial residuals/innovations
+\item Uses these moments with a specialized solver (pmm2_algorithm) to find
+robust parameter estimates
 }
 }

@@ -2,20 +2,20 @@
 % Please edit documentation in R/pmm2_main.R
 \name{compare_with_ols}
 \alias{compare_with_ols}
-\title{Porivniaty PMM2 z OLS}
+\title{Compare PMM2 with OLS}
 \usage{
 compare_with_ols(formula, data, pmm2_args = list())
 }
 \arguments{
-\item{formula}{Formula modeli}
+\item{formula}{Model formula}
 
-\item{data}{Freim danykh}
+\item{data}{Data frame}
 
-\item{pmm2_args}{Spysok arhumentiv dlia peredachi v lm_pmm2()}
+\item{pmm2_args}{List of arguments to pass to lm_pmm2()}
 }
 \value{
-Spysok z ob'iektamy pidhonky OLS ta PMM2
+List with OLS and PMM2 fit objects
 }
 \description{
-Porivniaty PMM2 z OLS
+Compare PMM2 with OLS
 }

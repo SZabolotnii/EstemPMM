@@ -2,23 +2,23 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{validate_ts_parameters}
 \alias{validate_ts_parameters}
-\title{Perevirka ta pidhotovka parametriv chasovoho riadu}
+\title{Validate and prepare time series parameters}
 \usage{
 validate_ts_parameters(x, order, model_type, include.mean)
 }
 \arguments{
-\item{x}{Dani chasovoho riadu}
+\item{x}{Time series data}
 
-\item{order}{Spetsyfikatsiia poriadku modeli}
+\item{order}{Model order specification}
 
-\item{model_type}{Typ modeli (ar, ma, arma, abo arima)}
+\item{model_type}{Model type (ar, ma, arma, or arima)}
 
-\item{include.mean}{Chy vkliuchaty serednie/perekhoplennia}
+\item{include.mean}{Whether to include mean/intercept}
 }
 \value{
-Spysok perevirenykh parametriv ta informatsii pro model
+List of validated parameters and model information
 }
 \description{
-Perevirka ta pidhotovka parametriv chasovoho riadu
+Validate and prepare time series parameters
 }
 \keyword{internal}

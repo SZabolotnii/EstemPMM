@@ -4,51 +4,51 @@
 \name{EstemPMM-package}
 \alias{EstemPMM}
 \alias{EstemPMM-package}
-\title{PMM2: Polinomialnyi metod maksymizatsii dlia robastnoi rehresii ta chasovykh riadiv}
+\title{EstemPMM: Polynomial Maximization Method for Robust Regression and Time Series}
 \description{
-Paket PMM2 proponuie robastni metody dlia otsiniuvannia parametriv liniinykh
-modelei ta modelei chasovykh riadiv, robastnykh do nehausivskykh pomylok.
+The EstemPMM package provides robust methods for estimating parameters of linear
+models and time series models that are robust to non-Gaussian errors.
 }
-\section{Funktsii liniinoi rehresii}{
+\section{Linear Regression Functions}{
 
 
-\code{\link{lm_pmm2}} - Pidhonka liniinoi modeli za dopomohoiu PMM2
+\code{\link{lm_pmm2}} - Fit linear models using PMM2
 
-\code{\link{compare_with_ols}} - Porivniannia PMM2 z OLS
-}
-
-\section{Funktsii chasovykh riadiv}{
-
-
-\code{\link{ts_pmm2}} - Zahalna funktsiia dlia pidhonky modelei chasovykh riadiv za dopomohoiu PMM2
-
-\code{\link{ar_pmm2}} - Pidhonka AR modelei
-
-\code{\link{ma_pmm2}} - Pidhonka MA modelei
-
-\code{\link{arma_pmm2}} - Pidhonka ARMA modelei
-
-\code{\link{arima_pmm2}} - Pidhonka ARIMA modelei
-
-\code{\link{compare_ts_methods}} - Porivniannia PMM2 z klasychnymy metodamy
+\code{\link{compare_with_ols}} - Compare PMM2 with OLS
 }
 
-\section{Statystychnyi vysnovok}{
+\section{Time Series Functions}{
 
 
-\code{\link{pmm2_inference}} - Butstrep-vysnovok dlia liniinykh modelei
+\code{\link{ts_pmm2}} - General function for fitting time series models using PMM2
 
-\code{\link{ts_pmm2_inference}} - Butstrep-vysnovok dlia modelei chasovykh riadiv
+\code{\link{ar_pmm2}} - Fit AR models
+
+\code{\link{ma_pmm2}} - Fit MA models
+
+\code{\link{arma_pmm2}} - Fit ARMA models
+
+\code{\link{arima_pmm2}} - Fit ARIMA models
+
+\code{\link{compare_ts_methods}} - Compare PMM2 with classical methods
 }
 
-\section{Utylity}{
+\section{Statistical Inference}{
 
 
-\code{\link{pmm_skewness}} - Obchyslennia asymetrii
+\code{\link{pmm2_inference}} - Bootstrap inference for linear models
 
-\code{\link{pmm_kurtosis}} - Obchyslennia ekstsesu
+\code{\link{ts_pmm2_inference}} - Bootstrap inference for time series models
+}
 
-\code{\link{compute_moments}} - Obchyslennia momentiv ta kumuliantiv
+\section{Utilities}{
+
+
+\code{\link{pmm_skewness}} - Compute skewness
+
+\code{\link{pmm_kurtosis}} - Compute kurtosis
+
+\code{\link{compute_moments}} - Compute moments and cumulants
 }
 
 \seealso{

@@ -3,27 +3,27 @@
 \docType{class}
 \name{BasePMM2-class}
 \alias{BasePMM2-class}
-\title{Bazovyi klas S4 dlia zberihannia rezultativ PMM2 modelei}
+\title{Base S4 class for storing PMM2 model results}
 \description{
-Bazovyi klas S4 dlia zberihannia rezultativ PMM2 modelei
+Base S4 class for storing PMM2 model results
 }
 \section{Slots}{
 
 \describe{
-\item{\code{coefficients}}{chyslovyi vektor otsinenykh parametriv}
+\item{\code{coefficients}}{numeric vector of estimated parameters}
 
-\item{\code{residuals}}{chyslovyi vektor kintsevykh zalyshkiv}
+\item{\code{residuals}}{numeric vector of final residuals}
 
-\item{\code{m2}}{chyslovyi druhyi tsentralnyi moment pochatkovykh zalyshkiv}
+\item{\code{m2}}{numeric second central moment of initial residuals}
 
-\item{\code{m3}}{chyslovyi tretii tsentralnyi moment pochatkovykh zalyshkiv}
+\item{\code{m3}}{numeric third central moment of initial residuals}
 
-\item{\code{m4}}{chyslovyi chetvertyi tsentralnyi moment pochatkovykh zalyshkiv}
+\item{\code{m4}}{numeric fourth central moment of initial residuals}
 
-\item{\code{convergence}}{lohichnyi abo tsilyi kod, shcho vkazuie, chy alhorytm zbihsia}
+\item{\code{convergence}}{logical or integer code indicating whether algorithm converged}
 
-\item{\code{iterations}}{chyslova kilkist vykonanykh iteratsii}
+\item{\code{iterations}}{numeric number of iterations performed}
 
-\item{\code{call}}{oryhinalnyi vyklyk funktsii}
+\item{\code{call}}{original function call}
 }}
 

@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm2_utils.R
 \name{pmm2_variance_matrices}
 \alias{pmm2_variance_matrices}
-\title{Obchyslyty teoretychni matrytsi dyspersii dlia OMNK ta PMM2}
+\title{Calculate theoretical variance matrices for OLS and PMM2}
 \usage{
 pmm2_variance_matrices(X, m2, m3, m4)
 }
 \arguments{
-\item{X}{Matrytsia dyzainu iz stovptsem odynyts}
+\item{X}{Design matrix with column of ones}
 
-\item{m2, m3, m4}{tsentralni momenty zalyshkiv OMNK}
+\item{m2, m3, m4}{central moments of OLS residuals}
 }
 \value{
-Spysok z poliamy \code{ols}, \code{pmm2}, \code{c3}, \code{c4}, \code{g}
+List with fields \code{ols}, \code{pmm2}, \code{c3}, \code{c4}, \code{g}
 }
 \description{
-Obchyslyty teoretychni matrytsi dyspersii dlia OMNK ta PMM2
+Calculate theoretical variance matrices for OLS and PMM2
 }

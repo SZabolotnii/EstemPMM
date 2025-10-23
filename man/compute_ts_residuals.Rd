@@ -2,19 +2,19 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{compute_ts_residuals}
 \alias{compute_ts_residuals}
-\title{Obchyslyty kintsevi zalyshky dlia modelei chasovykh riadiv}
+\title{Compute final residuals for time series models}
 \usage{
 compute_ts_residuals(coefs, model_info)
 }
 \arguments{
-\item{coefs}{Otsineni koefitsiienty}
+\item{coefs}{Estimated coefficients}
 
-\item{model_info}{Informatsiia pro model}
+\item{model_info}{Model information}
 }
 \value{
-Vektor zalyshkiv
+Vector of residuals
 }
 \description{
-Obchyslyty kintsevi zalyshky dlia modelei chasovykh riadiv
+Compute final residuals for time series models
 }
 \keyword{internal}

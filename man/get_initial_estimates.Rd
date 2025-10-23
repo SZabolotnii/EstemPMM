@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{get_initial_estimates}
 \alias{get_initial_estimates}
-\title{Otrymaty pochatkovi otsinky parametriv dlia modelei chasovykh riadiv}
+\title{Get initial parameter estimates for time series models}
 \usage{
 get_initial_estimates(
   model_params,
@@ -12,25 +12,25 @@ get_initial_estimates(
 )
 }
 \arguments{
-\item{model_params}{Perevireni parametry modeli z validate_ts_parameters}
+\item{model_params}{Validated model parameters from validate_ts_parameters}
 
-\item{initial}{Optsionalno nadani korystuvachem pochatkovi otsinky}
+\item{initial}{Optionally user-provided initial estimates}
 
-\item{method}{Metod otsiniuvannia}
+\item{method}{Estimation method}
 
-\item{verbose}{Vyvodyty detalnu informatsiiu}
+\item{verbose}{Output detailed information}
 }
 \value{
-Spysok, shcho mistyt:
-\item{b_init}{vektor pochatkovykh koefitsiientiv AR/MA}
-\item{x_mean}{otsinene serednie (iakshcho include.mean=TRUE)}
-\item{innovations}{pochatkovi zalyshky/innovatsii}
-\item{x_centered}{tsentrovanyi (abo dyferentsiiovanyi + tsentrovanyi) riad}
-\item{m2}{druhyi tsentralnyi moment pochatkovykh zalyshkiv}
-\item{m3}{tretii tsentralnyi moment pochatkovykh zalyshkiv}
-\item{m4}{chetvertyi tsentralnyi moment pochatkovykh zalyshkiv}
+List containing:
+\item{b_init}{Vector of initial AR/MA coefficients}
+\item{x_mean}{Estimated mean (if include.mean=TRUE)}
+\item{innovations}{Initial residuals/innovations}
+\item{x_centered}{Centered (or differenced + centered) series}
+\item{m2}{Second central moment of initial residuals}
+\item{m3}{Third central moment of initial residuals}
+\item{m4}{Fourth central moment of initial residuals}
 }
 \description{
-Otrymaty pochatkovi otsinky parametriv dlia modelei chasovykh riadiv
+Get initial parameter estimates for time series models
 }
 \keyword{internal}

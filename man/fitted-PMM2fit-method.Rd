@@ -2,20 +2,20 @@
 % Please edit documentation in R/pmm2_main.R
 \name{fitted,PMM2fit-method}
 \alias{fitted,PMM2fit-method}
-\title{Vytiahnuty pidihnani znachennia z ob'iekta PMM2fit}
+\title{Extract fitted values from PMM2fit object}
 \usage{
 \S4method{fitted}{PMM2fit}(object, data = NULL, ...)
 }
 \arguments{
-\item{object}{Ob'iekt PMM2fit}
+\item{object}{PMM2fit object}
 
-\item{data}{Neobov'iazkove dzherelo dlia rekonstruktsii modeli, yakshcho ob'iekt ne mistyt zberezhenykh danykh}
+\item{data}{Optional data source for model reconstruction, if object does not contain saved data}
 
-\item{...}{Dodatkovi arhumenty (ne vykorystovuiutsia)}
+\item{...}{Additional arguments (not used)}
 }
 \value{
-Vektor pidihnanykh znachen
+Vector of fitted values
 }
 \description{
-Vytiahnuty pidihnani znachennia z ob'iekta PMM2fit
+Extract fitted values from PMM2fit object
 }

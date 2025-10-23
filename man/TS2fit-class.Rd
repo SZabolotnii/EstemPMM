@@ -3,53 +3,53 @@
 \docType{class}
 \name{TS2fit-class}
 \alias{TS2fit-class}
-\title{Bazovyi klas S4 dlia zberihannia rezultativ PMM2 modelei chasovykh riadiv}
+\title{Base S4 class for storing PMM2 time series model results}
 \description{
-Bazovyi klas dlia zberihannia rezultativ otsiniuvannia modelei chasovykh riadiv za dopomohoiu PMM2
+Base class for storing results of time series model estimation using PMM2
 }
 \section{Slots}{
 
 \describe{
-\item{\code{coefficients}}{chyslovyi vektor otsinenykh parametriv}
+\item{\code{coefficients}}{numeric vector of estimated parameters}
 
-\item{\code{residuals}}{chyslovyi vektor kintsevykh zalyshkiv}
+\item{\code{residuals}}{numeric vector of final residuals}
 
-\item{\code{m2}}{chyslovyi druhyi tsentralnyi moment pochatkovykh zalyshkiv}
+\item{\code{m2}}{numeric second central moment of initial residuals}
 
-\item{\code{m3}}{chyslovyi tretii tsentralnyi moment pochatkovykh zalyshkiv}
+\item{\code{m3}}{numeric third central moment of initial residuals}
 
-\item{\code{m4}}{chyslovyi chetvertyi tsentralnyi moment pochatkovykh zalyshkiv}
+\item{\code{m4}}{numeric fourth central moment of initial residuals}
 
-\item{\code{convergence}}{lohichnyi abo tsilyi kod, shcho vkazuie, chy alhorytm zbihsia}
+\item{\code{convergence}}{logical or integer code indicating whether algorithm converged}
 
-\item{\code{iterations}}{chyslova kilkist vykonanykh iteratsii}
+\item{\code{iterations}}{numeric number of iterations performed}
 
-\item{\code{call}}{oryhinalnyi vyklyk funktsii}
+\item{\code{call}}{original function call}
 
-\item{\code{model_type}}{symvolnyi riadok, shcho vkazuie typ modeli}
+\item{\code{model_type}}{character string indicating model type}
 
-\item{\code{intercept}}{chyslove znachennia perekhoplennia}
+\item{\code{intercept}}{numeric value of intercept}
 
-\item{\code{original_series}}{chyslovyi vektor oryhinalnoho chasovoho riadu}
+\item{\code{original_series}}{numeric vector of original time series}
 
-\item{\code{order}}{spysok parametriv poriadku}
+\item{\code{order}}{list of order parameters}
 }}
 
-\section{Sloty}{
+\section{Slots}{
 
 \describe{
-\item{coefficients}{Otsineni koefitsiienty}
-\item{residuals}{Kintsevi zalyshky}
-\item{m2}{Druhyi tsentralnyi moment}
-\item{m3}{Tretii tsentralnyi moment}
-\item{m4}{Chetvertyi tsentralnyi moment}
-\item{convergence}{Status zbizhnosti}
-\item{iterations}{Kilkist vykonanykh iteratsii}
-\item{call}{Oryhinalnyi vyklyk}
-\item{model_type}{Typ modeli}
-\item{intercept}{Perekhoplennia}
-\item{original_series}{Oryhinalnyi chasovyi riad}
-\item{order}{Poriadky modeli}
+\item{coefficients}{Estimated coefficients}
+\item{residuals}{Final residuals}
+\item{m2}{Second central moment}
+\item{m3}{Third central moment}
+\item{m4}{Fourth central moment}
+\item{convergence}{Convergence status}
+\item{iterations}{Number of iterations performed}
+\item{call}{Original call}
+\item{model_type}{Model type}
+\item{intercept}{Intercept}
+\item{original_series}{Original time series}
+\item{order}{Model orders}
 }
 }
 

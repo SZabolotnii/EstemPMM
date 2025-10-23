@@ -2,24 +2,24 @@
 % Please edit documentation in R/pmm2_classes.R
 \name{summary,PMM2fit-method}
 \alias{summary,PMM2fit-method}
-\title{Uzahalnenyi metod summary dlia ob'iektiv PMM2fit}
+\title{Generic summary method for PMM2fit objects}
 \usage{
 \S4method{summary}{PMM2fit}(object, formula = NULL, data = NULL, B = 100, ...)
 }
 \arguments{
-\item{object}{ob'iekt klasu "PMM2fit"}
+\item{object}{object of class "PMM2fit"}
 
-\item{formula}{(optsionalno) formula, vykorystana dlia modeli}
+\item{formula}{(optional) formula used for the model}
 
-\item{data}{(optsionalno) vykorystani dani}
+\item{data}{(optional) data used}
 
-\item{B}{kilkist butstrep-replikatsii dlia statystychnoho vysnovku}
+\item{B}{number of bootstrap replications for statistical inference}
 
-\item{...}{dodatkovi arhumenty (ne vykorystovuiutsia)}
+\item{...}{additional arguments (not used)}
 }
 \value{
-Vyvodyt reziume na konsol; povertaie ob'iekt (nevydymo).
+Prints summary to console; returns object (invisibly).
 }
 \description{
-Uzahalnenyi metod summary dlia ob'iektiv PMM2fit
+Generic summary method for PMM2fit objects
 }

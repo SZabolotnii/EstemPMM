@@ -2,20 +2,20 @@
 % Please edit documentation in R/pmm2_ts_methods.R
 \name{predict,TS2fit-method}
 \alias{predict,TS2fit-method}
-\title{Metod prohnozuvannia dlia ob'iektiv TS2fit}
+\title{Prediction method for TS2fit objects}
 \usage{
 \S4method{predict}{TS2fit}(object, n.ahead = 1, ...)
 }
 \arguments{
-\item{object}{Ob'iekt TS2fit}
+\item{object}{TS2fit object}
 
-\item{n.ahead}{Kilkist krokiv vpered dlia prohnozuvannia}
+\item{n.ahead}{Number of steps ahead for prediction}
 
-\item{...}{dodatkovi arhumenty (ne vykorystovuiutsia)}
+\item{...}{additional arguments (not used)}
 }
 \value{
-Vektor abo spysok prohnoziv, zalezhno vid typu modeli
+Vector or list of predictions, depending on model type
 }
 \description{
-Metod prohnozuvannia dlia ob'iektiv TS2fit
+Prediction method for TS2fit objects
 }

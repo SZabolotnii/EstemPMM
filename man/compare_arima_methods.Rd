@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_ts_methods.R
 \name{compare_arima_methods}
 \alias{compare_arima_methods}
-\title{Porivniaty metody ARIMA}
+\title{Compare ARIMA methods}
 \usage{
 compare_arima_methods(
   x,
@@ -12,14 +12,14 @@ compare_arima_methods(
 )
 }
 \arguments{
-\item{x}{Chyslovyi vektor danykh chasovoho riadu}
+\item{x}{Numeric vector of time series data}
 
-\item{order}{Spetsyfikatsiia poriadku modeli (dyv. ts_pmm2 dlia formatu)}
+\item{order}{Model order specification (see ts_pmm2 for format)}
 
-\item{include.mean}{Lohichne, chy vkliuchaty chlen perekhoplennia}
+\item{include.mean}{Logical, whether to include intercept term}
 
-\item{pmm2_args}{Spysok dodatkovykh arhumentiv dlia peredachi v ts_pmm2()}
+\item{pmm2_args}{List of additional arguments to pass to ts_pmm2()}
 }
 \description{
-Porivniaty metody ARIMA
+Compare ARIMA methods
 }

@@ -3,41 +3,41 @@
 \docType{class}
 \name{PMM2fit-class}
 \alias{PMM2fit-class}
-\title{Klas S4 dlia zberihannia rezultativ PMM2 rehresiinoi modeli}
+\title{S4 class for storing PMM2 regression model results}
 \description{
-Klas dlia zberihannia rezultativ otsiniuvannia liniinykh modelei za dopomohoiu PMM2
+Class for storing results of linear model estimation using PMM2
 }
 \section{Slots}{
 
 \describe{
-\item{\code{coefficients}}{chyslovyi vektor otsinenykh parametriv}
+\item{\code{coefficients}}{numeric vector of estimated parameters}
 
-\item{\code{residuals}}{chyslovyi vektor kintsevykh zalyshkiv}
+\item{\code{residuals}}{numeric vector of final residuals}
 
-\item{\code{m2}}{chyslovyi druhyi tsentralnyi moment pochatkovykh zalyshkiv}
+\item{\code{m2}}{numeric second central moment of initial residuals}
 
-\item{\code{m3}}{chyslovyi tretii tsentralnyi moment pochatkovykh zalyshkiv}
+\item{\code{m3}}{numeric third central moment of initial residuals}
 
-\item{\code{m4}}{chyslovyi chetvertyi tsentralnyi moment pochatkovykh zalyshkiv}
+\item{\code{m4}}{numeric fourth central moment of initial residuals}
 
-\item{\code{convergence}}{lohichnyi abo tsilyi kod, shcho vkazuie, chy alhorytm zbihsia}
+\item{\code{convergence}}{logical or integer code indicating whether algorithm converged}
 
-\item{\code{iterations}}{chyslova kilkist vykonanykh iteratsii}
+\item{\code{iterations}}{numeric number of iterations performed}
 
-\item{\code{call}}{oryhinalnyi vyklyk funktsii}
+\item{\code{call}}{original function call}
 }}
 
-\section{Sloty}{
+\section{Slots}{
 
 \describe{
-\item{coefficients}{Otsineni koefitsiienty}
-\item{residuals}{Kintsevi zalyshky}
-\item{m2}{Druhyi tsentralnyi moment}
-\item{m3}{Tretii tsentralnyi moment}
-\item{m4}{Chetvertyi tsentralnyi moment}
-\item{convergence}{Status zbizhnosti}
-\item{iterations}{Kilkist vykonanykh iteratsii}
-\item{call}{Oryhinalnyi vyklyk}
+\item{coefficients}{Estimated coefficients}
+\item{residuals}{Final residuals}
+\item{m2}{Second central moment}
+\item{m3}{Third central moment}
+\item{m4}{Fourth central moment}
+\item{convergence}{Convergence status}
+\item{iterations}{Number of iterations performed}
+\item{call}{Original call}
 }
 }
 

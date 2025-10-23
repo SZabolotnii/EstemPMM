@@ -2,19 +2,19 @@
 % Please edit documentation in R/pmm2_ts_design.R
 \name{create_ar_matrix}
 \alias{create_ar_matrix}
-\title{Stvorennia matrytsi dyzainu dlia AR modeli}
+\title{Create design matrix for AR model}
 \usage{
 create_ar_matrix(x, p)
 }
 \arguments{
-\item{x}{tsentrovanyi chasovyi riad}
+\item{x}{Centered time series}
 
-\item{p}{poriadok AR}
+\item{p}{AR order}
 }
 \value{
-Matrytsia dyzainu z lahovymy znachenniamy
+Design matrix with lagged values
 }
 \description{
-Stvorennia matrytsi dyzainu dlia AR modeli
+Create design matrix for AR model
 }
 \keyword{internal}

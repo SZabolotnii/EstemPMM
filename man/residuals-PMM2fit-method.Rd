@@ -2,18 +2,18 @@
 % Please edit documentation in R/pmm2_main.R
 \name{residuals,PMM2fit-method}
 \alias{residuals,PMM2fit-method}
-\title{Vytiahnuty zalyshky z ob'iekta PMM2fit}
+\title{Extract residuals from PMM2fit object}
 \usage{
 \S4method{residuals}{PMM2fit}(object, ...)
 }
 \arguments{
-\item{object}{Ob'iekt PMM2fit}
+\item{object}{PMM2fit object}
 
-\item{...}{Dodatkovi arhumenty (ne vykorystovuiutsia)}
+\item{...}{Additional arguments (not used)}
 }
 \value{
-Vektor zalyshkiv
+Vector of residuals
 }
 \description{
-Vytiahnuty zalyshky z ob'iekta PMM2fit
+Extract residuals from PMM2fit object
 }
