@@ -159,18 +159,18 @@ solve_pmm2 <- function(b_init, X, y, m2, m3, m4,
     # Form Z - vector of equations
     # Improved handling for multi-variable cases
     if (p > 1) {
-      # Vykonuiemo crossprod dlia vsikh predyktoriv, okrim peretynu
+      # Perform crossprod for all predictors except intercept
       Z_rest <- crossprod(X[, -1, drop=FALSE], Z1)
 
-      # Pereviriaiemo, chy Z_rest ie matrytseiu (bilshe nizh 1 predyktor)
+      # Check if Z_rest is a matrix (more than 1 predictor)
       if (is.matrix(Z_rest)) {
         Z_rest <- as.vector(Z_rest)
       }
 
-      # Ob'iednuiemo rezultaty
+      # Combine results
       Z <- c(sum(Z1), Z_rest)
     } else {
-      # Yakshcho lyshe peretyn, Z - tse prosto suma
+      # If only intercept, Z is just the sum
       Z <- sum(Z1)
     }
 
@@ -181,14 +181,14 @@ solve_pmm2 <- function(b_init, X, y, m2, m3, m4,
     JZs <- matrix(NA, p, p)
     JZs[1,1] <- sum(JZ11)
 
-    # Pershyi riadok i pershyi stovpets Yakobiana
+    # First row and first column of Jacobian
     for (ii in 2:p) {
       tmp <- JZ11 * X[,ii]
       JZs[1,ii] <- sum(tmp)
-      JZs[ii,1] <- JZs[1,ii]  # Yakobian symetrychnyi
+      JZs[ii,1] <- JZs[1,ii]  # Jacobian is symmetric
     }
 
-    # Reshta elementiv Yakobiana
+    # Remaining elements of Jacobian
     for (ii in 2:p) {
       for (jj in 2:p) {
         tmp <- JZ11 * X[,ii] * X[,jj]
@@ -692,10 +692,10 @@ compute_moments <- function(errors) {
   m3 <- mean(errors^3)
   m4 <- mean(errors^4)
 
-  c3 <- m3 / m2^(3/2)  # Koefitsiient asymetrii
-  c4 <- m4 / m2^2 - 3  # Koefitsiient ekstsesu
+  c3 <- m3 / m2^(3/2)  # Skewness coefficient
+  c4 <- m4 / m2^2 - 3  # Excess kurtosis coefficient
 
-  # Teoretychnyi koefitsiient zmenshennia dyspersii
+  # Theoretical variance reduction coefficient
   g <- 1 - c3^2 / (2 + c4)
 
   return(list(m2 = m2, m3 = m3, m4 = m4,
@@ -703,11 +703,11 @@ compute_moments <- function(errors) {
               g = g))
 }
 
-#' Obchyslyty teoretychni koefitsiienty asymetrii, ekstsesu ta faktor zmenshennia dyspersii
+#' Calculate theoretical skewness, kurtosis coefficients and variance reduction factor
 #'
-#' @param m2,m3,m4 tsentralni momenty druhoho, tretoho ta chetvertoho poriadkiv
+#' @param m2,m3,m4 central moments of second, third and fourth orders
 #'
-#' @return Spysok z poliamy `c3`, `c4` ta `g`
+#' @return List with fields `c3`, `c4` and `g`
 #' @export
 pmm2_variance_factor <- function(m2, m3, m4) {
   if (is.na(m2) || m2 <= 0) {
@@ -720,12 +720,12 @@ pmm2_variance_factor <- function(m2, m3, m4) {
   list(c3 = c3, c4 = c4, g = g)
 }
 
-#' Obchyslyty teoretychni matrytsi dyspersii dlia OMNK ta PMM2
+#' Calculate theoretical variance matrices for OLS and PMM2
 #'
-#' @param X Matrytsia dyzainu iz stovptsem odynyts
-#' @param m2,m3,m4 tsentralni momenty zalyshkiv OMNK
+#' @param X Design matrix with column of ones
+#' @param m2,m3,m4 central moments of OLS residuals
 #'
-#' @return Spysok z poliamy `ols`, `pmm2`, `c3`, `c4`, `g`
+#' @return List with fields `ols`, `pmm2`, `c3`, `c4`, `g`
 #' @export
 pmm2_variance_matrices <- function(X, m2, m3, m4) {
   X <- as.matrix(X)
@@ -733,7 +733,7 @@ pmm2_variance_matrices <- function(X, m2, m3, m4) {
   V1 <- tryCatch({
     m2 * solve(XtX)
   }, error = function(e) {
-    stop("Ne vdaietsia obernuty matrytsiu X'X: ", conditionMessage(e), call. = FALSE)
+    stop("Failed to invert matrix X'X: ", conditionMessage(e), call. = FALSE)
   })
 
   vf <- pmm2_variance_factor(m2, m3, m4)

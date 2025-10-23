@@ -1,20 +1,20 @@
-# pmm2_ts_methods.R - Metody dlia roboty z ob'iektamy modelei chasovykh riadiv
+# pmm2_ts_methods.R - Methods for working with time series model objects
 
-#' Vytiahnuty koefitsiienty z ob'iekta TS2fit
+#' Extract coefficients from TS2fit object
 #'
-#' @param object Ob'iekt TS2fit
-#' @param ... Dodatkovi arhumenty (ne vykorystovuiutsia)
+#' @param object TS2fit object
+#' @param ... Additional arguments (not used)
 #'
-#' @return Imenovanyi vektor koefitsiientiv
+#' @return Named vector of coefficients
 #' @export
 setMethod("coef", "TS2fit",
           function(object, ...) {
-            # Otrymaty parametry modeli
+            # Get model parameters
             model_type <- object@model_type
             ar_order <- object@order$ar
             ma_order <- object@order$ma
 
-            # Vytiahnuty ta imenuvaty AR koefitsiienty
+            # Extract and name AR coefficients
             if(ar_order > 0) {
               ar_coefs <- object@coefficients[1:ar_order]
               names(ar_coefs) <- paste0("ar", 1:ar_order)
@@ -22,7 +22,7 @@ setMethod("coef", "TS2fit",
               ar_coefs <- numeric(0)
             }
 
-            # Vytiahnuty ta imenuvaty MA koefitsiienty
+            # Extract and name MA coefficients
             if(ma_order > 0) {
               ma_coefs <- object@coefficients[(ar_order+1):(ar_order+ma_order)]
               names(ma_coefs) <- paste0("ma", 1:ma_order)
@@ -30,10 +30,10 @@ setMethod("coef", "TS2fit",
               ma_coefs <- numeric(0)
             }
 
-            # Ob'iednaty koefitsiienty
+            # Combine coefficients
             result <- c(ar_coefs, ma_coefs)
 
-            # Dodaty perekhoplennia, iakshcho prysutnie
+            # Add intercept if present
             if(object@intercept != 0) {
               result <- c(intercept = object@intercept, result)
             }
@@ -41,26 +41,26 @@ setMethod("coef", "TS2fit",
             return(result)
           })
 
-#' Vytiahnuty zalyshky z ob'iekta TS2fit
+#' Extract residuals from TS2fit object
 #'
-#' @param object Ob'iekt TS2fit
-#' @param ... Dodatkovi arhumenty (ne vykorystovuiutsia)
+#' @param object TS2fit object
+#' @param ... Additional arguments (not used)
 #'
-#' @return Vektor zalyshkiv (innovatsii)
+#' @return Vector of residuals (innovations)
 #' @export
 setMethod("residuals", "TS2fit",
           function(object, ...) {
             object@residuals
           })
 
-#' Otrymaty pidihnani znachennia dlia AR modeli
+#' Get fitted values for AR model
 #'
-#' @param object Ob'iekt TS2fit z model_type="ar"
-#' @return Vektor pidihnanykh znachen
+#' @param object TS2fit object with model_type="ar"
+#' @return Vector of fitted values
 #' @keywords internal
 get_ar_fitted <- function(object) {
   if(object@model_type != "ar") {
-    stop("Tsia funktsiia lyshe dlia AR modelei")
+    stop("This function is only for AR models")
   }
 
   x <- object@original_series
@@ -74,44 +74,44 @@ get_ar_fitted <- function(object) {
     x_centered <- x
   }
 
-  # Stvoryty matrytsiu dyzainu ta obchyslyty pidihnani znachennia
+  # Create design matrix and calculate fitted values
   X <- create_ar_matrix(x_centered, ar_order)
   fitted <- as.vector(X %*% ar_coef) + intercept
   return(fitted)
 }
 
-#' Vytiahnuty pidihnani znachennia z ob'iekta TS2fit
+#' Extract fitted values from TS2fit object
 #'
-#' @param object Ob'iekt TS2fit
-#' @param ... Dodatkovi arhumenty (ne vykorystovuiutsia)
+#' @param object TS2fit object
+#' @param ... Additional arguments (not used)
 #'
-#' @return Vektor pidihnanykh znachen
+#' @return Vector of fitted values
 #' @export
 setMethod("fitted", "TS2fit",
           function(object, ...) {
-            # Otrymaty typ modeli
+            # Get model type
             model_type <- object@model_type
 
-            # Obchyslyty pidihnani znachennia v zalezhnosti vid typu modeli
+            # Calculate fitted values based on model type
             if(model_type == "ar") {
-              # Dlia AR modelei vykorystovuvaty priame obchyslennia
+              # For AR models use direct calculation
               fitted_values <- get_ar_fitted(object)
             } else {
-              # Dlia inshykh modelei: pidihnani = oryhinalni minus zalyshky
+              # For other models: fitted = original minus residuals
               orig <- object@original_series
               resid <- object@residuals
 
-              # Vyrivniaty dovzhyny (chasto zalyshky korotshi cherez pochatkovi znachennia)
+              # Align lengths (often residuals are shorter due to initial values)
               len_diff <- length(orig) - length(resid)
               if(len_diff > 0 && !all(is.na(resid))) {
-                # Znaity pershe ne-NA znachennia v resid
+                # Find first non-NA value in resid
                 first_valid <- min(which(!is.na(resid)))
 
-                # Pobuduvaty vektor fitted z NA v pochatku
+                # Build fitted vector with NA at the beginning
                 fitted_values <- rep(NA, length(orig))
                 valid_indices <- first_valid:length(resid)
 
-                # Vstanovyty diisni znachennia
+                # Set actual values
                 fitted_values[(len_diff + valid_indices)] <-
                   orig[(len_diff + valid_indices)] - resid[valid_indices]
               } else {
@@ -122,14 +122,14 @@ setMethod("fitted", "TS2fit",
             return(fitted_values)
           })
 
-#' Pobuduvaty diahnostychni hrafiky dlia ob'iektiv TS2fit
+#' Build diagnostic plots for TS2fit objects
 #'
-#' @param x Ob'iekt TS2fit
-#' @param y Ne vykorystovuietsia (dlia sumisnosti metodu S4)
-#' @param which Tsilochyselnyi vektor, shcho vkazuie, iaki hrafiky vyrobliaty
-#' @param ... dodatkovi arhumenty, peredani funktsiiam pobudovy hrafikiv
+#' @param x TS2fit object
+#' @param y Not used (for S4 method compatibility)
+#' @param which Integer vector indicating which plots to produce
+#' @param ... additional arguments passed to plot functions
 #'
-#' @return Nevydymo povertaie x
+#' @return Invisibly returns x
 #'
 #' @export
 setMethod("plot", signature(x = "TS2fit", y = "missing"),
@@ -137,83 +137,83 @@ setMethod("plot", signature(x = "TS2fit", y = "missing"),
             op <- par(no.readonly = TRUE)
             on.exit(par(op))
 
-            # Otrymaty parametry modeli
+            # Get model parameters
             model_type <- x@model_type
             ar_order <- x@order$ar
             ma_order <- x@order$ma
             d <- x@order$d
 
-            # Maket hrafika za zamovchuvanniam
+            # Default plot layout
             par(mfrow = c(2, 2))
 
-            # Dlia modelei ARIMA my mozhemo zakhotity pobuduvaty oryhinalnyi/dyferentsiiovanyi riad takozh
+            # For ARIMA models we may want to plot original/differenced series as well
             if(model_type == "arima" && length(which) > 4) {
               par(mfrow = c(3, 2))
             }
 
-            # Obchyslyty pidihnani znachennia ta zalyshky
+            # Calculate fitted values and residuals
             residuals <- as.numeric(x@residuals)
             fitted <- fitted(x)
 
-            # Vyznachyty, iaki hrafiky vidobrazhaty
+            # Determine which plots to display
             plot_idx <- 1
-            n_plots <- min(length(which), 6) # Maksymum 6 hrafikiv
+            n_plots <- min(length(which), 6) # Maximum 6 plots
 
-            # Dlia modelei ARIMA, my mozhemo khotity inshi hrafiky
+            # For ARIMA models, we may want other plots
             if(model_type == "arima") {
-              # Hrafik 1: Oryhinalnyi chasovyi riad (tilky ARIMA)
+              # Plot 1: Original time series (ARIMA only)
               if(1 %in% which && plot_idx <= n_plots) {
                 plot(x@original_series, type = "l",
-                     main = "Oryhinalnyi chasovyi riad",
-                     xlab = "Chas",
-                     ylab = "Znachennia",
+                     main = "Original Time Series",
+                     xlab = "Time",
+                     ylab = "Value",
                      ...)
                 plot_idx <- plot_idx + 1
               }
 
-              # Hrafik 2: Dyferentsiiovanyi chasovyi riad (tilky ARIMA)
+              # Plot 2: Differenced time series (ARIMA only)
               if(2 %in% which && plot_idx <= n_plots && d > 0) {
                 diff_series <- diff(x@original_series, differences = d)
                 plot(diff_series, type = "l",
-                     main = paste0("Dyferentsiiovanyi riad (d=", d, ")"),
-                     xlab = "Chas",
-                     ylab = "Znachennia",
+                     main = paste0("Differenced Series (d=", d, ")"),
+                     xlab = "Time",
+                     ylab = "Value",
                      ...)
                 plot_idx <- plot_idx + 1
               }
             }
 
-            # Standartni hrafiky dlia vsikh typiv modelei
-            # Hrafik: Zalyshky vs Pidihnani
+            # Standard plots for all model types
+            # Plot: Residuals vs Fitted
             if(3 %in% which && plot_idx <= n_plots) {
               plot(fitted, residuals,
-                   main = "Zalyshky vs Pidihnani",
-                   xlab = "Pidihnani znachennia",
-                   ylab = "Zalyshky",
+                   main = "Residuals vs Fitted",
+                   xlab = "Fitted values",
+                   ylab = "Residuals",
                    ...)
               abline(h = 0, lty = 2)
               lines(lowess(fitted, residuals), col = "red")
               plot_idx <- plot_idx + 1
             }
 
-            # Hrafik: Normalnyi Q-Q hrafik
+            # Plot: Normal Q-Q plot
             if(4 %in% which && plot_idx <= n_plots) {
-              qqnorm(residuals, main = "Normalnyi Q-Q hrafik", ...)
+              qqnorm(residuals, main = "Normal Q-Q Plot", ...)
               qqline(residuals)
               plot_idx <- plot_idx + 1
             }
 
-            # Hrafik: ACF zalyshkiv
+            # Plot: ACF of residuals
             if(5 %in% which && plot_idx <= n_plots) {
-              acf(residuals, main = "ACF zalyshkiv", ...)
+              acf(residuals, main = "ACF of Residuals", ...)
               plot_idx <- plot_idx + 1
             }
 
-            # Hrafik: Histohrama zalyshkiv
+            # Plot: Histogram of residuals
             if(6 %in% which && plot_idx <= n_plots) {
               hist(residuals,
-                   main = "Histohrama zalyshkiv",
-                   xlab = "Zalyshky",
+                   main = "Histogram of Residuals",
+                   xlab = "Residuals",
                    breaks = "FD",
                    ...)
               plot_idx <- plot_idx + 1
@@ -222,25 +222,25 @@ setMethod("plot", signature(x = "TS2fit", y = "missing"),
             invisible(x)
           })
 
-#' Metod prohnozuvannia dlia ob'iektiv TS2fit
+#' Prediction method for TS2fit objects
 #'
-#' @param object Ob'iekt TS2fit
-#' @param n.ahead Kilkist krokiv vpered dlia prohnozuvannia
-#' @param ... dodatkovi arhumenty (ne vykorystovuiutsia)
+#' @param object TS2fit object
+#' @param n.ahead Number of steps ahead for prediction
+#' @param ... additional arguments (not used)
 #'
-#' @return Vektor abo spysok prohnoziv, zalezhno vid typu modeli
+#' @return Vector or list of predictions, depending on model type
 #'
 #' @export
 setMethod("predict", "TS2fit",
           function(object, n.ahead = 1, ...) {
-            # Otrymaty parametry modeli
+            # Get model parameters
             model_type <- object@model_type
             ar_order <- object@order$ar
             ma_order <- object@order$ma
             d <- object@order$d
             intercept <- object@intercept
 
-            # Vytiahnuty koefitsiienty
+            # Extract coefficients
             if(ar_order > 0) {
               ar_coef <- object@coefficients[1:ar_order]
             } else {
@@ -253,37 +253,37 @@ setMethod("predict", "TS2fit",
               ma_coef <- numeric(0)
             }
 
-            # Dlia AR modelei, realizuvaty priame prohnozuvannia
+            # For AR models, implement direct prediction
             if(model_type == "ar") {
               x <- object@original_series
               n <- length(x)
               pred <- numeric(n.ahead)
 
-              # Heneruvaty prohnozy
+              # Generate predictions
               for(i in 1:n.ahead) {
-                # Vykorystovuvaty oryhinalni dani ta poperedni prohnozy za potreby
+                # Use original data and previous predictions as needed
                 lags <- numeric(ar_order)
                 for(j in 1:ar_order) {
                   if(i - j <= 0) {
-                    # Vykorystovuvaty oryhinalni dani
+                    # Use original data
                     lags[j] <- x[n - j + i]
                   } else {
-                    # Vykorystovuvaty poperedni prohnozy
+                    # Use previous predictions
                     lags[j] <- pred[i - j]
                   }
                 }
 
-                # Obchyslyty prohnoz
+                # Calculate prediction
                 pred[i] <- sum(ar_coef * lags) + intercept
               }
 
               return(pred)
 
             } else if(model_type == "ma") {
-              # Dlia MA modelei, prohnozy za mezhamy poriadku - tse prosto serednie
+              # For MA models, predictions beyond the order are just the mean
               innovations <- object@residuals
 
-              # Heneruvaty prohnozy MA
+              # Generate MA predictions
               ma_pred <- function(innovations, ma_coef, n.ahead) {
                 n <- length(innovations)
                 q <- length(ma_coef)
@@ -307,13 +307,13 @@ setMethod("predict", "TS2fit",
               }
 
             } else {
-              # Dlia ARMA ta ARIMA modelei, vykorystovuvaty prohnozy stats::arima
-              # iaki pravylno obrobliaiut obydva komponenty
+              # For ARMA and ARIMA models, use stats::arima predictions
+              # which correctly handle both components
 
-              # Nalashtuvaty model arima z fiksovanymy parametramy
+              # Set up arima model with fixed parameters
               arima_order <- c(ar_order, ifelse(model_type == "arima", d, 0), ma_order)
 
-              # Vykorystovuvaty funktsiiu prohnozuvannia z paketu stats
+              # Use prediction function from stats package
               arima_pred <- stats::predict(
                 stats::arima(object@original_series,
                              order = arima_order,
@@ -326,48 +326,48 @@ setMethod("predict", "TS2fit",
             }
           })
 
-#' Porivniaty PMM2 z klasychnymy metodamy otsiniuvannia chasovykh riadiv
+#' Compare PMM2 with classical time series estimation methods
 #'
-#' @param x Chyslovyi vektor danykh chasovoho riadu
-#' @param order Spetsyfikatsiia poriadku modeli (dyv. ts_pmm2 dlia formatu)
-#' @param model_type Typ modeli: "ar", "ma", "arma", abo "arima"
-#' @param include.mean Lohichne, chy vkliuchaty chlen perekhoplennia
-#' @param pmm2_args Spysok dodatkovykh arhumentiv dlia peredachi v ts_pmm2()
+#' @param x Numeric vector of time series data
+#' @param order Model order specification (see ts_pmm2 for format)
+#' @param model_type Model type: "ar", "ma", "arma", or "arima"
+#' @param include.mean Logical, whether to include intercept term
+#' @param pmm2_args List of additional arguments to pass to ts_pmm2()
 #'
-#' @return Spysok z pidihnanymy modeliamy ta tablytsiamy porivniannia
+#' @return List with fitted models and comparison tables
 #' @export
 compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "arima"),
                                include.mean = TRUE, pmm2_args = list()) {
-  # Vybraty arhument model_type
+  # Select model_type argument
   model_type <- match.arg(model_type)
 
-  # Pidhotuvaty porivniannia modelei na osnovi model_type
+  # Prepare model comparison based on model_type
   if(model_type == "ar") {
-    # Dlia AR modelei
-    # Pidihnaty AR model za dopomohoiu metodu Yula-Volkera
+    # For AR models
+    # Fit AR model using Yule-Walker method
     yw_fit <- stats::ar(x, order.max = order, aic = FALSE, method = "yw",
                         demean = include.mean)
 
-    # Pidihnaty AR model za dopomohoiu metodu OLS
+    # Fit AR model using OLS method
     ols_fit <- stats::ar(x, order.max = order, aic = FALSE, method = "ols",
                          demean = include.mean)
 
-    # Pidihnaty AR model za dopomohoiu metodu MLE
+    # Fit AR model using MLE method
     mle_fit <- stats::ar(x, order.max = order, aic = FALSE, method = "mle",
                          demean = include.mean)
 
-    # Pidihnaty AR model za dopomohoiu PMM2
+    # Fit AR model using PMM2
     pmm2_args <- c(list(x = x, order = order, model_type = "ar",
                         include.mean = include.mean), pmm2_args)
     pmm2_fit <- do.call(ts_pmm2, pmm2_args)
 
-    # Vytiahnuty koefitsiienty
+    # Extract coefficients
     coef_yw <- yw_fit$ar
     coef_ols <- ols_fit$ar
     coef_mle <- mle_fit$ar
     coef_pmm2 <- pmm2_fit@coefficients
 
-    # Obchyslyty zalyshky
+    # Calculate residuals
     res_yw <- yw_fit$resid[!is.na(yw_fit$resid)]
     res_ols <- ols_fit$resid[!is.na(ols_fit$resid)]
     res_mle <- mle_fit$resid[!is.na(mle_fit$resid)]
@@ -383,9 +383,9 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
     )
 
   } else if(model_type %in% c("ma", "arma", "arima")) {
-    # Dlia MA, ARMA ta ARIMA modelei
+    # For MA, ARMA and ARIMA models
 
-    # Pidhotuvaty poriadok arima na osnovi typu modeli
+    # Prepare arima order based on model type
     if(model_type == "ma") {
       arima_order <- c(0, 0, order)
     } else if(model_type == "arma") {
@@ -394,18 +394,18 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
       arima_order <- order
     }
 
-    # Pidihnaty model za dopomohoiu metodu CSS
+    # Fit model using CSS method
     css_fit <- arima(x, order = arima_order, method = "CSS", include.mean = include.mean)
 
-    # Pidihnaty model za dopomohoiu metodu ML
+    # Fit model using ML method
     ml_fit <- arima(x, order = arima_order, method = "ML", include.mean = include.mean)
 
-    # Pidihnaty model za dopomohoiu PMM2
+    # Fit model using PMM2
     pmm2_args <- c(list(x = x, order = order, model_type = model_type,
                         include.mean = include.mean), pmm2_args)
     pmm2_fit <- do.call(ts_pmm2, pmm2_args)
 
-    # Vytiahnuty nazvy koefitsiientiv AR ta MA na osnovi typu modeli
+    # Extract AR and MA coefficient names based on model type
     if(model_type == "ma") {
       ar_names <- character(0)
       ma_names <- paste0("ma", 1:order)
@@ -419,12 +419,12 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
 
     coef_names <- c(ar_names, ma_names)
 
-    # Vytiahnuty koefitsiienty
+    # Extract coefficients
     coef_css <- as.numeric(css_fit$coef[coef_names])
     coef_ml <- as.numeric(ml_fit$coef[coef_names])
     coef_pmm2 <- pmm2_fit@coefficients
 
-    # Obchyslyty zalyshky
+    # Calculate residuals
     res_css <- residuals(css_fit)
     res_ml <- residuals(ml_fit)
     res_pmm2 <- pmm2_fit@residuals
@@ -438,7 +438,7 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
     )
   }
 
-  # Obchyslyty statystyku zalyshkiv dlia vsikh metodiv
+  # Calculate residual statistics for all methods
   residuals_list <- if(model_type == "ar") {
     list(res_yw, res_ols, res_mle, res_pmm2)
   } else {
@@ -461,7 +461,7 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
     do.call(rbind, lapply(residuals_list, compute_res_stats))
   )
 
-  # Stvoryty tablytsiu porivniannia koefitsiientiv
+  # Create coefficient comparison table
   if(model_type == "ar") {
     coef_names <- paste0("ar", 1:order)
     coef_values <- list(coef_yw, coef_ols, coef_mle, coef_pmm2)
@@ -481,14 +481,14 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
     }))
   )
 
-  # Povernuty rezultaty
+  # Return results
   result_list$coefficients <- coef_table
   result_list$residual_stats <- res_stats
 
   return(result_list)
 }
 
-#' Porivniaty metody AR
+#' Compare AR methods
 #'
 #' @inheritParams compare_ts_methods
 #' @export
@@ -497,7 +497,7 @@ compare_ar_methods <- function(x, order = 1, include.mean = TRUE, pmm2_args = li
                      include.mean = include.mean, pmm2_args = pmm2_args)
 }
 
-#' Porivniaty metody MA
+#' Compare MA methods
 #'
 #' @inheritParams compare_ts_methods
 #' @export
@@ -506,7 +506,7 @@ compare_ma_methods <- function(x, order = 1, include.mean = TRUE, pmm2_args = li
                      include.mean = include.mean, pmm2_args = pmm2_args)
 }
 
-#' Porivniaty metody ARMA
+#' Compare ARMA methods
 #'
 #' @inheritParams compare_ts_methods
 #' @export
@@ -515,7 +515,7 @@ compare_arma_methods <- function(x, order = c(1, 1), include.mean = TRUE, pmm2_a
                      include.mean = include.mean, pmm2_args = pmm2_args)
 }
 
-#' Porivniaty metody ARIMA
+#' Compare ARIMA methods
 #'
 #' @inheritParams compare_ts_methods
 #' @export

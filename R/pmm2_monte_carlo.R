@@ -1,42 +1,42 @@
-# pmm2_monte_carlo.R - Monte Carlo porivniannia tochnosti metodiv PMM2
+# pmm2_monte_carlo.R - Monte Carlo comparison of PMM2 method accuracy
 
 .pmm2_default_burn_in <- 100L
 
-#' Monte Carlo porivniannia metodiv otsiniuvannia PMM2
+#' Monte Carlo comparison of PMM2 estimation methods
 #'
-#' Funktsiia heneruie chasovi riady dlia zadanykh modelei, bahatorazovo otsiniuie
-#' parametry riznymy metodamy i porivniuie ikh tochnist za kryteriiem MSE.
-#' Dodatkovo vyvodiatsia teoretychni ta empirychni kharakterystyky rozpodilu
-#' innovatsii (asymetriia, ekstses, teoretychnyi vyhrash PMM2).
+#' Function generates time series for given models, repeatedly estimates
+#' parameters using different methods and compares their accuracy by MSE criterion.
+#' Additionally outputs theoretical and empirical characteristics of the innovation
+#' distribution (skewness, excess kurtosis, theoretical gain of PMM2).
 #'
-#' @param model_specs Spysok spetsyfikatsii modelei. Kozhen element maie mistyty:
+#' @param model_specs List of model specifications. Each element must contain:
 #'   \describe{
-#'     \item{model}{"ar", "ma" abo "arma"}
-#'     \item{order}{poriadok (dlia AR/MA) abo vektor c(p, q) dlia ARMA}
-#'     \item{theta}{chyslovyi vektor istynnykh parametriv; dlia ARMA spysok
+#'     \item{model}{"ar", "ma" or "arma"}
+#'     \item{order}{order (for AR/MA) or vector c(p, q) for ARMA}
+#'     \item{theta}{numeric vector of true parameters; for ARMA a list
 #'                  `list(ar = ..., ma = ...)`}
-#'     \item{label}{(optsiino) nazva modeli u zviti}
-#'     \item{innovations}{(optsiino) opys rozpodilu innovatsii:
-#'           \code{list(type = \"gamma\", shape = 2)},
-#'           \code{list(type = \"student_t\", df = 5)}, toshcho. Mozhna takozh
-#'           peredaty dovilnu funktsiiu heneratsii cherez \code{generator}.}
+#'     \item{label}{(optional) model name in report}
+#'     \item{innovations}{(optional) description of innovation distribution:
+#'           \code{list(type = "gamma", shape = 2)},
+#'           \code{list(type = "student_t", df = 5)}, etc. Can also
+#'           pass an arbitrary generation function via \code{generator}.}
 #'   }
-#' @param methods Vektor metodiv otsiniuvannia (napryklad, `c("css","pmm2")`).
-#'                Pershyi metod vvazhaietsia bazovym dlia rozrakhunku vidnosnoho MSE.
-#' @param n Rozmir vybirky dlia symuliatsii.
-#' @param n_sim Kilkist Monte Karlo eksperymentiv.
-#' @param innovations Funktsiia abo opys rozpodilu, iaki vykorystovuiutsia za
-#'                    zamovchuvanniam dlia vsikh modelei (iakshcho ne vkazano u spec).
-#' @param seed Pochatkove zerno heneratora vypadkovykh chysel (optsiino).
-#' @param include.mean Lohichnyi praporets: chy vkliuchaty perekhoplennia pid chas otsiniuvannia.
-#' @param progress Lohichnyi praporets: drukuvaty prohres Monte Karlo.
-#' @param verbose Chy drukuvaty diahnostychni povidomlennia pry zboiakh.
+#' @param methods Vector of estimation methods (e.g., `c("css","pmm2")`).
+#'                The first method is considered baseline for relative MSE calculation.
+#' @param n Sample size for simulation.
+#' @param n_sim Number of Monte Carlo experiments.
+#' @param innovations Function or distribution description, used by
+#'                    default for all models (if not specified in spec).
+#' @param seed Initial seed for random number generator (optional).
+#' @param include.mean Logical flag: whether to include intercept during estimation.
+#' @param progress Logical flag: print Monte Carlo progress.
+#' @param verbose Whether to print diagnostic messages on failures.
 #'
-#' @return Spysok z troma komponentamy:
+#' @return List with three components:
 #'   \describe{
-#'     \item{parameter_results}{MSE ta vidnosnyi MSE dlia kozhnoho parametra}
-#'     \item{summary}{Userednenyi MSE po parametrakh dlia kozhnoi modeli/metodu}
-#'     \item{gain}{Porivniannia teoretychnoho ta empirychnoho vyhrashu PMM2}
+#'     \item{parameter_results}{MSE and relative MSE for each parameter}
+#'     \item{summary}{Averaged MSE over parameters for each model/method}
+#'     \item{gain}{Comparison of theoretical and empirical PMM2 gain}
 #'   }
 #'
 #' @export
@@ -50,16 +50,16 @@ pmm2_monte_carlo_compare <- function(model_specs,
                                      progress = interactive(),
                                      verbose = FALSE) {
   if (missing(model_specs) || length(model_specs) == 0L) {
-    stop("model_specs maie mistyty prynaimni odnu model")
+    stop("model_specs must contain at least one model")
   }
   if (missing(n) || n <= 0) {
-    stop("n maie buty dodatnym")
+    stop("n must be positive")
   }
   if (missing(n_sim) || n_sim <= 0) {
-    stop("n_sim maie buty dodatnym")
+    stop("n_sim must be positive")
   }
   if (length(methods) < 2L) {
-    warning("Peredano menshe dvokh metodiv; vidnosnyi MSE rozrakhovuietsia vidnosno pershoho")
+    warning("Less than two methods provided; relative MSE is calculated relative to the first")
   }
   if (!is.null(seed)) {
     set.seed(seed)
@@ -117,7 +117,7 @@ compare_single_spec <- function(spec,
       simulate_series(spec, n, innov_info),
       error = function(e) {
         if (verbose) {
-          message("Pomylka heneratsii serii: ", conditionMessage(e))
+          message("Series generation error: ", conditionMessage(e))
         }
         NULL
       }
@@ -136,7 +136,7 @@ compare_single_spec <- function(spec,
         fit_and_extract(series_obj$series, spec, method, include.mean),
         error = function(e) {
           if (verbose) {
-            message("Pomylka otsiniuvannia (", label, ", metod=", method,
+            message("Estimation error (", label, ", method=", method,
                     "): ", conditionMessage(e))
           }
           rep(NA_real_, n_params)
@@ -267,7 +267,7 @@ simulate_series <- function(spec, n, innov_info) {
                      n = n,
                      rand.gen = rand_gen)
   } else {
-    stop("Nevidomyi typ modeli: ", model_type)
+    stop("Unknown model type: ", model_type)
   }
 
   list(
@@ -357,7 +357,7 @@ resolve_innovation_spec <- function(spec_innovations, default_innovations) {
   }
 
   if (!is.list(descriptor)) {
-    stop("Opys innovatsii maie buty funktsiieiu abo spyskom.")
+    stop("Innovation description must be a function or list.")
   }
 
   if (!is.null(descriptor$generator)) {
@@ -399,7 +399,7 @@ innovation_generator_from_type <- function(descriptor) {
   if (type %in% c("student_t", "t")) {
     df <- descriptor$df %||% 6
     if (df <= 2) {
-      stop("df dlia student_t maie buty > 2")
+      stop("df for student_t must be > 2")
     }
     scale <- sqrt(df / (df - 2))
     return(function(n) stats::rt(n, df = df) / scale)
@@ -446,7 +446,7 @@ innovation_generator_from_type <- function(descriptor) {
     })
   }
 
-  stop("Nepidtrymuvanyi typ innovatsii: ", descriptor$type)
+  stop("Unsupported innovation type: ", descriptor$type)
 }
 
 innovation_theoretical_moments <- function(descriptor) {

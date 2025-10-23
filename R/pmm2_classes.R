@@ -1,15 +1,15 @@
-# pmm2_classes.R - Iierarkhiia klasiv dlia modelei PMM2
+# pmm2_classes.R - Class hierarchy for PMM2 models
 
-#' Bazovyi klas S4 dlia zberihannia rezultativ PMM2 modelei
+#' Base S4 class for storing PMM2 model results
 #'
-#' @slot coefficients chyslovyi vektor otsinenykh parametriv
-#' @slot residuals chyslovyi vektor kintsevykh zalyshkiv
-#' @slot m2 chyslovyi druhyi tsentralnyi moment pochatkovykh zalyshkiv
-#' @slot m3 chyslovyi tretii tsentralnyi moment pochatkovykh zalyshkiv
-#' @slot m4 chyslovyi chetvertyi tsentralnyi moment pochatkovykh zalyshkiv
-#' @slot convergence lohichnyi abo tsilyi kod, shcho vkazuie, chy alhorytm zbihsia
-#' @slot iterations chyslova kilkist vykonanykh iteratsii
-#' @slot call oryhinalnyi vyklyk funktsii
+#' @slot coefficients numeric vector of estimated parameters
+#' @slot residuals numeric vector of final residuals
+#' @slot m2 numeric second central moment of initial residuals
+#' @slot m3 numeric third central moment of initial residuals
+#' @slot m4 numeric fourth central moment of initial residuals
+#' @slot convergence logical or integer code indicating whether algorithm converged
+#' @slot iterations numeric number of iterations performed
+#' @slot call original function call
 #'
 #' @exportClass BasePMM2
 setClass("BasePMM2",
@@ -22,35 +22,35 @@ setClass("BasePMM2",
                    iterations   = "numeric",
                    call         = "call"))
 
-#' Klas S4 dlia zberihannia rezultativ PMM2 rehresiinoi modeli
+#' S4 class for storing PMM2 regression model results
 #'
-#' @slot coefficients chyslovyi vektor otsinenykh parametriv
-#' @slot residuals chyslovyi vektor kintsevykh zalyshkiv
-#' @slot m2 chyslovyi druhyi tsentralnyi moment pochatkovykh zalyshkiv
-#' @slot m3 chyslovyi tretii tsentralnyi moment pochatkovykh zalyshkiv
-#' @slot m4 chyslovyi chetvertyi tsentralnyi moment pochatkovykh zalyshkiv
-#' @slot convergence lohichnyi abo tsilyi kod, shcho vkazuie, chy alhorytm zbihsia
-#' @slot iterations chyslova kilkist vykonanykh iteratsii
-#' @slot call oryhinalnyi vyklyk funktsii
+#' @slot coefficients numeric vector of estimated parameters
+#' @slot residuals numeric vector of final residuals
+#' @slot m2 numeric second central moment of initial residuals
+#' @slot m3 numeric third central moment of initial residuals
+#' @slot m4 numeric fourth central moment of initial residuals
+#' @slot convergence logical or integer code indicating whether algorithm converged
+#' @slot iterations numeric number of iterations performed
+#' @slot call original function call
 #'
 #' @exportClass PMM2fit
 setClass("PMM2fit",
          contains = "BasePMM2")
 
-#' Bazovyi klas S4 dlia zberihannia rezultativ PMM2 modelei chasovykh riadiv
+#' Base S4 class for storing PMM2 time series model results
 #'
-#' @slot coefficients chyslovyi vektor otsinenykh parametriv
-#' @slot residuals chyslovyi vektor kintsevykh zalyshkiv
-#' @slot m2 chyslovyi druhyi tsentralnyi moment pochatkovykh zalyshkiv
-#' @slot m3 chyslovyi tretii tsentralnyi moment pochatkovykh zalyshkiv
-#' @slot m4 chyslovyi chetvertyi tsentralnyi moment pochatkovykh zalyshkiv
-#' @slot convergence lohichnyi abo tsilyi kod, shcho vkazuie, chy alhorytm zbihsia
-#' @slot iterations chyslova kilkist vykonanykh iteratsii
-#' @slot call oryhinalnyi vyklyk funktsii
-#' @slot model_type symvolnyi riadok, shcho vkazuie typ modeli
-#' @slot intercept chyslove znachennia perekhoplennia
-#' @slot original_series chyslovyi vektor oryhinalnoho chasovoho riadu
-#' @slot order spysok parametriv poriadku
+#' @slot coefficients numeric vector of estimated parameters
+#' @slot residuals numeric vector of final residuals
+#' @slot m2 numeric second central moment of initial residuals
+#' @slot m3 numeric third central moment of initial residuals
+#' @slot m4 numeric fourth central moment of initial residuals
+#' @slot convergence logical or integer code indicating whether algorithm converged
+#' @slot iterations numeric number of iterations performed
+#' @slot call original function call
+#' @slot model_type character string indicating model type
+#' @slot intercept numeric value of intercept
+#' @slot original_series numeric vector of original time series
+#' @slot order list of order parameters
 #'
 #' @exportClass TS2fit
 setClass("TS2fit",
@@ -60,88 +60,88 @@ setClass("TS2fit",
                    original_series = "numeric",
                    order           = "list"))
 
-#' Klas S4 dlia zberihannia rezultativ PMM2 modeli AR
+#' S4 class for storing PMM2 AR model results
 #'
 #' @exportClass ARPMM2
 setClass("ARPMM2", contains = "TS2fit")
 
-#' Klas S4 dlia zberihannia rezultativ PMM2 modeli MA
+#' S4 class for storing PMM2 MA model results
 #'
 #' @exportClass MAPMM2
 setClass("MAPMM2", contains = "TS2fit")
 
-#' Klas S4 dlia zberihannia rezultativ PMM2 modeli ARMA
+#' S4 class for storing PMM2 ARMA model results
 #'
 #' @exportClass ARMAPMM2
 setClass("ARMAPMM2", contains = "TS2fit")
 
-#' Klas S4 dlia zberihannia rezultativ PMM2 modeli ARIMA
+#' S4 class for storing PMM2 ARIMA model results
 #'
 #' @exportClass ARIMAPMM2
 setClass("ARIMAPMM2", contains = "TS2fit")
 
-#' Uzahalnenyi metod summary dlia ob'iektiv PMM2fit
+#' Generic summary method for PMM2fit objects
 #'
-#' @param object ob'iekt klasu "PMM2fit"
-#' @param formula (optsionalno) formula, vykorystana dlia modeli
-#' @param data (optsionalno) vykorystani dani
-#' @param B kilkist butstrep-replikatsii dlia statystychnoho vysnovku
-#' @param ... dodatkovi arhumenty (ne vykorystovuiutsia)
+#' @param object object of class "PMM2fit"
+#' @param formula (optional) formula used for the model
+#' @param data (optional) data used
+#' @param B number of bootstrap replications for statistical inference
+#' @param ... additional arguments (not used)
 #'
-#' @return Vyvodyt reziume na konsol; povertaie ob'iekt (nevydymo).
+#' @return Prints summary to console; returns object (invisibly).
 #'
 #' @export
 setMethod("summary", "PMM2fit",
           function(object, formula=NULL, data=NULL, B=100, ...) {
-            cat("Rezultaty otsiniuvannia metodom PMM2\n")
+            cat("PMM2 estimation results\n")
             if(!is.null(object@call)) {
-              cat("Vyklyk:\n")
+              cat("Call:\n")
               print(object@call)
               cat("\n")
             }
 
-            cat("Koefitsiienty:\n")
+            cat("Coefficients:\n")
             print(object@coefficients)
 
-            cat("\nTsentralni momenty pochatkovykh zalyshkiv:\n")
+            cat("\nCentral moments of initial residuals:\n")
             cat("  m2 =", object@m2, "\n")
             cat("  m3 =", object@m3, "\n")
             cat("  m4 =", object@m4, "\n\n")
 
             vf <- pmm2_variance_factor(object@m2, object@m3, object@m4)
             if(!is.na(vf$g)) {
-              cat("Teoretychni kharakterystyky PMM2 (S = 2):\n")
+              cat("Theoretical characteristics of PMM2 (S = 2):\n")
               cat("  c3 =", vf$c3, "\n")
               cat("  c4 =", vf$c4, "\n")
-              cat("  g  =", vf$g, " (ochikuvane vidnoshennia Var[PMM2]/Var[OLS])\n\n")
+              cat("  g  =", vf$g, " (expected ratio Var[PMM2]/Var[OLS])\n\n")
             }
 
-            cat("Informatsiia pro alhorytm:\n")
-            cat("  Status zbizhnosti:", object@convergence, "\n")
+            cat("Algorithm information:\n")
+            cat("  Convergence status:", object@convergence, "\n")
             if("iterations" %in% slotNames(object)) {
-              cat("  Iteratsii:", object@iterations, "\n\n")
+              cat("  Iterations:", object@iterations, "\n\n")
             } else {
               cat("\n")
             }
 
-            # Yakshcho korystuvach khoche pobachyty p-znachennia, vyklykaiemo pmm2_inference:
+            # If user wants to see p-values, call pmm2_inference:
             if(!is.null(formula) && !is.null(data)) {
-              cat("Nablyzhenyi statystychnyi vysnovok cherez butstrep (B=", B, "):\n", sep="")
+              cat("Approximate statistical inference via bootstrap (B=", B, "):\n", sep="")
               inf_tab <- pmm2_inference(object, formula, data, B=B)
               print(inf_tab)
             } else {
-              cat("Dlia perehliadu p-znachen, peredaite formula= ta data=\n")
+              cat("To view p-values, provide formula= and data=\n")
             }
             invisible(object)
           }
 )
 
-#' Uzahalnenyi metod summary dlia ob'iektiv TS2fit
+#' Generic summary method for TS2fit objects
 #'
-#' @param object ob'iekt klasu "TS2fit" abo pidklasu
-#' @param ... dodatkovi arhumenty (ne vykorystovuiutsia)
+#' @param object object of class "TS2fit" or subclass
+#' @param ... additional arguments (not used)
 #'
-#' @return Vyvodyt reziume na konsol; povertaie ob'iekt (nevydymo).
+#' @return Prints summary to console; returns object (invisibly).
 #'
 #' @export
 setMethod("summary", "TS2fit",
@@ -151,10 +151,10 @@ setMethod("summary", "TS2fit",
             ma_order <- object@order$ma
             d <- object@order$d
 
-            cat("Rezultaty otsiniuvannia chasovoho riadu metodom PMM2\n")
+            cat("PMM2 time series estimation results\n")
 
-            # Vyvesty typ modeli
-            cat("Typ modeli: ")
+            # Print model type
+            cat("Model type: ")
             if (model_type == "ar") {
               cat("AR(", ar_order, ")\n", sep = "")
             } else if (model_type == "ma") {
@@ -166,13 +166,13 @@ setMethod("summary", "TS2fit",
             }
 
             if(!is.null(object@call)) {
-              cat("Vyklyk:\n")
+              cat("Call:\n")
               print(object@call)
               cat("\n")
             }
 
-            # Vyvesty koefitsiienty z rozdilenniam na AR ta MA chastyny
-            cat("Koefitsiienty:\n")
+            # Print coefficients with separation into AR and MA parts
+            cat("Coefficients:\n")
             if (ar_order > 0) {
               ar_coefs <- object@coefficients[1:ar_order]
               names(ar_coefs) <- paste0("ar", 1:ar_order)
@@ -187,28 +187,28 @@ setMethod("summary", "TS2fit",
               print(ma_coefs)
             }
 
-            # Vyvesty perekhoplennia, iakshcho ie
+            # Print intercept if present
             if (object@intercept != 0) {
-              cat("Perekhoplennia: ", object@intercept, "\n")
+              cat("Intercept: ", object@intercept, "\n")
             }
 
-            cat("\nTsentralni momenty pochatkovykh zalyshkiv:\n")
+            cat("\nCentral moments of initial residuals:\n")
             cat("  m2 =", object@m2, "\n")
             cat("  m3 =", object@m3, "\n")
             cat("  m4 =", object@m4, "\n\n")
 
             vf <- pmm2_variance_factor(object@m2, object@m3, object@m4)
             if(!is.na(vf$g)) {
-              cat("Teoretychni kharakterystyky PMM2 (S = 2):\n")
+              cat("Theoretical characteristics of PMM2 (S = 2):\n")
               cat("  c3 =", vf$c3, "\n")
               cat("  c4 =", vf$c4, "\n")
-              cat("  g  =", vf$g, " (ochikuvane vidnoshennia Var[PMM2]/Var[OLS])\n\n")
+              cat("  g  =", vf$g, " (expected ratio Var[PMM2]/Var[OLS])\n\n")
             }
 
-            cat("Informatsiia pro alhorytm:\n")
-            cat("  Status zbizhnosti:", object@convergence, "\n")
+            cat("Algorithm information:\n")
+            cat("  Convergence status:", object@convergence, "\n")
             if("iterations" %in% slotNames(object)) {
-              cat("  Iteratsii:", object@iterations, "\n\n")
+              cat("  Iterations:", object@iterations, "\n\n")
             } else {
               cat("\n")
             }
