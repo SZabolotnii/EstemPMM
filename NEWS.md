@@ -1,13 +1,13 @@
 # EstemPMM News
 
-## Version 0.1.1 (2025-10-22)
+## Version 0.1.1 (2025-10-23)
 
 ### Maintenance
 
-- Оновлено `DESCRIPTION` (свіжа дата релізу, список Suggests для пакетів, що використовуються в демо).
-- Перевірено пакет за допомогою `R CMD check --as-cran` (тепер без WARNING після встановлення `qpdf`).
-- Перегенеровано вінігрети (HTML і tangle `.R`) та включено в `inst/doc` для розповсюдження.
-- Оновлено `.Rbuildignore` і `.gitignore`, залишено лише файли, потрібні для CRAN.
+- Updated `DESCRIPTION` (latest release date, Suggests list for packages used in the demos).
+- Verified the package with `R CMD check --as-cran` (now warning-free after installing `qpdf`).
+- Regenerated vignettes (HTML and tangled `.R`) and included them in `inst/doc` for distribution.
+- Updated `.Rbuildignore` and `.gitignore`, keeping only files required for CRAN.
 
 ## Version 0.1.0 (2025-01-15)
 
