@@ -2,6 +2,7 @@
 ^\.Rproj\.user$
 ^\.git$
 ^\.gitignore$
+^\.github$
 ^\.Rhistory$
 ^\.DS_Store$
 ^.*\.DS_Store$
@@ -9,3 +10,6 @@
 ^files\.zip$
 ^r-cran-development\.zip$
 ^articles/.+\.pdf$
+^docs$
+^cran-comments\.md$
+^README\.Rmd$
