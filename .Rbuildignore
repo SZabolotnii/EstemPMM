@@ -9,5 +9,3 @@
 ^files\.zip$
 ^r-cran-development\.zip$
 ^articles/.+\.pdf$
-^inst/doc$
-^inst/doc/.*$
