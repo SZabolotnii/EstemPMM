@@ -13,6 +13,8 @@ PMM allows obtaining parameter estimates with lower variance compared to the cla
 
 PMM uses polynomials of degree S for parameter estimation. When S=1, PMM estimates coincide with OLS estimates. When S=2 and there is asymmetry in the error distribution, PMM can provide reduced variance of estimates.
 
+The PMM framework was originally developed by Yu. P. Kunchenko, who formulated the polynomial maximization approach for estimating distribution parameters [Kunchenko & Lega, 1992].
+
 The theoretical coefficient of variance reduction for S=2 is calculated by the formula:
 
 ```
@@ -153,6 +155,9 @@ The method is particularly useful in:
 ## Scientific Publications
 
 The Polynomial Maximization Method and its applications are described in the following peer-reviewed publications:
+
+### Foundational Reference
+Kunchenko, Y. P., & Lega, Y. G. (1992). *Estimation of Random Variable Parameters by the Polynomial Maximization Method*. Kyiv: Naukova Dumka. 180 pp.
 
 ### Linear Regression (PMM2 for lm_pmm2)
 Zabolotnii S., Warsza Z.L., Tkachenko O. (2018) Polynomial Estimation of Linear Regression Parameters for the Asymmetric PDF of Errors. In: Szewczyk R., Zieliński C., Kaliczyńska M. (eds) Automation 2018. AUTOMATION 2018. Advances in Intelligent Systems and Computing, vol 743. Springer, Cham. https://doi.org/10.1007/978-3-319-77179-3_75
