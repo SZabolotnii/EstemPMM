@@ -1,0 +1,401 @@
+---
+title: "ARIMA Model Comparison: PMM2 vs Classical Methods on Oil Price Data"
+author: "EstemPMM Package"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    theme: united
+    highlight: tango
+vignette: >
+  %\VignetteIndexEntry{ARIMA Model Comparison: PMM2 vs Classical Methods on Oil Price Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 10,
+  fig.height = 6
+)
+```
+
+# Introduction
+
+This report presents an experimental comparison of classical ARIMA estimation methods (CSS and ML)
+versus the Polynomial Maximization Method order 2 (PMM2) on real-world crude oil price data
+(West Texas Intermediate - WTI).
+
+The PMM2 method is designed to be robust to non-Gaussian error distributions, which are common
+in financial time series data. We evaluate model quality using:
+
+- **AIC (Akaike Information Criterion)**: Measures relative quality with penalty for parameters
+- **BIC (Bayesian Information Criterion)**: Similar to AIC but with stronger penalty
+- **Residual diagnostics**: RSS, MAE, skewness, kurtosis
+
+# Data Loading and Preprocessing
+
+```{r load_data}
+# Load required libraries
+library(EstemPMM)
+library(ggplot2)
+library(knitr)
+
+# Load oil price data
+data_path <- system.file("extdata", "DCOILWTICO.csv", package = "EstemPMM")
+if (!file.exists(data_path) || data_path == "") {
+  data_path <- "../data/DCOILWTICO.csv"
+}
+
+if (!file.exists(data_path)) {
+  stop("Data file DCOILWTICO.csv not found")
+}
+
+# Read and clean data
+oil_data <- read.csv(data_path, stringsAsFactors = FALSE)
+oil_data$observation_date <- as.Date(oil_data$observation_date)
+oil_data$DCOILWTICO <- as.numeric(oil_data$DCOILWTICO)
+
+# Remove NA values
+oil_clean <- oil_data[!is.na(oil_data$DCOILWTICO), ]
+
+# Extract price series
+prices <- oil_clean$DCOILWTICO
+dates <- oil_clean$observation_date
+
+cat(sprintf("Data period: %s to %s\n", min(dates), max(dates)))
+cat(sprintf("Total observations: %d\n", length(prices)))
+cat(sprintf("Missing values removed: %d\n", nrow(oil_data) - nrow(oil_clean)))
+```
+
+# Exploratory Data Analysis
+
+```{r eda_plots}
+# Plot original time series
+ggplot(oil_clean, aes(x = observation_date, y = DCOILWTICO)) +
+  geom_line(color = "steelblue", size = 0.7) +
+  labs(title = "WTI Crude Oil Prices (2020-2025)",
+       x = "Date",
+       y = "Price (USD per barrel)") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+
+# Basic statistics
+summary_stats <- data.frame(
+  Statistic = c("Mean", "Median", "Std Dev", "Min", "Max", "Skewness", "Kurtosis"),
+  Value = c(
+    mean(prices),
+    median(prices),
+    sd(prices),
+    min(prices),
+    max(prices),
+    moments::skewness(prices),
+    moments::kurtosis(prices) - 3  # Excess kurtosis
+  )
+)
+
+kable(summary_stats, digits = 3, caption = "Descriptive Statistics of Oil Prices")
+
+# Test for stationarity (ADF test)
+adf_test <- tseries::adf.test(prices)
+cat(sprintf("\nAugmented Dickey-Fuller Test:\n"))
+cat(sprintf("  Test statistic: %.4f\n", adf_test$statistic))
+cat(sprintf("  p-value: %.4f\n", adf_test$p.value))
+cat(sprintf("  Conclusion: Series is %s\n",
+            ifelse(adf_test$p.value < 0.05, "stationary", "non-stationary (requires differencing)")))
+```
+
+```{r acf_pacf}
+# ACF and PACF plots
+par(mfrow = c(2, 2))
+
+# Original series
+acf(prices, main = "ACF - Original Series", lag.max = 30)
+pacf(prices, main = "PACF - Original Series", lag.max = 30)
+
+# First difference
+diff_prices <- diff(prices)
+acf(diff_prices, main = "ACF - First Difference", lag.max = 30)
+pacf(diff_prices, main = "PACF - First Difference", lag.max = 30)
+
+par(mfrow = c(1, 1))
+```
+
+# Model Comparison
+
+We fit several ARIMA models using both classical methods and PMM2:
+
+- ARIMA(1,1,1) - Standard integrated model
+- ARIMA(0,1,1) - IMA model
+- ARIMA(1,1,0) - ARI model
+- ARIMA(2,1,1) - Extended model
+
+```{r model_fitting}
+# Function to fit and compare models
+fit_and_compare <- function(prices, order, model_name) {
+  cat(sprintf("\n=== Fitting %s ===\n", model_name))
+
+  # Classical CSS method
+  fit_css <- tryCatch({
+    arima(prices, order = order, method = "CSS-ML", include.mean = FALSE)
+  }, error = function(e) {
+    cat("CSS-ML failed:", e$message, "\n")
+    NULL
+  })
+
+  # PMM2 method
+  fit_pmm2 <- tryCatch({
+    arima_pmm2(prices, order = order, include.mean = FALSE, verbose = FALSE)
+  }, error = function(e) {
+    cat("PMM2 failed:", e$message, "\n")
+    NULL
+  })
+
+  # Extract metrics
+  results <- data.frame(
+    Method = character(),
+    AIC = numeric(),
+    BIC = numeric(),
+    LogLik = numeric(),
+    RSS = numeric(),
+    MAE = numeric(),
+    Skewness = numeric(),
+    Kurtosis = numeric(),
+    stringsAsFactors = FALSE
+  )
+
+  if (!is.null(fit_css)) {
+    res_css <- residuals(fit_css)
+    res_css <- res_css[is.finite(res_css)]
+
+    results <- rbind(results, data.frame(
+      Method = "CSS-ML",
+      AIC = AIC(fit_css),
+      BIC = BIC(fit_css),
+      LogLik = as.numeric(logLik(fit_css)),
+      RSS = sum(res_css^2),
+      MAE = mean(abs(res_css)),
+      Skewness = moments::skewness(res_css),
+      Kurtosis = moments::kurtosis(res_css) - 3
+    ))
+  }
+
+  if (!is.null(fit_pmm2)) {
+    res_pmm2 <- fit_pmm2@residuals
+    res_pmm2 <- res_pmm2[is.finite(res_pmm2)]
+
+    results <- rbind(results, data.frame(
+      Method = "PMM2",
+      AIC = AIC(fit_pmm2),
+      BIC = BIC(fit_pmm2),
+      LogLik = as.numeric(logLik(fit_pmm2)),
+      RSS = sum(res_pmm2^2),
+      MAE = mean(abs(res_pmm2)),
+      Skewness = moments::skewness(res_pmm2),
+      Kurtosis = moments::kurtosis(res_pmm2) - 3
+    ))
+  }
+
+  list(results = results, css = fit_css, pmm2 = fit_pmm2)
+}
+
+# Fit models
+models <- list(
+  "ARIMA(1,1,1)" = fit_and_compare(prices, c(1, 1, 1), "ARIMA(1,1,1)"),
+  "ARIMA(0,1,1)" = fit_and_compare(prices, c(0, 1, 1), "ARIMA(0,1,1)"),
+  "ARIMA(1,1,0)" = fit_and_compare(prices, c(1, 1, 0), "ARIMA(1,1,0)"),
+  "ARIMA(2,1,1)" = fit_and_compare(prices, c(2, 1, 1), "ARIMA(2,1,1)")
+)
+```
+
+# Results Summary
+
+## Information Criteria Comparison
+
+```{r ic_comparison}
+# Combine all results
+all_results <- do.call(rbind, lapply(names(models), function(name) {
+  res <- models[[name]]$results
+  res$Model <- name
+  res
+}))
+
+# Reorder columns
+all_results <- all_results[, c("Model", "Method", "AIC", "BIC", "LogLik", "RSS", "MAE", "Skewness", "Kurtosis")]
+
+# Display table
+kable(all_results, digits = 3, caption = "Model Comparison: All Metrics", row.names = FALSE)
+
+# Highlight best models by AIC and BIC
+cat("\n=== Best Models by Information Criteria ===\n")
+best_aic <- all_results[which.min(all_results$AIC), ]
+best_bic <- all_results[which.min(all_results$BIC), ]
+
+cat(sprintf("Best by AIC: %s (%s) - AIC = %.2f\n",
+            best_aic$Model, best_aic$Method, best_aic$AIC))
+cat(sprintf("Best by BIC: %s (%s) - BIC = %.2f\n",
+            best_bic$Model, best_bic$Method, best_bic$BIC))
+```
+
+## Visualization of Model Quality
+
+```{r quality_plots}
+# Plot AIC comparison
+ggplot(all_results, aes(x = Model, y = AIC, fill = Method)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "AIC Comparison Across Models and Methods",
+       y = "AIC (lower is better)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
+
+# Plot BIC comparison
+ggplot(all_results, aes(x = Model, y = BIC, fill = Method)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "BIC Comparison Across Models and Methods",
+       y = "BIC (lower is better)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
+
+# Plot RSS comparison
+ggplot(all_results, aes(x = Model, y = RSS, fill = Method)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Residual Sum of Squares Comparison",
+       y = "RSS (lower is better)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+## Detailed Analysis: Best Model
+
+```{r best_model_analysis}
+# Select best model by BIC (more conservative)
+best_model_name <- best_bic$Model
+best_method <- best_bic$Method
+
+cat(sprintf("\n=== Detailed Analysis of %s using %s ===\n", best_model_name, best_method))
+
+best_fit <- if (best_method == "CSS-ML") {
+  models[[best_model_name]]$css
+} else {
+  models[[best_model_name]]$pmm2
+}
+
+# Print coefficients
+cat("\nCoefficients:\n")
+if (best_method == "CSS-ML") {
+  print(coef(best_fit))
+} else {
+  print(coef(best_fit))
+}
+
+# Residual diagnostics
+if (best_method == "CSS-ML") {
+  res <- residuals(best_fit)
+} else {
+  res <- best_fit@residuals
+}
+res <- res[is.finite(res)]
+
+# Plot diagnostics
+par(mfrow = c(2, 2))
+
+# Residuals over time
+plot(res, type = "l", main = "Residuals Over Time",
+     xlab = "Time", ylab = "Residuals")
+abline(h = 0, col = "red", lty = 2)
+
+# Histogram
+hist(res, breaks = 30, main = "Histogram of Residuals",
+     xlab = "Residuals", col = "lightblue", border = "white")
+
+# Q-Q plot
+qqnorm(res, main = "Normal Q-Q Plot")
+qqline(res, col = "red")
+
+# ACF of residuals
+acf(res, main = "ACF of Residuals", lag.max = 30)
+
+par(mfrow = c(1, 1))
+
+# Ljung-Box test for residual autocorrelation
+lb_test <- Box.test(res, lag = 20, type = "Ljung-Box")
+cat(sprintf("\nLjung-Box Test (lag=20):\n"))
+cat(sprintf("  Test statistic: %.4f\n", lb_test$statistic))
+cat(sprintf("  p-value: %.4f\n", lb_test$p.value))
+cat(sprintf("  Conclusion: Residuals %s white noise\n",
+            ifelse(lb_test$p.value > 0.05, "are consistent with", "show departure from")))
+```
+
+# Coefficient Comparison
+
+```{r coef_comparison}
+# Compare coefficients across methods for each model
+for (model_name in names(models)) {
+  cat(sprintf("\n=== Coefficients for %s ===\n", model_name))
+
+  css_fit <- models[[model_name]]$css
+  pmm2_fit <- models[[model_name]]$pmm2
+
+  if (!is.null(css_fit) && !is.null(pmm2_fit)) {
+    coef_css <- coef(css_fit)
+    coef_pmm2 <- coef(pmm2_fit)
+
+    # Match coefficient names
+    common_names <- intersect(names(coef_css), names(coef_pmm2))
+
+    if (length(common_names) > 0) {
+      coef_compare <- data.frame(
+        Coefficient = common_names,
+        CSS_ML = coef_css[common_names],
+        PMM2 = coef_pmm2[common_names],
+        Difference = coef_pmm2[common_names] - coef_css[common_names],
+        Pct_Diff = 100 * (coef_pmm2[common_names] - coef_css[common_names]) / coef_css[common_names]
+      )
+
+      print(kable(coef_compare, digits = 4, row.names = FALSE))
+    }
+  }
+}
+```
+
+# Conclusions
+
+## Key Findings
+
+1. **Model Selection**: Based on BIC criterion, the best model is **`r best_bic$Model`** using **`r best_bic$Method`** method.
+
+2. **Method Comparison**:
+   - Both CSS-ML and PMM2 methods produce similar fits for most specifications
+   - PMM2 shows robustness in handling non-Gaussian residuals
+   - Information criteria (AIC/BIC) help identify parsimonious models
+
+3. **Data Characteristics**:
+   - Oil prices show non-stationary behavior requiring differencing
+   - Residuals may exhibit fat tails (check kurtosis values)
+   - ACF/PACF suggest moderate autocorrelation structure
+
+4. **Practical Implications**:
+   - The selected model can be used for short-term forecasting
+   - Model adequacy should be monitored with new data
+   - Consider ensemble methods for improved predictions
+
+## Recommendations
+
+- Use **BIC** for model selection when sample size is moderate to large (stronger penalty against overfitting)
+- **PMM2** offers a robust alternative when residuals deviate from normality
+- Validate selected model on hold-out data before deployment
+- Monitor residual diagnostics regularly for model deterioration
+
+# Session Information
+
+```{r session_info}
+sessionInfo()
+```

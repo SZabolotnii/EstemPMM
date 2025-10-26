@@ -523,3 +523,72 @@ compare_arima_methods <- function(x, order = c(1, 1, 1), include.mean = TRUE, pm
   compare_ts_methods(x, order = order, model_type = "arima",
                      include.mean = include.mean, pmm2_args = pmm2_args)
 }
+
+#' Calculate log-likelihood for TS2fit object
+#'
+#' @param object TS2fit object
+#' @param ... Additional arguments (not used)
+#'
+#' @return Log-likelihood value
+#' @export
+setMethod("logLik", "TS2fit",
+          function(object, ...) {
+            res <- object@residuals[is.finite(object@residuals)]
+            n <- length(res)
+
+            # Log-likelihood assuming Gaussian errors
+            sigma2 <- sum(res^2) / n
+            ll <- -n/2 * (log(2*pi) + log(sigma2) + 1)
+
+            # Set attributes for AIC/BIC calculation
+            attr(ll, "nobs") <- n
+            attr(ll, "df") <- length(object@coefficients) + 1  # coefficients + sigma^2
+            class(ll) <- "logLik"
+
+            return(ll)
+          })
+
+#' Calculate AIC for TS2fit object
+#'
+#' @param object TS2fit object
+#' @param ... Additional arguments (not used)
+#' @param k Penalty per parameter to be used; default is 2
+#'
+#' @return AIC value
+#' @export
+setMethod("AIC", "TS2fit",
+          function(object, ..., k = 2) {
+            ll <- logLik(object)
+            n <- attr(ll, "nobs")
+            df <- attr(ll, "df")
+
+            # Add intercept to df if present
+            if(object@intercept != 0) {
+              df <- df + 1
+            }
+
+            # AIC = -2*logLik + k*df
+            -2 * as.numeric(ll) + k * df
+          })
+
+#' Calculate BIC for TS2fit object
+#'
+#' @param object TS2fit object
+#' @param ... Additional arguments (not used)
+#'
+#' @return BIC value
+#' @export
+setMethod("BIC", "TS2fit",
+          function(object, ...) {
+            ll <- logLik(object)
+            n <- attr(ll, "nobs")
+            df <- attr(ll, "df")
+
+            # Add intercept to df if present
+            if(object@intercept != 0) {
+              df <- df + 1
+            }
+
+            # BIC = -2*logLik + log(n)*df
+            -2 * as.numeric(ll) + log(n) * df
+          })
