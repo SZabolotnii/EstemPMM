@@ -13,7 +13,7 @@ This directory contains scripts and reports for comparing classical ARIMA estima
   - Coefficient comparison across methods
   - Conclusions and recommendations
 
-- **`run_arima_comparison.R`**: Quick script to render the full HTML/PDF report
+- **`../demo/run_arima_comparison.R`**: Quick script to render the full HTML/PDF report
 
 - **`../demo/arima_oil_quick_demo.R`**: Simplified demo for quick testing without generating plots
 
@@ -60,13 +60,11 @@ Best by BIC: ARIMA(x,x,x) (METHOD)
 ### Option 2: Full Report with Visualizations
 
 ```r
-# Navigate to vignettes directory
+# Render full HTML report from package root
+source("demo/run_arima_comparison.R")
+
+# Or navigate to vignettes and use rmarkdown directly
 setwd("vignettes")
-
-# Render full HTML report
-source("run_arima_comparison.R")
-
-# Or use rmarkdown directly
 library(rmarkdown)
 render("arima_oil_comparison.Rmd")
 ```
