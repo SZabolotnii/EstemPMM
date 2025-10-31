@@ -9,13 +9,13 @@ Authors@R:
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0242-2234"))
 Maintainer: Serhii Zabolotnii <zabolotniua@gmail.com>
-Description: 
-    Implements the Polynomial Maximization Method (PMM) for parameter estimation
+Description:
+    Implements the Polynomial Maximization Method ('PMM') for parameter estimation
     in linear and time series models when error distributions deviate from normality.
-    The PMM2 variant achieves lower variance parameter estimates compared to ordinary
-    least squares (OLS) when errors exhibit significant skewness. Includes methods
-    for linear regression, AR/MA/ARMA/ARIMA models, and bootstrap inference.
-License: GPL-3
+    The 'PMM2' variant achieves lower variance parameter estimates compared to ordinary
+    least squares ('OLS') when errors exhibit significant skewness. Includes methods
+    for linear regression, 'AR'/'MA'/'ARMA'/'ARIMA' models, and bootstrap inference.
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 3.5.0)
 Imports:
