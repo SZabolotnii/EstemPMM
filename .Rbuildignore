@@ -15,3 +15,6 @@
 ^README\.Rmd$
 ^CRAN_CHECK_INSTRUCTIONS\.md$
 ^CRAN_SUBMISSION_CHECKLIST\.md$
+^\.claude$
+^articles$
+^skill$
