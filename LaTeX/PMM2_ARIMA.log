@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.7.27)  3 NOV 2025 16:39
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.7.27)  3 NOV 2025 21:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1078,11 +1078,7 @@ File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count344
 \l__pdf_internal_box=\box70
 )
-(./PMM2_ARIMA.aux
-
-LaTeX Warning: Label `subsec:limitations' multiply defined.
-
-)
+(./PMM2_ARIMA.aux)
 \openout1 = `PMM2_ARIMA.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 109.
@@ -1106,7 +1102,8 @@ LaTeX Font Info:    ... okay on input line 109.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 109.
 LaTeX Font Info:    ... okay on input line 109.
 LaTeX Info: Redefining \th on input line 109.
- (/usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+
+(/usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count345
 \scratchdimen=\dimen310
@@ -1233,13 +1230,13 @@ at-ing ARIMA(p,d,q) model
 [6]
 
 [7]
-Overfull \hbox (1.26385pt too wide) in paragraph at lines 203--204
+Overfull \hbox (1.26385pt too wide) in paragraph at lines 201--202
 \T2A/cmr/m/n/12 до-оцiн-ки або пе-ре-оцiн-ки не-ви-зна-че-но-стi про-гно-зiв, щ
 о кри-ти-чно ва-жли-во для прийня-
  []
 
 
-Overfull \hbox (2.13356pt too wide) in paragraph at lines 212--213
+Overfull \hbox (2.13356pt too wide) in paragraph at lines 210--211
  []\T2A/cmr/bx/n/12 Квантильна ре-гре-сiя та LAD ме-то-ди.[] \T2A/cmr/m/n/12 Ka
 tsouris (2023) на-дав ком-пле-ксний огляд
  []
@@ -1249,7 +1246,7 @@ tsouris (2023) на-дав ком-пле-ксний огляд
 [8]
 
 [9]
-Overfull \hbox (8.88673pt too wide) in paragraph at lines 248--249
+Overfull \hbox (8.88673pt too wide) in paragraph at lines 246--247
 []\T2A/cmr/bx/n/12 Лiнiйна ре-гре-сiя: \T2A/cmr/m/n/12 Zabolotnii et al. (2018)
  про-де-мон-стру-ва-ли за-сто-су-ва-н-ня PMM2
  []
@@ -1267,9 +1264,7 @@ Overfull \hbox (8.88673pt too wide) in paragraph at lines 248--249
 [14]
 
 [15]
-
-[16]
-Overfull \hbox (43.11824pt too wide) in paragraph at lines 533--534
+Overfull \hbox (43.11824pt too wide) in paragraph at lines 531--532
 []\T2A/cmr/bx/n/12 Крок 3: \T2A/cmr/m/n/12 Якщо $\OMS/cmsy/m/n/12 j[]j \OML/cmm
 /m/it/12 < \OT1/cmr/m/n/12 0\OML/cmm/m/it/12 :\OT1/cmr/m/n/12 1$\T2A/cmr/m/n/12
  , до-цiль-но за-ли-ши-тись на МНК-оцiнцi. Iна-кше розв'язати []
@@ -1277,8 +1272,10 @@ Overfull \hbox (43.11824pt too wide) in paragraph at lines 533--534
 
 
 
+[16]
+
 [17]
-Overfull \hbox (7.52275pt too wide) in paragraph at lines 602--603
+Overfull \hbox (7.52275pt too wide) in paragraph at lines 600--601
 []\T2A/cmr/bx/n/12 PMM2-корекцiя. \T2A/cmr/m/n/12 Фi-ксу-№-мо по-бу-до-ва-ну на
  по-пе-ре-дньо-му кро-цi дизайн-матрицю
  []
@@ -1287,9 +1284,9 @@ Overfull \hbox (7.52275pt too wide) in paragraph at lines 602--603
 
 [18]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 647.
+put line 645.
 
-Underfull \hbox (badness 10000) in paragraph at lines 661--662
+Underfull \hbox (badness 10000) in paragraph at lines 659--660
 [] []\T2A/cmr/bx/n/12 Iнiцiалiзацiя PMM2. \T2A/cmr/m/n/12 Взя-ти по-ча-тко-ве н
 а-бли-же-н-ня $[][] \OT1/cmr/m/n/12 =
  []
@@ -1302,7 +1299,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 661--662
 
 [21]
 LaTeX Font Info:    Trying to load font information for T2A+cmtt on input line 
-786.
+784.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/cyrillic/t2acmtt.fd
 File: t2acmtt.fd 2001/08/11 v1.0a Computer Modern Cyrillic font definitions
 )
@@ -1316,7 +1313,7 @@ File: t2acmtt.fd 2001/08/11 v1.0a Computer Modern Cyrillic font definitions
 [25]
 
 [26]
-Overfull \hbox (180.65874pt too wide) in paragraph at lines 1025--1026
+Overfull \hbox (180.65874pt too wide) in paragraph at lines 1023--1024
 \T2A/cmr/m/n/12 ми ме-то-да-ми; роз-ши-ре-нi ста-ти-сти-ки до-сту-пнi у вiд-тво
 -рю-ва-но-му па-ке-тi (\T2A/cmtt/m/n/12 results/monte_carlo/arima110_summary.cs
 v\T2A/cmr/m/n/12 ). 
@@ -1335,7 +1332,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Overfull \hbox (0.69402pt too wide) in paragraph at lines 1148--1149
+Overfull \hbox (0.69402pt too wide) in paragraph at lines 1146--1147
 \T2A/cmr/m/n/12 кла-си-чни-ми та PMM2-оцiнками (див. \T2A/cmtt/m/n/12 results/m
 onte_carlo/arima110_summary.csv\T2A/cmr/m/n/12 ). 
  []
@@ -1350,29 +1347,29 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [30]
 
 [31]
-<figures/07_performance_heatmap.pdf, id=961, 578.16pt x 722.7pt>
+<figures/07_performance_heatmap.pdf, id=957, 578.16pt x 722.7pt>
 File: figures/07_performance_heatmap.pdf Graphic file (type pdf)
 <use figures/07_performance_heatmap.pdf>
 Package pdftex.def Info: figures/07_performance_heatmap.pdf  used on input line
- 1317.
+ 1315.
 (pdftex.def)             Requested size: 455.24411pt x 569.05206pt.
 
 
 [32]
 
 [33 <./figures/07_performance_heatmap.pdf>]
-<figures/08_method_differences.pdf, id=983, 722.7pt x 433.62pt>
+<figures/08_method_differences.pdf, id=979, 722.7pt x 433.62pt>
 File: figures/08_method_differences.pdf Graphic file (type pdf)
 <use figures/08_method_differences.pdf>
 Package pdftex.def Info: figures/08_method_differences.pdf  used on input line 
-1326.
+1324.
 (pdftex.def)             Requested size: 386.96027pt x 232.1796pt.
 
 
 [34 <./figures/08_method_differences.pdf>]
 
 [35]
-Overfull \hbox (30.34001pt too wide) in paragraph at lines 1465--1466
+Overfull \hbox (30.34001pt too wide) in paragraph at lines 1463--1464
 \T2A/cmr/m/n/12 ма-кси-маль-ноЁ прав-до-по-дi-бно-стi, стан-дар-тне об-чи-сле-н
 -ня AIC/BIC че-рез \T2A/cmtt/m/n/12 stats::arima
  []
@@ -1380,31 +1377,17 @@ Overfull \hbox (30.34001pt too wide) in paragraph at lines 1465--1466
 
 
 [36]
-Overfull \hbox (0.77708pt too wide) in paragraph at lines 1545--1546
+Overfull \hbox (0.77708pt too wide) in paragraph at lines 1543--1544
 []\T2A/cmr/m/n/12 PMM2 де-мон-стру№ сут-т№-ве по-кра-ще-н-ня для спе-ци-фi-ка-ц
 iй AR: для ARI-MA(1,1,0)
  []
-
-
-! LaTeX Error: Unicode character в‚Ђ (U+2080)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.1561 ...tbf{CSS} & \textbf{PMM2} & \textbf{Hв‚Ђ}
-                                                   & \textbf{Р РµР·СѓР»СЊС‚Р...
-
-You may provide a definition with
-\DeclareUnicodeCharacter 
 
 
 
 [37]
 
 [38]
-Overfull \hbox (6.61496pt too wide) in paragraph at lines 1585--1586
+Overfull \hbox (6.61496pt too wide) in paragraph at lines 1583--1584
 []\T2A/cmr/bx/n/12 Out-of-sample ва-лi-да-цiя \T2A/cmr/m/n/12 пiд-твер-джу№ пра
 -кти-чну цiн-нiсть PMM2: 11--38% змен-
  []
@@ -1414,7 +1397,7 @@ Overfull \hbox (6.61496pt too wide) in paragraph at lines 1585--1586
 [39]
 
 [40]
-Overfull \hbox (54.68816pt too wide) in paragraph at lines 1674--1675
+Overfull \hbox (54.68816pt too wide) in paragraph at lines 1672--1673
 \T2A/cmr/m/n/12 На осно-вi на-ших ре-зуль-та-тiв, ми ре-ко-мен-ду-№-мо ви-ко-ри
 -сто-ву-ва-ти PMM2 за-мiсть OLS/CSS/MLE,
  []
@@ -1422,7 +1405,7 @@ Overfull \hbox (54.68816pt too wide) in paragraph at lines 1674--1675
 
 
 [41]
-Underfull \hbox (badness 1831) in paragraph at lines 1705--1707
+Underfull \hbox (badness 1831) in paragraph at lines 1703--1705
 [] []\T2A/cmr/bx/n/12 Використати $[]$ \T2A/cmr/m/n/12 або пе-ре-вi-ри-ти кон-с
 и-стен-тнiсть PMM2 че-рез кросс-
  []
@@ -1430,7 +1413,7 @@ Underfull \hbox (badness 1831) in paragraph at lines 1705--1707
 
 
 [42]
-Overfull \hbox (6.44168pt too wide) in paragraph at lines 1734--1735
+Overfull \hbox (6.44168pt too wide) in paragraph at lines 1732--1733
 \T2A/cmr/m/n/12 Нашi Monte Carlo екс-пе-ри-мен-ти охо-плю-ють чо-ти-ри ти-пи ро
 з-по-дi-лiв (Gaussi-an, Gamma,
  []
@@ -1438,19 +1421,14 @@ Overfull \hbox (6.44168pt too wide) in paragraph at lines 1734--1735
 
 
 [43]
-
-LaTeX Warning: Reference `sec:empirical_wti' on page 44 undefined on input line
- 1759.
-
-
-Overfull \hbox (29.0891pt too wide) in paragraph at lines 1784--1785
+Overfull \hbox (29.0891pt too wide) in paragraph at lines 1782--1783
 \T2A/cmr/m/n/12 Метод PMM2 мо-же бу-ти при-ро-дно роз-ши-ре-ний на се-зон-нi AR
 I-MA мо-де-лi SARIMA$\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 p; d; q\OT1/cmr/m/n/12 )
  \OMS/cmsy/m/n/12 ^^B
  []
 
 
-Overfull \hbox (31.35086pt too wide) in paragraph at lines 1790--1791
+Overfull \hbox (31.35086pt too wide) in paragraph at lines 1788--1789
 \T2A/cmr/m/n/12 Багато фi-нан-со-вих ча-со-вих ря-дiв де-мон-стру-ють як умов-н
 у ге-те-ро-ске-да-сти-чнiсть (GARCH),
  []
@@ -1458,7 +1436,7 @@ Overfull \hbox (31.35086pt too wide) in paragraph at lines 1790--1791
 
 
 [44]
-Overfull \hbox (1.58295pt too wide) in paragraph at lines 1806--1807
+Overfull \hbox (1.58295pt too wide) in paragraph at lines 1804--1805
 \T2A/cmr/m/n/12 Для за-сто-су-вань ре-аль-но-го ча-су (на-при-клад, ал-го-ри-тм
 i-чна тор-гiв-ля, мо-нi-то-ринг IoT),
  []
@@ -1466,13 +1444,13 @@ i-чна тор-гiв-ля, мо-нi-то-ринг IoT),
 
 
 [45]
-Overfull \hbox (3.39703pt too wide) in paragraph at lines 1828--1829
+Overfull \hbox (3.39703pt too wide) in paragraph at lines 1826--1827
 []\T2A/cmr/bx/n/12 Обговорили обме-же-н-ня: \T2A/cmr/m/n/12 По-то-чне до-слi-дж
 е-н-ня обме-же-не си-му-ля-цi-я-ми з низь-
  []
 
 
-Overfull \hbox (16.10606pt too wide) in paragraph at lines 1863--1864
+Overfull \hbox (16.10606pt too wide) in paragraph at lines 1861--1862
 []\T2A/cmr/m/n/12 Розроблено ефе-ктив-ний об-чи-слю-валь-ний ал-го-ритм (Ал-го-
 ритм [][]1[][]) на осно-вi Newton-
  []
@@ -1486,7 +1464,7 @@ Overfull \hbox (16.10606pt too wide) in paragraph at lines 1863--1864
 [48]
 
 [49]
-Overfull \hbox (89.20038pt too wide) in paragraph at lines 2015--2016
+Overfull \hbox (89.20038pt too wide) in paragraph at lines 2013--2016
 []\T2A/cmr/bx/n/12 СпецифiкацiЁ мо-де-лей. \T2A/cmr/m/n/12 Роз-гля-да-ли кон-фi
 -гу-ра-цiЁ $\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 p; q\OT1/cmr/m/n/12 ) \OMS/cmsy/m
 /n/12 2 f\OT1/cmr/m/n/12 (0\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 1)\OML/cmm/m/it/1
@@ -1498,7 +1476,7 @@ n/12 (1\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 2)\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12
  []
 
 
-Overfull \hbox (8.8682pt too wide) in paragraph at lines 2017--2018
+Overfull \hbox (8.8682pt too wide) in paragraph at lines 2017--2020
 []\T2A/cmr/bx/n/12 КритерiЁ по-рiв-ня-н-ня. \T2A/cmr/m/n/12 Вра-хо-ва-но AIC, B
 IC, RMSE, MAE, лог-правдоподiбнiсть,
  []
@@ -1506,22 +1484,22 @@ IC, RMSE, MAE, лог-правдоподiбнiсть,
 
 
 [50]
-Overfull \hbox (9.56248pt too wide) in paragraph at lines 2055--2056
+Overfull \hbox (9.56248pt too wide) in paragraph at lines 2057--2062
 \T2A/cmr/m/n/12 Рисунки [][]4[][] та [][]5[][] пред-став-ля-ють ком-пле-ксну дi
 -а-гно-сти-ку най-кра-щоЁ мо-де-лi ARI-MA(1,1,1)
  []
 
-<figures/11_cssml_diagnostics.pdf, id=1191, 867.24pt x 722.7pt>
+<figures/11_cssml_diagnostics.pdf, id=1188, 867.24pt x 722.7pt>
 File: figures/11_cssml_diagnostics.pdf Graphic file (type pdf)
 <use figures/11_cssml_diagnostics.pdf>
 Package pdftex.def Info: figures/11_cssml_diagnostics.pdf  used on input line 2
-059.
+065.
 (pdftex.def)             Requested size: 455.24411pt x 379.36804pt.
-<figures/12_pmm2_diagnostics.pdf, id=1192, 867.24pt x 722.7pt>
+<figures/12_pmm2_diagnostics.pdf, id=1189, 867.24pt x 722.7pt>
 File: figures/12_pmm2_diagnostics.pdf Graphic file (type pdf)
 <use figures/12_pmm2_diagnostics.pdf>
 Package pdftex.def Info: figures/12_pmm2_diagnostics.pdf  used on input line 20
-66.
+72.
 (pdftex.def)             Requested size: 455.24411pt x 379.36804pt.
 
 
@@ -1534,7 +1512,7 @@ Package pdftex.def Info: figures/12_pmm2_diagnostics.pdf  used on input line 20
 [54]
 
 [55]
-Underfull \hbox (badness 3229) in paragraph at lines 217--223
+Underfull \hbox (badness 3229) in paragraph at lines 205--211
 []\T2A/cmr/m/n/12 Serhii Zabolotnii, Volodymyr Khotunov, Andrii Chepynoha, and 
 Oleksandr
  []
@@ -1548,21 +1526,14 @@ Oleksandr
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
-
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: There were multiply-defined labels.
-
 Package rerunfilecheck Info: File `PMM2_ARIMA.out' has not changed.
 (rerunfilecheck)             Checksum: 17BB1202898D2704B5728F79EAB4A42B;32084.
  ) 
 Here is how much of TeX's memory you used:
- 36599 strings out of 473190
- 826801 string characters out of 5715800
- 1360575 words of memory out of 5000000
- 58841 multiletter control sequences out of 15000+600000
+ 36594 strings out of 473190
+ 826710 string characters out of 5715800
+ 1360533 words of memory out of 5000000
+ 58838 multiletter control sequences out of 15000+600000
  587555 words of font info for 108 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,19n,87p,1201b,2293s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1600,10 +1571,10 @@ fonts/type1/public/cm-super/sfti0600.pfb></usr/local/texlive/2025/texmf-dist/fo
 nts/type1/public/cm-super/sfti0800.pfb></usr/local/texlive/2025/texmf-dist/font
 s/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/
 type1/public/cm-super/sftt1200.pfb>
-Output written on PMM2_ARIMA.pdf (57 pages, 2384710 bytes).
+Output written on PMM2_ARIMA.pdf (57 pages, 2383966 bytes).
 PDF statistics:
- 1474 PDF objects out of 1728 (max. 8388607)
- 1323 compressed objects within 14 object streams
- 430 named destinations out of 1000 (max. 500000)
+ 1471 PDF objects out of 1728 (max. 8388607)
+ 1320 compressed objects within 14 object streams
+ 428 named destinations out of 1000 (max. 500000)
  849 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -1,8 +1,8 @@
-PWD /Users/serhiizabolotnii/R/PMM2-ARIMA/LaTeX
+PWD /Users/serhiizabolotnii/Projects/EstemPMM/LaTeX
 INPUT /usr/local/texlive/2025/texmf.cnf
 INPUT /usr/local/texlive/2025/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT /Users/serhiizabolotnii/R/PMM2-ARIMA/LaTeX/PMM2_ARIMA.tex
+INPUT /Users/serhiizabolotnii/Projects/EstemPMM/LaTeX/PMM2_ARIMA.tex
 OUTPUT PMM2_ARIMA.log
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/base/article.cls
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/base/article.cls
@@ -423,6 +423,7 @@ INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/cyrillic/t2acmtt.fd
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/cyrillic/t2acmtt.fd
 INPUT /usr/local/texlive/2025/texmf-dist/tex/latex/cyrillic/t2acmtt.fd
 INPUT /Users/serhiizabolotnii/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/latt1200.tfm
+INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm
 INPUT /usr/local/texlive/2025/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm

@@ -17,14 +17,14 @@
 \citation{gerlach2024commodity}
 \citation{verma2025optimal}
 \citation{slezak2023application,dedomenico2023modeling}
-\citation{markiewicz2021time}
-\citation{dinamarca2025modeling}
+\citation{potscher1991noninvertibility}
+\citation{fan2014quasi}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Вступ}{7}{section.1}\protected@file@percent }
 \newlabel{sec:introduction}{{1}{7}{Вступ}{section.1}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Актуальність Проблеми}{7}{subsection.1.1}\protected@file@percent }
 \newlabel{subsec:motivation}{{1.1}{7}{Актуальність Проблеми}{subsection.1.1}{}}
-\citation{potscher1991noninvertibility}
-\citation{fan2014quasi}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Обмеження Класичних Методів}{7}{subsection.1.2}\protected@file@percent }
+\newlabel{subsec:limitations}{{1.2}{7}{Обмеження Класичних Методів}{subsection.1.2}{}}
 \citation{zhang2012maximum}
 \citation{li2020forecasting}
 \citation{dowe2025novel}
@@ -34,8 +34,6 @@
 \citation{reisen2024robust}
 \citation{katsouris2023quantile}
 \citation{peng2003least,ling2005self,zhu2015model}
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Обмеження Класичних Методів}{8}{subsection.1.2}\protected@file@percent }
-\newlabel{subsec:limitations}{{1.2}{8}{Обмеження Класичних Методів}{subsection.1.2}{}}
 \@writefile{toc}{\contentsline {paragraph}{Систематична зміщеність та неконсистентність.}{8}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Втрата статистичної ефективності.}{8}{section*.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Зниження точності прогнозів.}{8}{section*.4}\protected@file@percent }
@@ -43,13 +41,13 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Класичні Підходи: Короткий Огляд}{8}{subsection.1.3}\protected@file@percent }
 \newlabel{subsec:existing_approaches}{{1.3}{8}{Класичні Підходи: Короткий Огляд}{subsection.1.3}{}}
 \@writefile{toc}{\contentsline {paragraph}{Робастні методи оцінювання (M-estimators).}{8}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Квантильна регресія та LAD методи.}{8}{section*.7}\protected@file@percent }
 \citation{wong2009student}
 \citation{ampadu2024comparative}
 \citation{graves2015efficient}
 \citation{zhou2024comprehensive}
 \citation{liu2024arima}
 \citation{godfried2024advances}
-\@writefile{toc}{\contentsline {paragraph}{Квантильна регресія та LAD методи.}{9}{section*.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Специфікації з важкими хвостами.}{9}{section*.8}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Байєсовські підходи.}{9}{section*.9}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Глибинне Навчання для Часових Рядів}{9}{subsection.1.4}\protected@file@percent }
@@ -78,9 +76,9 @@
 \newlabel{subsec:arima_basics}{{2.1}{12}{ARIMA Моделі: Основи та Класичне Оцінювання}{subsection.2.1}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.1}Визначення ARIMA(p,d,q) Моделі}{12}{subsubsection.2.1.1}\protected@file@percent }
 \newlabel{eq:differencing}{{1}{12}{ARIMA(p,d,q) модель}{equation.1}{}}
-\newlabel{eq:arma}{{2}{13}{ARIMA(p,d,q) модель}{equation.2}{}}
-\newlabel{eq:ar_poly}{{3}{13}{ARIMA(p,d,q) модель}{equation.3}{}}
-\newlabel{eq:ma_poly}{{4}{13}{ARIMA(p,d,q) модель}{equation.4}{}}
+\newlabel{eq:arma}{{2}{12}{ARIMA(p,d,q) модель}{equation.2}{}}
+\newlabel{eq:ar_poly}{{3}{12}{ARIMA(p,d,q) модель}{equation.3}{}}
+\newlabel{eq:ma_poly}{{4}{12}{ARIMA(p,d,q) модель}{equation.4}{}}
 \newlabel{eq:arima_explicit}{{5}{13}{Визначення ARIMA(p,d,q) Моделі}{equation.5}{}}
 \@writefile{toc}{\contentsline {paragraph}{Умови стаціонарності та оборотності.}{13}{section*.15}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.2}Класичні Методи Оцінювання}{13}{subsubsection.2.1.2}\protected@file@percent }
@@ -88,18 +86,18 @@
 \newlabel{eq:css}{{6}{13}{Метод умовної суми квадратів (CSS)}{equation.6}{}}
 \@writefile{toc}{\contentsline {paragraph}{Звичайний метод найменших квадратів (OLS).}{13}{section*.17}\protected@file@percent }
 \newlabel{eq:ols}{{7}{13}{Звичайний метод найменших квадратів (OLS)}{equation.7}{}}
+\@writefile{toc}{\contentsline {paragraph}{Метод максимальної правдоподібності (MLE).}{13}{section*.18}\protected@file@percent }
+\newlabel{eq:mle}{{8}{13}{Метод максимальної правдоподібності (MLE)}{equation.8}{}}
+\newlabel{eq:mle_asymptotic}{{9}{13}{Метод максимальної правдоподібності (MLE)}{equation.9}{}}
 \citation{kunchenko2002polynomial}
-\@writefile{toc}{\contentsline {paragraph}{Метод максимальної правдоподібності (MLE).}{14}{section*.18}\protected@file@percent }
-\newlabel{eq:mle}{{8}{14}{Метод максимальної правдоподібності (MLE)}{equation.8}{}}
-\newlabel{eq:mle_asymptotic}{{9}{14}{Метод максимальної правдоподібності (MLE)}{equation.9}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Теоретичні Основи Методу Максимізації Поліномів}{14}{subsection.2.2}\protected@file@percent }
 \newlabel{subsec:pmm_theory}{{2.2}{14}{Теоретичні Основи Методу Максимізації Поліномів}{subsection.2.2}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.1}Стохастичні Поліноми}{14}{subsubsection.2.2.1}\protected@file@percent }
 \newlabel{eq:stochastic_polynomial_general}{{10}{14}{Стохастичний поліном порядку $S$ загального виду}{equation.10}{}}
 \@writefile{toc}{\contentsline {paragraph}{Фундаментальні властивості стохастичного полінома.}{14}{section*.19}\protected@file@percent }
 \newlabel{eq:pmm_estimation_eq}{{11}{14}{Фундаментальні властивості стохастичного полінома}{equation.11}{}}
-\@writefile{toc}{\contentsline {paragraph}{Оптимальні коефіцієнти та система рівнянь.}{15}{section*.20}\protected@file@percent }
-\newlabel{eq:optimal_coefficients}{{12}{15}{Оптимальні коефіцієнти та система рівнянь}{equation.12}{}}
+\@writefile{toc}{\contentsline {paragraph}{Оптимальні коефіцієнти та система рівнянь.}{14}{section*.20}\protected@file@percent }
+\newlabel{eq:optimal_coefficients}{{12}{14}{Оптимальні коефіцієнти та система рівнянь}{equation.12}{}}
 \@writefile{toc}{\contentsline {paragraph}{Векторний параметр та багатопараметричне оцінювання.}{15}{section*.21}\protected@file@percent }
 \newlabel{eq:vector_estimation}{{13}{15}{Векторний параметр та багатопараметричне оцінювання}{equation.13}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.2}PMM для Асиметричних Розподілів}{15}{subsubsection.2.2.2}\protected@file@percent }
@@ -107,7 +105,7 @@
 \@writefile{toc}{\contentsline {paragraph}{PMM1: лінійний стохастичний поліном і еквівалентність МНК.}{15}{section*.22}\protected@file@percent }
 \newlabel{eq:pmm1_system}{{15}{15}{PMM1: лінійний стохастичний поліном і еквівалентність МНК}{equation.15}{}}
 \newlabel{eq:pmm1_solution}{{16}{15}{PMM1: лінійний стохастичний поліном і еквівалентність МНК}{equation.16}{}}
-\@writefile{toc}{\contentsline {paragraph}{PMM2: стохастичний поліном другого порядку.}{16}{section*.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{PMM2: стохастичний поліном другого порядку.}{15}{section*.23}\protected@file@percent }
 \newlabel{eq:pmm2_k1_general}{{19}{16}{PMM2: стохастичний поліном другого порядку}{equation.19}{}}
 \newlabel{eq:pmm2_k2_general}{{20}{16}{PMM2: стохастичний поліном другого порядку}{equation.20}{}}
 \newlabel{eq:delta_definition}{{21}{16}{PMM2: стохастичний поліном другого порядку}{equation.21}{}}
@@ -118,7 +116,7 @@
 \newlabel{eq:lambda_definition}{{25}{16}{Узагальнена матрична форма та формула Ньютона--Рафсона}{equation.25}{}}
 \newlabel{eq:pmm2_jacobian}{{26}{16}{Узагальнена матрична форма та формула Ньютона--Рафсона}{equation.26}{}}
 \newlabel{eq:pmm_newton}{{27}{16}{Узагальнена матрична форма та формула Ньютона--Рафсона}{equation.27}{}}
-\@writefile{toc}{\contentsline {paragraph}{Адаптивна процедура.}{17}{section*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Адаптивна процедура.}{16}{section*.25}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.3}Асимптотичні Дисперсії та Ефективність ММПл-Оцінок}{17}{subsubsection.2.2.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Матриця кількості добутої інформації.}{17}{section*.26}\protected@file@percent }
 \newlabel{eq:fisher_information_matrix}{{28}{17}{Матриця кількості добутої інформації}{equation.28}{}}
@@ -297,7 +295,7 @@
 \citation{pan2001akaike}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.3}Рекомендації щодо Прогнозування}{43}{subsubsection.5.3.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Обмеження Поточного Дослідження}{43}{subsection.5.4}\protected@file@percent }
-\newlabel{subsec:limitations}{{5.4}{43}{Обмеження Поточного Дослідження}{subsection.5.4}{}}
+\newlabel{subsec:study_limitations}{{5.4}{43}{Обмеження Поточного Дослідження}{subsection.5.4}{}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}Обмеження на Розподіли Інновацій}{43}{subsubsection.5.4.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Обмеження на Порядок Моделі}{43}{subsubsection.5.4.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}Відсутність Тестів на Вибір Моделі}{43}{subsubsection.5.4.3}\protected@file@percent }
@@ -355,45 +353,43 @@
 \bibcite{verma2025optimal}{7}
 \bibcite{slezak2023application}{8}
 \bibcite{dedomenico2023modeling}{9}
-\bibcite{markiewicz2021time}{10}
-\bibcite{dinamarca2025modeling}{11}
-\bibcite{potscher1991noninvertibility}{12}
-\bibcite{fan2014quasi}{13}
-\bibcite{zhang2012maximum}{14}
-\bibcite{li2020forecasting}{15}
-\bibcite{dowe2025novel}{16}
-\bibcite{ledolter1989inference}{17}
-\bibcite{huber1964robust}{18}
-\bibcite{muler2009robust}{19}
-\bibcite{reisen2024robust}{20}
-\bibcite{katsouris2023quantile}{21}
-\bibcite{peng2003least}{22}
-\bibcite{ling2005self}{23}
-\bibcite{zhu2015model}{24}
-\bibcite{wong2009student}{25}
-\bibcite{ampadu2024comparative}{26}
-\bibcite{graves2015efficient}{27}
-\bibcite{zhou2024comprehensive}{28}
-\bibcite{liu2024arima}{29}
-\bibcite{godfried2024advances}{30}
-\bibcite{kunchenko1991estimation}{31}
-\bibcite{kunchenko2002polynomial}{32}
-\bibcite{kunchenko2006stochastic}{33}
-\bibcite{zabolotnii2018polynomial}{34}
-\bibcite{zabolotnii2021estimating}{35}
-\bibcite{palahin2016joint}{36}
-\bibcite{warsza2017polynomial}{37}
-\bibcite{zabolotnii2020estimation}{38}
-\bibcite{hansen1982gmm}{39}
-\bibcite{pagan1984econometric}{40}
-\bibcite{newey1984method}{41}
-\bibcite{efron1993introduction}{42}
-\bibcite{diciccio1996bootstrap}{43}
-\bibcite{pan2001akaike}{44}
-\bibcite{koenker1978regression}{45}
-\bibcite{hampel1986robust}{46}
-\bibcite{harvey2013dynamic}{47}
-\bibcite{fruhwirth2006finite}{48}
-\bibcite{nakajima2012generalized}{49}
-\bibcite{koenker2005quantile}{50}
+\bibcite{potscher1991noninvertibility}{10}
+\bibcite{fan2014quasi}{11}
+\bibcite{zhang2012maximum}{12}
+\bibcite{li2020forecasting}{13}
+\bibcite{dowe2025novel}{14}
+\bibcite{ledolter1989inference}{15}
+\bibcite{huber1964robust}{16}
+\bibcite{muler2009robust}{17}
+\bibcite{reisen2024robust}{18}
+\bibcite{katsouris2023quantile}{19}
+\bibcite{peng2003least}{20}
+\bibcite{ling2005self}{21}
+\bibcite{zhu2015model}{22}
+\bibcite{wong2009student}{23}
+\bibcite{ampadu2024comparative}{24}
+\bibcite{graves2015efficient}{25}
+\bibcite{zhou2024comprehensive}{26}
+\bibcite{liu2024arima}{27}
+\bibcite{godfried2024advances}{28}
+\bibcite{kunchenko1991estimation}{29}
+\bibcite{kunchenko2002polynomial}{30}
+\bibcite{kunchenko2006stochastic}{31}
+\bibcite{zabolotnii2018polynomial}{32}
+\bibcite{zabolotnii2021estimating}{33}
+\bibcite{palahin2016joint}{34}
+\bibcite{warsza2017polynomial}{35}
+\bibcite{zabolotnii2020estimation}{36}
+\bibcite{hansen1982gmm}{37}
+\bibcite{pagan1984econometric}{38}
+\bibcite{newey1984method}{39}
+\bibcite{efron1993introduction}{40}
+\bibcite{diciccio1996bootstrap}{41}
+\bibcite{pan2001akaike}{42}
+\bibcite{koenker1978regression}{43}
+\bibcite{hampel1986robust}{44}
+\bibcite{harvey2013dynamic}{45}
+\bibcite{fruhwirth2006finite}{46}
+\bibcite{nakajima2012generalized}{47}
+\bibcite{koenker2005quantile}{48}
 \gdef \@abspage@last{57}

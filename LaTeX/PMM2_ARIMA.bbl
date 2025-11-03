@@ -56,18 +56,6 @@ Federica De~Domenico, Giacomo Livan, Guido Montagna, and Oreste Nicrosini.
 \newblock {\em Physica A: Statistical Mechanics and Its Applications},
   622:128886, 2023.
 
-\bibitem{markiewicz2021time}
-Marcin Markiewicz and Agnieszka Wyłomańska.
-\newblock Time series forecasting: Problem of heavy-tailed distributed noise.
-\newblock {\em International Journal of Advances in Engineering Sciences and
-  Applied Mathematics}, 13:248--256, 2021.
-
-\bibitem{dinamarca2025modeling}
-M.~A. Dinamarca, F.~Rojas, C.~Ibacache-Quiroga, and K.~González-Pizarro.
-\newblock Modeling time series with sarimax and skew-normal and zero-inflated
-  skew-normal errors.
-\newblock {\em Mathematics}, 13(11):1892, 2025.
-
 \bibitem{potscher1991noninvertibility}
 Benedikt~M. Pötscher.
 \newblock Noninvertibility and pseudo-maximum likelihood estimation of

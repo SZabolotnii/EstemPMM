@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex PMM2_ARIMA"] 1762163296.17987 "PMM2_ARIMA.aux" "PMM2_ARIMA.bbl" "PMM2_ARIMA" 1762163298.60564 0
-  "./references.bib" 1762162364.53208 21400 740c96cbecad77a7c4226b1c54b6ef7a ""
+["bibtex PMM2_ARIMA"] 1762198551.26515 "PMM2_ARIMA.aux" "PMM2_ARIMA.bbl" "PMM2_ARIMA" 1762198551.37839 0
+  "./references.bib" 1762198551.03375 19262 0ad0d21d2d9e63dbd7cb18c0d8186f98 ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/base/unsrt.bst" 1292289607 18030 1376b4b231b50c66211e47e42eda2875 ""
-  "PMM2_ARIMA.aux" 1762163298.21121 48371 fc9e83bd37c69d4c66db999339f9cefc "pdflatex"
+  "PMM2_ARIMA.aux" 1762198293.40376 50467 b5dd13ac5a4c22dd9b662cb12f7c6dfd "pdflatex"
   (generated)
   "PMM2_ARIMA.bbl"
   "PMM2_ARIMA.blg"
   (rewritten before read)
-["pdflatex"] 1762163296.32616 "/Users/serhiizabolotnii/R/PMM2-ARIMA/LaTeX/PMM2_ARIMA.tex" "PMM2_ARIMA.pdf" "PMM2_ARIMA" 1762163298.60621 0
+["pdflatex"] 1762198291.61498 "/Users/serhiizabolotnii/Projects/EstemPMM/LaTeX/PMM2_ARIMA.tex" "PMM2_ARIMA.pdf" "PMM2_ARIMA" 1762198551.37843 0
   "/Users/serhiizabolotnii/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1000.tfm" 1761722830.39252 3300 6abb8e321227ead2a8e929e5abc72bd3 ""
   "/Users/serhiizabolotnii/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1095.tfm" 1753635364.65939 3336 216c27338cb0f11f0d2908d69ce3de23 ""
   "/Users/serhiizabolotnii/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1200.tfm" 1753635367.39437 3308 eee81981029f67083258db36df06e523 ""
@@ -26,7 +26,7 @@
   "/Users/serhiizabolotnii/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lati0800.tfm" 1753686803.31133 3528 34d5b03fb0a23b3c8d81225e326c0140 ""
   "/Users/serhiizabolotnii/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lati1200.tfm" 1753686800.60913 3512 f3a56cfe95a159371df20f73d1eb107d ""
   "/Users/serhiizabolotnii/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/latt1200.tfm" 1753709504.3721 1272 bf3bb5cc29880b269c8bcb412a1ac6e2 ""
-  "/Users/serhiizabolotnii/R/PMM2-ARIMA/LaTeX/PMM2_ARIMA.tex" 1762163293.59317 186839 dc3df8e739a2399b4951945e6eb4b94d ""
+  "/Users/serhiizabolotnii/Projects/EstemPMM/LaTeX/PMM2_ARIMA.tex" 1762198286.48485 194644 1d24b53c373472baa669541bbd781ec3 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t2a.enc" 1136849721 3141 82d5616418ed8d5de703b3951bedecb4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -290,15 +290,15 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1753635178 5467155 19efa205003f9ecad95fbbaa6ff24da1 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1753635129 3345736 adfd9f4852ea84de82163b795a3ab81c ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "PMM2_ARIMA.aux" 1762163298.21121 48371 fc9e83bd37c69d4c66db999339f9cefc "pdflatex"
-  "PMM2_ARIMA.bbl" 1762163296.3048 11915 ca3613208933fcad9f27d5cb1f595eb1 "bibtex PMM2_ARIMA"
-  "PMM2_ARIMA.out" 1762163298.21892 31248 5b51e2bb71ad711848948365c9f0f5ac "pdflatex"
-  "PMM2_ARIMA.tex" 1762163293.59317 186839 dc3df8e739a2399b4951945e6eb4b94d ""
-  "PMM2_ARIMA.toc" 1762163298.22232 16956 90b1f35517bc921bcb434bc64582f3af "pdflatex"
-  "figures/07_performance_heatmap.pdf" 1761913860.22544 293884 112790cacc3e96bf46da19e805379f7e ""
-  "figures/08_method_differences.pdf" 1761913860.28479 194535 c7e15f24887d68a0e1e6760c216ba016 ""
-  "figures/11_cssml_diagnostics.pdf" 1761916007.77989 546360 8efb32d0fa762f7e91e73ad35eeb3e3b ""
-  "figures/12_pmm2_diagnostics.pdf" 1761916007.93549 532755 fb953bc395a7838c97806fa3c24dfc40 ""
+  "PMM2_ARIMA.aux" 1762198293.40376 50467 b5dd13ac5a4c22dd9b662cb12f7c6dfd "pdflatex"
+  "PMM2_ARIMA.bbl" 1762198551.35694 11736 896abb52301b1a20ee475797c0af5cd1 "bibtex PMM2_ARIMA"
+  "PMM2_ARIMA.out" 1762198293.41248 32084 17bb1202898d2704b5728f79eab4a42b "pdflatex"
+  "PMM2_ARIMA.tex" 1762198286.48485 194644 1d24b53c373472baa669541bbd781ec3 ""
+  "PMM2_ARIMA.toc" 1762198293.41659 17638 10031611da4d53009031cdd847746ef9 "pdflatex"
+  "figures/07_performance_heatmap.pdf" 1761913860.225 293884 112790cacc3e96bf46da19e805379f7e ""
+  "figures/08_method_differences.pdf" 1761913860.284 194535 c7e15f24887d68a0e1e6760c216ba016 ""
+  "figures/11_cssml_diagnostics.pdf" 1761916007.779 546360 8efb32d0fa762f7e91e73ad35eeb3e3b ""
+  "figures/12_pmm2_diagnostics.pdf" 1761916007.935 532755 fb953bc395a7838c97806fa3c24dfc40 ""
   (generated)
   "PMM2_ARIMA.aux"
   "PMM2_ARIMA.log"
