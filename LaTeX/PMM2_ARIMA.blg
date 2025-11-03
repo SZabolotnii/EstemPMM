@@ -3,44 +3,44 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: PMM2_ARIMA.aux
 The style file: unsrt.bst
 Database file #1: references.bib
-You've used 48 entries,
+You've used 50 entries,
             1791 wiz_defined-function locations,
-            747 strings with 12526 characters,
-and the built_in function-call counts, 11401 in all, are:
-= -- 1069
-> -- 469
+            759 strings with 12774 characters,
+and the built_in function-call counts, 11809 in all, are:
+= -- 1107
+> -- 485
 < -- 7
-+ -- 175
-- -- 127
-* -- 820
-:= -- 1808
-add.period$ -- 153
-call.type$ -- 48
-change.case$ -- 42
++ -- 181
+- -- 131
+* -- 845
+:= -- 1872
+add.period$ -- 159
+call.type$ -- 50
+change.case$ -- 43
 chr.to.int$ -- 0
-cite$ -- 48
-duplicate$ -- 480
-empty$ -- 1115
-format.name$ -- 127
-if$ -- 2517
+cite$ -- 50
+duplicate$ -- 499
+empty$ -- 1158
+format.name$ -- 131
+if$ -- 2609
 int.to.chr$ -- 0
-int.to.str$ -- 48
-missing$ -- 55
-newline$ -- 248
-num.names$ -- 54
-pop$ -- 104
+int.to.str$ -- 50
+missing$ -- 58
+newline$ -- 258
+num.names$ -- 56
+pop$ -- 111
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 193
+skip$ -- 200
 stack$ -- 0
-substring$ -- 879
-swap$ -- 86
+substring$ -- 904
+swap$ -- 88
 text.length$ -- 7
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 0
-while$ -- 123
-width$ -- 50
-write$ -- 548
+while$ -- 127
+width$ -- 52
+write$ -- 570

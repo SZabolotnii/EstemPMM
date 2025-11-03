@@ -340,6 +340,7 @@ if (!dir.exists(results_dir)) {
 }
 
 metrics_records <- list()
+raw_estimates_store <- list()  # For bootstrap CI computation
 residual_store <- lapply(distribution_configs, function(x) list(skew = numeric(0), kurtosis = numeric(0)))
 
 total_tasks <- sum(vapply(monte_carlo_configs, function(cfg) {
@@ -462,6 +463,15 @@ for (cfg in monte_carlo_configs) {
         }
       }
       metrics_records[[length(metrics_records) + 1L]] <- combo_df
+
+      # Store raw estimates for bootstrap CI computation
+      for (method in cfg$methods) {
+        mat <- estimates[[method]]
+        for (param in param_names) {
+          key <- paste(cfg$id, dist_cfg$label, n, method, param, sep = "|")
+          raw_estimates_store[[key]] <- mat[, param]
+        }
+      }
     }
   }
 }
@@ -469,6 +479,14 @@ for (cfg in monte_carlo_configs) {
 metrics_df <- do.call(rbind, metrics_records)
 metrics_path <- file.path(results_dir, "monte_carlo_metrics.csv")
 utils::write.csv(metrics_df, metrics_path, row.names = FALSE)
+
+# Save raw estimates and configuration for bootstrap CI computation
+raw_estimates_path <- file.path(results_dir, "raw_estimates.rds")
+saveRDS(list(
+  estimates = raw_estimates_store,
+  configs = monte_carlo_configs
+), raw_estimates_path)
+cat(sprintf("Raw estimates saved to: %s\n", raw_estimates_path))
 
 arima110_summary <- metrics_df[
   metrics_df$model == "ARIMA(1,1,0)" & metrics_df$parameter == "phi1",

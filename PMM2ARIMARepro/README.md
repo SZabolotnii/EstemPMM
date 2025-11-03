@@ -88,6 +88,59 @@ Key artifacts:
 - `article_comparison.csv` – comparison of simulations with published values and new columns with deviations.
 - The `M-EST` column in summary files contains results of Huber M-estimates for AR components, allowing comparison of PMM2/CSS with robust estimates.
 
+## Bootstrap Confidence Intervals (NEW)
+
+After running Monte Carlo simulations, you can add bootstrap confidence intervals to the results:
+
+```bash
+# Add bootstrap CIs to Monte Carlo results
+Rscript scripts/add_confidence_intervals.R
+
+# Customization
+Rscript scripts/add_confidence_intervals.R --bootstrap-reps=2000 --confidence=0.95
+```
+
+This creates `monte_carlo_metrics_with_ci.csv` containing standard errors and confidence intervals for bias, variance, MSE, and relative efficiency. Addresses reviewer request for uncertainty quantification in Monte Carlo tables.
+
+## Out-of-Sample Validation (NEW)
+
+Evaluate forecasting performance on held-out data:
+
+```bash
+# Fixed train/test split (80/20) + rolling window forecasts
+Rscript scripts/wti_out_of_sample.R
+
+# Customization
+Rscript scripts/wti_out_of_sample.R --train-fraction=0.8 --window-size=100
+```
+
+Outputs:
+- `wti_fixed_split_validation.csv` – RMSE/MAE for train/test split
+- `wti_rolling_window_validation.csv` – rolling window forecast metrics
+
+Addresses reviewer request for out-of-sample validation.
+
+## Enhanced Diagnostics (NEW)
+
+Generate comprehensive diagnostic plots and statistics with p-values:
+
+```bash
+# Full diagnostic suite for WTI case study
+Rscript scripts/wti_diagnostics.R
+
+# For different model specification
+Rscript scripts/wti_diagnostics.R --order=1,1,1
+```
+
+Outputs:
+- `wti_diagnostics_statistics.csv` – Ljung-Box, Jarque-Bera, Shapiro-Wilk, ARCH tests with p-values
+- `wti_qq_plots.png` – Q-Q plots for residual normality assessment
+- `wti_acf_pacf.png` – autocorrelation diagnostics
+- `wti_residual_time_series.png` – residual plots over time
+- `wti_residual_histograms.png` – residual distributions with normal overlay
+
+Addresses reviewer request for diagnostic plots with p-values.
+
 ## Software Versions
 
 - **R:** Version 4.5.1 (2025-06-13)
