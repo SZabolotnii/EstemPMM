@@ -1,0 +1,144 @@
+\babel@toc {english}{}\relax 
+\babel@toc {ukrainian}{}\relax 
+\babel@toc {english}{}\relax 
+\babel@toc {english}{}\relax 
+\babel@toc {english}{}\relax 
+\babel@toc {ukrainian}{}\relax 
+\contentsline {section}{\numberline {1}Вступ}{7}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Актуальність Проблеми}{7}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Обмеження Класичних Методів}{8}{subsection.1.2}%
+\contentsline {paragraph}{Систематична зміщеність та неконсистентність.}{8}{section*.2}%
+\contentsline {paragraph}{Втрата статистичної ефективності.}{8}{section*.3}%
+\contentsline {paragraph}{Зниження точності прогнозів.}{8}{section*.4}%
+\contentsline {paragraph}{Невірні довірчі інтервали.}{8}{section*.5}%
+\contentsline {subsection}{\numberline {1.3}Класичні Підходи: Короткий Огляд}{8}{subsection.1.3}%
+\contentsline {paragraph}{Робастні методи оцінювання (M-estimators).}{8}{section*.6}%
+\contentsline {paragraph}{Квантильна регресія та LAD методи.}{9}{section*.7}%
+\contentsline {paragraph}{Специфікації з важкими хвостами.}{9}{section*.8}%
+\contentsline {paragraph}{Байєсовські підходи.}{9}{section*.9}%
+\contentsline {subsection}{\numberline {1.4}Глибинне Навчання для Часових Рядів}{9}{subsection.1.4}%
+\contentsline {paragraph}{Архітектури на основі Transformers.}{9}{section*.10}%
+\contentsline {subsection}{\numberline {1.5}Метод Максимізації Поліномів: Альтернативний Підхід}{10}{subsection.1.5}%
+\contentsline {subsection}{\numberline {1.6}Дослідницька Прогалина та Внесок Роботи}{11}{subsection.1.6}%
+\contentsline {paragraph}{Нерозвиненість моментно-кумулянтних методів для часових рядів.}{11}{section*.11}%
+\contentsline {paragraph}{Недостатня увага до асиметричних інновацій.}{11}{section*.12}%
+\contentsline {paragraph}{Методологічний розрив між регіональними дослідницькими спільнотами.}{11}{section*.13}%
+\contentsline {paragraph}{Відсутність порівняльних досліджень ефективності.}{11}{section*.14}%
+\contentsline {subsection}{\numberline {1.7}Структура Статті}{12}{subsection.1.7}%
+\contentsline {section}{\numberline {2}Методологія}{12}{section.2}%
+\contentsline {subsection}{\numberline {2.1}ARIMA Моделі: Основи та Класичне Оцінювання}{12}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}Визначення ARIMA(p,d,q) Моделі}{12}{subsubsection.2.1.1}%
+\contentsline {paragraph}{Умови стаціонарності та оборотності.}{13}{section*.15}%
+\contentsline {subsubsection}{\numberline {2.1.2}Класичні Методи Оцінювання}{13}{subsubsection.2.1.2}%
+\contentsline {paragraph}{Метод умовної суми квадратів (CSS).}{13}{section*.16}%
+\contentsline {paragraph}{Звичайний метод найменших квадратів (OLS).}{13}{section*.17}%
+\contentsline {paragraph}{Метод максимальної правдоподібності (MLE).}{14}{section*.18}%
+\contentsline {subsection}{\numberline {2.2}Теоретичні Основи Методу Максимізації Поліномів}{14}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Стохастичні Поліноми}{14}{subsubsection.2.2.1}%
+\contentsline {paragraph}{Фундаментальні властивості стохастичного полінома.}{14}{section*.19}%
+\contentsline {paragraph}{Оптимальні коефіцієнти та система рівнянь.}{15}{section*.20}%
+\contentsline {paragraph}{Векторний параметр та багатопараметричне оцінювання.}{15}{section*.21}%
+\contentsline {subsubsection}{\numberline {2.2.2}PMM для Асиметричних Розподілів}{15}{subsubsection.2.2.2}%
+\contentsline {paragraph}{PMM1: лінійний стохастичний поліном і еквівалентність МНК.}{15}{section*.22}%
+\contentsline {paragraph}{PMM2: стохастичний поліном другого порядку.}{16}{section*.23}%
+\contentsline {paragraph}{Узагальнена матрична форма та формула Ньютона--Рафсона.}{16}{section*.24}%
+\contentsline {paragraph}{Адаптивна процедура.}{17}{section*.25}%
+\contentsline {subsubsection}{\numberline {2.2.3}Асимптотичні Дисперсії та Ефективність ММПл-Оцінок}{17}{subsubsection.2.2.3}%
+\contentsline {paragraph}{Матриця кількості добутої інформації.}{17}{section*.26}%
+\contentsline {paragraph}{Властивість збіжності до межі Рао-Крамера.}{17}{section*.27}%
+\contentsline {paragraph}{Інтерпретація відносної ефективності.}{18}{section*.28}%
+\contentsline {subsection}{\numberline {2.3}PMM2 для ARIMA Моделей: Адаптація Методу}{18}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Мотивація та принцип наближення}{18}{subsubsection.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}Конструкція псевдорегресорів}{19}{subsubsection.2.3.2}%
+\contentsline {subsubsection}{\numberline {2.3.3}Моментне калібрування й стохастичний поліном}{19}{subsubsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.4}Алгоритм Оцінювання PMM2 для ARIMA}{20}{subsection.2.4}%
+\contentsline {paragraph}{Коментарі до реалізації.}{20}{section*.29}%
+\contentsline {subsection}{\numberline {2.5}Асимптотичні Властивості PMM2 для ARIMA}{20}{subsection.2.5}%
+\contentsline {subsubsection}{\numberline {2.5.1}Вплив згенерованих регресорів}{21}{subsubsection.2.5.1}%
+\contentsline {subsubsection}{\numberline {2.5.2}Консистентність}{21}{subsubsection.2.5.2}%
+\contentsline {subsubsection}{\numberline {2.5.3}Асимптотична нормальність}{22}{subsubsection.2.5.3}%
+\contentsline {subsubsection}{\numberline {2.5.4}Відносна ефективність}{22}{subsubsection.2.5.4}%
+\contentsline {subsection}{\numberline {2.6}Практичні Аспекти Реалізації}{23}{subsection.2.6}%
+\contentsline {subsubsection}{\numberline {2.6.1}Вибір початкового оцінювача}{23}{subsubsection.2.6.1}%
+\contentsline {subsubsection}{\numberline {2.6.2}Нормування та згладжування}{23}{subsubsection.2.6.2}%
+\contentsline {subsubsection}{\numberline {2.6.3}Регуляризація та контроль обмежень}{23}{subsubsection.2.6.3}%
+\contentsline {subsubsection}{\numberline {2.6.4}Пост-обробка та діагностика}{23}{subsubsection.2.6.4}%
+\contentsline {section}{\numberline {3}Емпіричні Результати: Monte Carlo Дослідження}{24}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Дизайн Monte Carlo Експерименту}{24}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Загальна Структура Експерименту}{24}{subsubsection.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Процедура Генерації Даних}{24}{subsubsection.3.1.2}%
+\contentsline {paragraph}{Крок 1: Генерація інновацій.}{25}{section*.30}%
+\contentsline {paragraph}{Крок 2: Генерація ARIMA ряду.}{25}{section*.31}%
+\contentsline {paragraph}{Крок 3: Оцінювання параметрів.}{25}{section*.32}%
+\contentsline {subsubsection}{\numberline {3.1.3}Метрики Оцінювання Ефективності}{25}{subsubsection.3.1.3}%
+\contentsline {paragraph}{Зміщеність (Bias).}{25}{section*.33}%
+\contentsline {paragraph}{Дисперсія (Variance).}{25}{section*.34}%
+\contentsline {paragraph}{Середньоквадратична похибка (MSE).}{25}{section*.35}%
+\contentsline {paragraph}{Відносна ефективність (RE).}{26}{section*.36}%
+\contentsline {paragraph}{Зменшення дисперсії (Variance Reduction).}{26}{section*.37}%
+\contentsline {subsection}{\numberline {3.2}Результати для ARIMA(1,1,0) Моделі}{26}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Оцінювання при Гаусових Інноваціях}{26}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Оцінювання при Gamma Інноваціях}{27}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Оцінювання при Lognormal Інноваціях}{28}{subsubsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.4}Оцінювання при Chi-squared Інноваціях}{28}{subsubsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.3}Порівняння Ефективності для Різних Конфігурацій}{29}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Залежність RE від Коефіцієнта Асиметрії}{29}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}Залежність від Розміру Вибірки}{30}{subsubsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.4}Результати для Інших Конфігурацій ARIMA}{31}{subsection.3.4}%
+\contentsline {subsubsection}{\numberline {3.4.1}ARIMA(1,1,1) Модель}{31}{subsubsection.3.4.1}%
+\contentsline {subsubsection}{\numberline {3.4.2}ARIMA(2,1,0) Модель}{31}{subsubsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.5}Робастність та Діагностика}{31}{subsection.3.5}%
+\contentsline {subsubsection}{\numberline {3.5.1}Тести на Автокореляцію Залишків}{31}{subsubsection.3.5.1}%
+\contentsline {subsubsection}{\numberline {3.5.2}Оцінка Кумулянтів Залишків}{31}{subsubsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.6}Підсумок Емпіричних Результатів}{31}{subsection.3.6}%
+\contentsline {subsubsection}{\numberline {3.6.1}Візуалізація Порівняльної Ефективності}{32}{subsubsection.3.6.1}%
+\contentsline {section}{\numberline {4}Застосування до Реальних Даних: WTI Crude Oil}{32}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Дані та передобробка}{35}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Порівняння методів}{35}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Ключові спостереження}{35}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Практичні рекомендації}{37}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Висновки}{37}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Дискусія}{37}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Інтерпретація Результатів}{37}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}Ефективність PMM2 для Негаусових Інновацій}{37}{subsubsection.5.1.1}%
+\contentsline {subsubsection}{\numberline {5.1.2}Квадратична Залежність RE від Асиметрії}{38}{subsubsection.5.1.2}%
+\contentsline {subsubsection}{\numberline {5.1.3}Консистентність для Різних Конфігурацій ARIMA}{38}{subsubsection.5.1.3}%
+\contentsline {paragraph}{Зауваження щодо RE для множинних параметрів.}{38}{section*.52}%
+\contentsline {subsection}{\numberline {5.2}Порівняння з Існуючою Літературою}{39}{subsection.5.2}%
+\contentsline {subsubsection}{\numberline {5.2.1}Робастні M-Оцінки}{39}{subsubsection.5.2.1}%
+\contentsline {subsubsection}{\numberline {5.2.2}Специфікації з Важкими Хвостами}{39}{subsubsection.5.2.2}%
+\contentsline {subsubsection}{\numberline {5.2.3}Байєсівські Методи}{39}{subsubsection.5.2.3}%
+\contentsline {subsubsection}{\numberline {5.2.4}Квантильна Регресія для Часових Рядів}{39}{subsubsection.5.2.4}%
+\contentsline {subsection}{\numberline {5.3}Практичні Рекомендації}{39}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}Коли Використовувати PMM2?}{39}{subsubsection.5.3.1}%
+\contentsline {subsubsection}{\numberline {5.3.2}Діагностичний Алгоритм для Практиків}{40}{subsubsection.5.3.2}%
+\contentsline {subsubsection}{\numberline {5.3.3}Рекомендації щодо Прогнозування}{41}{subsubsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.4}Обмеження Поточного Дослідження}{41}{subsection.5.4}%
+\contentsline {subsubsection}{\numberline {5.4.1}Обмеження на Розподіли Інновацій}{41}{subsubsection.5.4.1}%
+\contentsline {subsubsection}{\numberline {5.4.2}Обмеження на Порядок Моделі}{41}{subsubsection.5.4.2}%
+\contentsline {subsubsection}{\numberline {5.4.3}Відсутність Тестів на Вибір Моделі}{41}{subsubsection.5.4.3}%
+\contentsline {subsubsection}{\numberline {5.4.4}Обмеження Інформаційних Критеріїв для PMM2}{41}{subsubsection.5.4.4}%
+\contentsline {subsection}{\numberline {5.5}Теоретичні Міркування}{42}{subsection.5.5}%
+\contentsline {subsubsection}{\numberline {5.5.1}Умови Регулярності}{42}{subsubsection.5.5.1}%
+\contentsline {subsubsection}{\numberline {5.5.2}Оптимальність PMM2}{42}{subsubsection.5.5.2}%
+\contentsline {subsection}{\numberline {5.6}Напрямки Майбутніх Досліджень}{42}{subsection.5.6}%
+\contentsline {subsubsection}{\numberline {5.6.1}Розширення на SARIMA та Сезонні Моделі}{42}{subsubsection.5.6.1}%
+\contentsline {subsubsection}{\numberline {5.6.2}Інтеграція з GARCH Моделями}{43}{subsubsection.5.6.2}%
+\contentsline {subsubsection}{\numberline {5.6.3}PMM2 для Векторних ARIMA (VARIMA)}{43}{subsubsection.5.6.3}%
+\contentsline {subsubsection}{\numberline {5.6.4}Онлайн та Адаптивні Версії PMM2}{43}{subsubsection.5.6.4}%
+\contentsline {subsubsection}{\numberline {5.6.5}Робастні Варіанти PMM2}{43}{subsubsection.5.6.5}%
+\contentsline {subsubsection}{\numberline {5.6.6}Порівняння з Глибинним Навчанням}{43}{subsubsection.5.6.6}%
+\contentsline {subsection}{\numberline {5.7}Підсумок Дискусії}{43}{subsection.5.7}%
+\contentsline {section}{\numberline {6}Висновки}{44}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Основні Результати}{44}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Практична Цінність}{45}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Науковий Внесок}{46}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Обмеження та Застереження}{47}{subsection.6.4}%
+\contentsline {subsection}{\numberline {6.5}Заключні Зауваження}{47}{subsection.6.5}%
+\contentsline {section}{\numberline {\CYRA }WTI: додаткові матеріали}{48}{appendix.Alph1}%
+\contentsline {subsection}{\numberline {\CYRA .1}Дизайн емпіричного дослідження}{48}{subsection.Alph1.1}%
+\contentsline {subsection}{\numberline {\CYRA .2}Теоретична валідація}{48}{subsection.Alph1.2}%
+\contentsline {paragraph}{Висновки.}{49}{section*.54}%
+\contentsline {subsubsection}{\numberline {\CYRA .2.1}Діагностика Моделі ARIMA(1,1,1): Порівняння CSS-ML та PMM2}{49}{subsubsection.Alph1.2.1}%
+\contentsline {subsection}{\numberline {\CYRA .3}Практичні рекомендації (деталі)}{49}{subsection.Alph1.3}%
+\contentsline {paragraph}{Алгоритм вибору методу.}{49}{section*.57}%

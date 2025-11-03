@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this software or reproduce results from this repository, please cite the associated research paper and this repository."
+title: "PMM2-ARIMA Reproducibility Package"
+version: 1.0.0
+date-released: 2025-11-03
+authors:
+  - family-names: Zabolotnii
+    given-names: Serhii
+    email: serhii.zabolotnii@example.com
+    orcid: https://orcid.org/0000-0003-0242-2234
+repository-code: "https://github.com/SZabolotnii/PMM2ARIMARepro"
+license: MIT
+keywords:
+  - time series
+  - ARIMA
+  - PMM2
+  - robust estimation
+  - reproducibility
+  - R package
+abstract: "This repository provides complete reproducibility materials for the research paper on Polynomial Maximization Method of order 2 (PMM2) for ARIMA parameter estimation. It includes all R scripts, data, and documentation needed to regenerate the empirical results, Monte Carlo simulations, and visualizations presented in the manuscript."
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Zabolotnii
+      given-names: Serhii
+  title: "Polynomial Maximization Method of order 2 for ARIMA Parameter Estimation: Theory and Applications"
+  year: 2025
+  journal: "Journal Name (To be updated upon acceptance)"
+  status: "Under Review"
+references:
+  - type: software
+    title: "EstemPMM: Polynomial Maximization Method Estimation Package"
+    version: 0.1.1
+    authors:
+      - family-names: Zabolotnii
+        given-names: Serhii
+    repository-code: "https://github.com/SZabolotnii/EstemPMM"
