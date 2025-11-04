@@ -66,44 +66,44 @@
 \contentsline {section}{\numberline {3}Емпіричні Результати: Monte Carlo Дослідження}{24}{section.3}%
 \contentsline {subsection}{\numberline {3.1}Дизайн Monte Carlo Експерименту}{24}{subsection.3.1}%
 \contentsline {subsubsection}{\numberline {3.1.1}Загальна Структура Експерименту}{24}{subsubsection.3.1.1}%
-\contentsline {subsubsection}{\numberline {3.1.2}Процедура Генерації Даних}{24}{subsubsection.3.1.2}%
+\contentsline {subsubsection}{\numberline {3.1.2}Процедура Генерації Даних}{25}{subsubsection.3.1.2}%
 \contentsline {paragraph}{Крок 1: Генерація інновацій.}{25}{section*.30}%
 \contentsline {paragraph}{Крок 2: Генерація ARIMA ряду.}{25}{section*.31}%
 \contentsline {paragraph}{Крок 3: Оцінювання параметрів.}{25}{section*.32}%
 \contentsline {subsubsection}{\numberline {3.1.3}Метрики Оцінювання Ефективності}{25}{subsubsection.3.1.3}%
 \contentsline {paragraph}{Зміщеність (Bias).}{25}{section*.33}%
 \contentsline {paragraph}{Дисперсія (Variance).}{25}{section*.34}%
-\contentsline {paragraph}{Середньоквадратична похибка (MSE).}{25}{section*.35}%
+\contentsline {paragraph}{Середньоквадратична похибка (MSE).}{26}{section*.35}%
 \contentsline {paragraph}{Відносна ефективність (RE).}{26}{section*.36}%
 \contentsline {paragraph}{Зменшення дисперсії (Variance Reduction).}{26}{section*.37}%
 \contentsline {subsubsection}{\numberline {3.1.4}Bootstrap Довірчі Інтервали}{26}{subsubsection.3.1.4}%
 \contentsline {paragraph}{Метод та Конфігурація.}{26}{section*.38}%
 \contentsline {paragraph}{Обчислювальна процедура.}{26}{section*.39}%
-\contentsline {paragraph}{Успішність та Валідація.}{26}{section*.40}%
+\contentsline {paragraph}{Успішність та Валідація.}{27}{section*.40}%
 \contentsline {paragraph}{Інтерпретація.}{27}{section*.41}%
 \contentsline {subsection}{\numberline {3.2}Результати для ARIMA(1,1,0) Моделі}{27}{subsection.3.2}%
 \contentsline {subsubsection}{\numberline {3.2.1}Оцінювання при Гаусових Інноваціях}{27}{subsubsection.3.2.1}%
 \contentsline {subsubsection}{\numberline {3.2.2}Оцінювання при Gamma Інноваціях}{28}{subsubsection.3.2.2}%
 \contentsline {subsubsection}{\numberline {3.2.3}Оцінювання при Lognormal Інноваціях}{28}{subsubsection.3.2.3}%
 \contentsline {subsubsection}{\numberline {3.2.4}Оцінювання при Chi-squared Інноваціях}{29}{subsubsection.3.2.4}%
-\contentsline {subsection}{\numberline {3.3}Порівняння Ефективності для Різних Конфігурацій}{29}{subsection.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.1}Залежність RE від Коефіцієнта Асиметрії}{29}{subsubsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3}Порівняння Ефективності для Різних Конфігурацій}{30}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Залежність RE від Коефіцієнта Асиметрії}{30}{subsubsection.3.3.1}%
 \contentsline {subsubsection}{\numberline {3.3.2}Залежність від Розміру Вибірки}{30}{subsubsection.3.3.2}%
 \contentsline {subsection}{\numberline {3.4}Результати для Інших Конфігурацій ARIMA}{31}{subsection.3.4}%
 \contentsline {subsubsection}{\numberline {3.4.1}ARIMA(1,1,1) Модель}{31}{subsubsection.3.4.1}%
-\contentsline {subsubsection}{\numberline {3.4.2}ARIMA(2,1,0) Модель}{31}{subsubsection.3.4.2}%
+\contentsline {subsubsection}{\numberline {3.4.2}ARIMA(2,1,0) Модель}{32}{subsubsection.3.4.2}%
 \contentsline {subsection}{\numberline {3.5}Робастність та Діагностика}{32}{subsection.3.5}%
 \contentsline {subsubsection}{\numberline {3.5.1}Тести на Автокореляцію Залишків}{32}{subsubsection.3.5.1}%
 \contentsline {subsubsection}{\numberline {3.5.2}Оцінка Кумулянтів Залишків}{32}{subsubsection.3.5.2}%
 \contentsline {subsection}{\numberline {3.6}Підсумок Емпіричних Результатів}{32}{subsection.3.6}%
-\contentsline {subsubsection}{\numberline {3.6.1}Візуалізація Порівняльної Ефективності}{34}{subsubsection.3.6.1}%
-\contentsline {section}{\numberline {4}Застосування до Реальних Даних: WTI Crude Oil}{34}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Дані та передобробка}{34}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Порівняння методів}{35}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {3.6.1}Візуалізація Порівняльної Ефективності}{33}{subsubsection.3.6.1}%
+\contentsline {section}{\numberline {4}Застосування до Реальних Даних: WTI Crude Oil}{33}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Дані та передобробка}{33}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Порівняння методів}{33}{subsection.4.2}%
 \contentsline {subsection}{\numberline {4.3}Ключові спостереження}{36}{subsection.4.3}%
 \contentsline {subsection}{\numberline {4.4}Практичні рекомендації}{37}{subsection.4.4}%
 \contentsline {subsection}{\numberline {4.5}Out-of-Sample Validation}{37}{subsection.4.5}%
-\contentsline {subsection}{\numberline {4.6}Діагностичні Тести з P-значеннями}{37}{subsection.4.6}%
+\contentsline {subsection}{\numberline {4.6}Діагностичні Тести з P-значеннями}{38}{subsection.4.6}%
 \contentsline {subsection}{\numberline {4.7}Висновки}{39}{subsection.4.7}%
 \contentsline {section}{\numberline {5}Дискусія}{39}{section.5}%
 \contentsline {subsection}{\numberline {5.1}Інтерпретація Результатів}{39}{subsection.5.1}%
@@ -116,8 +116,8 @@
 \contentsline {subsubsection}{\numberline {5.2.2}Специфікації з Важкими Хвостами}{41}{subsubsection.5.2.2}%
 \contentsline {subsubsection}{\numberline {5.2.3}Байєсівські Методи}{41}{subsubsection.5.2.3}%
 \contentsline {subsubsection}{\numberline {5.2.4}Квантильна Регресія для Часових Рядів}{41}{subsubsection.5.2.4}%
-\contentsline {subsection}{\numberline {5.3}Практичні Рекомендації}{41}{subsection.5.3}%
-\contentsline {subsubsection}{\numberline {5.3.1}Коли Використовувати PMM2?}{41}{subsubsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3}Практичні Рекомендації}{42}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}Коли Використовувати PMM2?}{42}{subsubsection.5.3.1}%
 \contentsline {subsubsection}{\numberline {5.3.2}Діагностичний Алгоритм для Практиків}{42}{subsubsection.5.3.2}%
 \contentsline {subsubsection}{\numberline {5.3.3}Рекомендації щодо Прогнозування}{43}{subsubsection.5.3.3}%
 \contentsline {subsection}{\numberline {5.4}Обмеження Поточного Дослідження}{43}{subsection.5.4}%
@@ -145,7 +145,7 @@
 \contentsline {section}{\numberline {\CYRA }WTI: додаткові матеріали}{50}{appendix.Alph1}%
 \contentsline {subsection}{\numberline {\CYRA .1}Дизайн емпіричного дослідження}{50}{subsection.Alph1.1}%
 \contentsline {subsection}{\numberline {\CYRA .2}Теоретична валідація}{50}{subsection.Alph1.2}%
-\contentsline {paragraph}{Висновки.}{51}{section*.60}%
+\contentsline {paragraph}{Висновки.}{50}{section*.60}%
 \contentsline {subsubsection}{\numberline {\CYRA .2.1}Діагностика Моделі ARIMA(1,1,1): Порівняння CSS-ML та PMM2}{51}{subsubsection.Alph1.2.1}%
 \contentsline {subsection}{\numberline {\CYRA .3}Практичні рекомендації (деталі)}{51}{subsection.Alph1.3}%
 \contentsline {paragraph}{Алгоритм вибору методу.}{51}{section*.63}%

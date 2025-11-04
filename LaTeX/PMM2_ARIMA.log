@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.7.27)  3 NOV 2025 21:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.7.27)  4 NOV 2025 10:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -8,8 +8,8 @@ LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
 (/usr/local/texlive/2025/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2024/06/29 v1.4n Standard LaTeX document class
-(/usr/local/texlive/2025/texmf-dist/tex/latex/base/size12.clo
-File: size12.clo 2024/06/29 v1.4n Standard LaTeX file (size option)
+(/usr/local/texlive/2025/texmf-dist/tex/latex/base/size11.clo
+File: size11.clo 2024/06/29 v1.4n Standard LaTeX file (size option)
 )
 \c@part=\count196
 \c@section=\count197
@@ -1069,9 +1069,12 @@ Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
 \Gm@layoutvoffset=\dimen309
 \Gm@dimlist=\toks55
 )
+(/usr/local/texlive/2025/texmf-dist/tex/latex/setspace/setspace.sty
+Package: setspace 2022/12/04 v6.7b set line spacing
+)
 \c@theorem=\count343
-Package hyperref Info: Option `colorlinks' set `true' on input line 43.
-Package hyperref Info: Option `bookmarksnumbered' set `true' on input line 43.
+Package hyperref Info: Option `colorlinks' set `true' on input line 50.
+Package hyperref Info: Option `bookmarksnumbered' set `true' on input line 50.
 
 (/usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
@@ -1081,27 +1084,27 @@ File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 (./PMM2_ARIMA.aux)
 \openout1 = `PMM2_ARIMA.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for T2A/cmr/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 109.
-LaTeX Font Info:    ... okay on input line 109.
-LaTeX Info: Redefining \th on input line 109.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Font Info:    Checking defaults for T2A/cmr/m/n on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 124.
+LaTeX Font Info:    ... okay on input line 124.
+LaTeX Info: Redefining \th on input line 124.
 
 (/usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -1129,7 +1132,7 @@ Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
-Package hyperref Info: Link coloring ON on input line 109.
+Package hyperref Info: Link coloring ON on input line 124.
 
 (./PMM2_ARIMA.out) (./PMM2_ARIMA.out)
 \@outlinefile=\write4
@@ -1158,12 +1161,12 @@ s been generated with the most recent feature set (\pgfplotsset{compat=1.18}).
 * \topmargin=-38.1381pt
 * \headheight=12.0pt
 * \headsep=25.0pt
-* \topskip=12.0pt
+* \topskip=11.0pt
 * \footskip=30.0pt
-* \marginparwidth=35.0pt
+* \marginparwidth=50.0pt
 * \marginparsep=10.0pt
 * \columnsep=10.0pt
-* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \skip\footins=10.0pt plus 4.0pt minus 2.0pt
 * \hoffset=0.0pt
 * \voffset=0.0pt
 * \mag=1000
@@ -1173,20 +1176,20 @@ s been generated with the most recent feature set (\pgfplotsset{compat=1.18}).
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 112
+LaTeX Font Info:    Trying to load font information for U+msa on input line 127
 .
 (/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 112
+LaTeX Font Info:    Trying to load font information for U+msb on input line 127
 .
 
 (/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Overfull \hbox (0.10754pt too wide) in paragraph at lines 125--126
-\T2A/cmr/m/n/10.95 сут-т№-ве пiд-ви-ще-н-ня ефе-ктив-но-стi оцi-ню-ва-н-ня для 
-аси-ме-три-чних роз-по-дi-лiв (вiд-
+Overfull \hbox (21.84843pt too wide) in paragraph at lines 138--139
+\T2A/cmr/m/n/10 вклю-ча№ ди-фе-рен-цi-ю-ва-н-ня ря-ду, пе-ре-вiр-ку ста-цiо-нар
+-но-стi та iте-ра-тив-ну про-це-ду-ру Ньютона-
  []
 
 
@@ -1194,23 +1197,16 @@ Overfull \hbox (0.10754pt too wide) in paragraph at lines 125--126
 [1
 
 {/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
-al/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t2a.enc}{/usr/loca
-l/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
-Overfull \hbox (16.01157pt too wide) in paragraph at lines 133--134
-\T2A/cmr/m/n/12 iнновацiЁ, оцiнювання параметрiв, асимптотична ефективнiсть, ча
-совi ряди, асиметричнi
+al/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t2a.enc}]
+Overfull \hbox (14.60072pt too wide) in paragraph at lines 148--149
+\T2A/cmr/bx/n/10 Ключовi слова: \T2A/cmr/m/n/10 ARIMA моделi; метод максимiзацi
+Ё полiномiв; PMM2; негаусовi iнновацiЁ; оцiнювання
  []
 
 
-Overfull \hbox (5.30197pt too wide) in paragraph at lines 143--144
-[]\T2A/cmr/bx/n/10.95 Context. \T2A/cmr/m/n/10.95 Au-tore-gres-sive In-te-grate
-d Mov-ing Av-er-age (ARIMA) mod-els are among
- []
-
-
-Overfull \hbox (6.55112pt too wide) in paragraph at lines 145--146
-\T2A/cmr/m/n/10.95 order Poly-no-mial Max-i-miza-tion Method (PMM2) for es-ti-m
-at-ing ARIMA(p,d,q) model
+Overfull \hbox (0.5983pt too wide) in paragraph at lines 148--149
+\T2A/cmr/m/n/10 параметрiв; асимптотична ефективнiсть; часовi ряди; асиметричнi
+ розподiли; Monte Carlo симуляцiЁ. 
  []
 
 
@@ -1229,16 +1225,11 @@ at-ing ARIMA(p,d,q) model
 
 [6]
 
-[7]
-Overfull \hbox (1.26385pt too wide) in paragraph at lines 201--202
-\T2A/cmr/m/n/12 до-оцiн-ки або пе-ре-оцiн-ки не-ви-зна-че-но-стi про-гно-зiв, щ
-о кри-ти-чно ва-жли-во для прийня-
- []
-
-
-Overfull \hbox (2.13356pt too wide) in paragraph at lines 210--211
- []\T2A/cmr/bx/n/12 Квантильна ре-гре-сiя та LAD ме-то-ди.[] \T2A/cmr/m/n/12 Ka
-tsouris (2023) на-дав ком-пле-ксний огляд
+[7{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
+}]
+Overfull \hbox (8.3785pt too wide) in paragraph at lines 223--224
+ []\T2A/cmr/bx/n/10.95 Робастнi ме-то-ди оцi-ню-ва-н-ня (M-estimators).[] \T2A/
+cmr/m/n/10.95 За-по-ча-тко-ва-нi кла-си-чною ро-бо-тою Huber
  []
 
 
@@ -1246,12 +1237,6 @@ tsouris (2023) на-дав ком-пле-ксний огляд
 [8]
 
 [9]
-Overfull \hbox (8.88673pt too wide) in paragraph at lines 246--247
-[]\T2A/cmr/bx/n/12 Лiнiйна ре-гре-сiя: \T2A/cmr/m/n/12 Zabolotnii et al. (2018)
- про-де-мон-стру-ва-ли за-сто-су-ва-н-ня PMM2
- []
-
-
 
 [10]
 
@@ -1264,31 +1249,42 @@ Overfull \hbox (8.88673pt too wide) in paragraph at lines 246--247
 [14]
 
 [15]
-Overfull \hbox (43.11824pt too wide) in paragraph at lines 531--532
-[]\T2A/cmr/bx/n/12 Крок 3: \T2A/cmr/m/n/12 Якщо $\OMS/cmsy/m/n/12 j[]j \OML/cmm
-/m/it/12 < \OT1/cmr/m/n/12 0\OML/cmm/m/it/12 :\OT1/cmr/m/n/12 1$\T2A/cmr/m/n/12
- , до-цiль-но за-ли-ши-тись на МНК-оцiнцi. Iна-кше розв'язати []
+
+[16]
+Overfull \hbox (5.74727pt too wide) in paragraph at lines 544--546
+\T2A/cmr/m/n/10.95 та ви-зна-чи-ти екс-цес $[] \OT1/cmr/m/n/10.95 = []\OML/cmm/
+m/it/10.95 =\OT1/cmr/m/n/10.95 ([])[] \OMS/cmsy/m/n/10.95 ^^@ \OT1/cmr/m/n/10.9
+5 3$ \T2A/cmr/m/n/10.95 й ко-е-фi-цi-№нт аси-ме-трiЁ $[] \OT1/cmr/m/n/10.95 = [
+]\OML/cmm/m/it/10.95 =\OT1/cmr/m/n/10.95 ([])[]$\T2A/cmr/m/n/10.95 . 
+ []
+
+
+Overfull \hbox (7.85297pt too wide) in paragraph at lines 546--547
+[]\T2A/cmr/bx/n/10.95 Крок 3: \T2A/cmr/m/n/10.95 Якщо $\OMS/cmsy/m/n/10.95 j[]j
+ \OML/cmm/m/it/10.95 < \OT1/cmr/m/n/10.95 0\OML/cmm/m/it/10.95 :\OT1/cmr/m/n/10
+.95 1$\T2A/cmr/m/n/10.95 , до-цiль-но за-ли-ши-тись на МНК-оцiнцi. Iна-кше розв
+'язати []
  []
 
 
 
-[16]
-
 [17]
-Overfull \hbox (7.52275pt too wide) in paragraph at lines 600--601
-[]\T2A/cmr/bx/n/12 PMM2-корекцiя. \T2A/cmr/m/n/12 Фi-ксу-№-мо по-бу-до-ва-ну на
- по-пе-ре-дньо-му кро-цi дизайн-матрицю
+Overfull \hbox (10.26097pt too wide) in paragraph at lines 584--586
+\T2A/cmr/m/n/10.95 Для лi-нiй-ноЁ ре-гре-сiЁ кiль-кiсть до-бу-тоЁ iн-фор-ма-цiЁ
+ при $\OML/cmm/m/it/10.95 S \OT1/cmr/m/n/10.95 = 1$ \T2A/cmr/m/n/10.95 до-рiв-н
+ю№ $\OML/cmm/m/it/10.95 J[] \OT1/cmr/m/n/10.95 = [] [][] \OML/cmm/m/it/10.95 x[
+]x[]$\T2A/cmr/m/n/10.95 ,
  []
 
 
 
 [18]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 645.
+put line 660.
 
-Underfull \hbox (badness 10000) in paragraph at lines 659--660
-[] []\T2A/cmr/bx/n/12 Iнiцiалiзацiя PMM2. \T2A/cmr/m/n/12 Взя-ти по-ча-тко-ве н
-а-бли-же-н-ня $[][] \OT1/cmr/m/n/12 =
+Underfull \hbox (badness 10000) in paragraph at lines 674--675
+[] []\T2A/cmr/bx/n/10.95 Iнiцiалiзацiя PMM2. \T2A/cmr/m/n/10.95 Взя-ти по-ча-тк
+о-ве на-бли-же-н-ня $[][] \OT1/cmr/m/n/10.95 =
  []
 
 
@@ -1298,13 +1294,13 @@ Underfull \hbox (badness 10000) in paragraph at lines 659--660
 [20]
 
 [21]
+
+[22]
 LaTeX Font Info:    Trying to load font information for T2A+cmtt on input line 
-784.
+799.
  (/usr/local/texlive/2025/texmf-dist/tex/latex/cyrillic/t2acmtt.fd
 File: t2acmtt.fd 2001/08/11 v1.0a Computer Modern Cyrillic font definitions
 )
-
-[22]
 
 [23]
 
@@ -1313,28 +1309,31 @@ File: t2acmtt.fd 2001/08/11 v1.0a Computer Modern Cyrillic font definitions
 [25]
 
 [26]
-Overfull \hbox (180.65874pt too wide) in paragraph at lines 1023--1024
-\T2A/cmr/m/n/12 ми ме-то-да-ми; роз-ши-ре-нi ста-ти-сти-ки до-сту-пнi у вiд-тво
--рю-ва-но-му па-ке-тi (\T2A/cmtt/m/n/12 results/monte_carlo/arima110_summary.cs
-v\T2A/cmr/m/n/12 ). 
+
+[27]
+Overfull \hbox (93.20686pt too wide) in paragraph at lines 1038--1039
+\T2A/cmr/m/n/10.95 да-ми; роз-ши-ре-нi ста-ти-сти-ки до-сту-пнi у вiд-тво-рю-ва
+-но-му па-ке-тi (\T2A/cmtt/m/n/10.95 results/monte_carlo/arima110_summary.csv\T
+2A/cmr/m/n/10.95 ). 
  []
 
 
+Overfull \hbox (142.73637pt too wide) in paragraph at lines 1075--1076
+\T2A/cmr/m/n/10.95 пiд-твер-джу№ по-сту-по-вий пе-ре-хiд вiд кла-си-чних до PMM
+2-оцiнок (де-та-лi у \T2A/cmtt/m/n/10.95 results/monte_carlo/arima110_summary.c
+sv\T2A/cmr/m/n/10.95 ). 
+ []
 
-[27]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
 
 [28]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-
-Overfull \hbox (0.69402pt too wide) in paragraph at lines 1146--1147
-\T2A/cmr/m/n/12 кла-си-чни-ми та PMM2-оцiнками (див. \T2A/cmtt/m/n/12 results/m
-onte_carlo/arima110_summary.csv\T2A/cmr/m/n/12 ). 
+Overfull \hbox (136.45985pt too wide) in paragraph at lines 1118--1119
+\T2A/cmr/m/n/10.95 най-ро-ба-стнi-шим се-ред про-те-сто-ва-них пiд-хо-дiв; пов-
+нi зна-че-н-ня до-сту-пнi у \T2A/cmtt/m/n/10.95 results/monte_carlo/arima110_su
+mmary.csv\T2A/cmr/m/n/10.95 . 
  []
 
 
@@ -1344,162 +1343,122 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 [29]
 
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+
 [30]
 
 [31]
-<figures/07_performance_heatmap.pdf, id=957, 578.16pt x 722.7pt>
+
+[32]
+<figures/07_performance_heatmap.pdf, id=967, 578.16pt x 722.7pt>
 File: figures/07_performance_heatmap.pdf Graphic file (type pdf)
 <use figures/07_performance_heatmap.pdf>
 Package pdftex.def Info: figures/07_performance_heatmap.pdf  used on input line
- 1315.
+ 1330.
 (pdftex.def)             Requested size: 455.24411pt x 569.05206pt.
-
-
-[32]
-
-[33 <./figures/07_performance_heatmap.pdf>]
-<figures/08_method_differences.pdf, id=979, 722.7pt x 433.62pt>
+<figures/08_method_differences.pdf, id=969, 722.7pt x 433.62pt>
 File: figures/08_method_differences.pdf Graphic file (type pdf)
 <use figures/08_method_differences.pdf>
 Package pdftex.def Info: figures/08_method_differences.pdf  used on input line 
-1324.
+1339.
 (pdftex.def)             Requested size: 386.96027pt x 232.1796pt.
 
-
-[34 <./figures/08_method_differences.pdf>]
-
-[35]
-Overfull \hbox (30.34001pt too wide) in paragraph at lines 1463--1464
-\T2A/cmr/m/n/12 ма-кси-маль-ноЁ прав-до-по-дi-бно-стi, стан-дар-тне об-чи-сле-н
--ня AIC/BIC че-рез \T2A/cmtt/m/n/12 stats::arima
+Overfull \hbox (25.8333pt too wide) in paragraph at lines 1406--1407
+\T2A/cmr/m/n/10.95 Ко-жну мо-дель по-рiв-ню-№-мо мiж CSS-ML i PMM2 за AIC, BIC,
+ RMSE, MAE, лог-правдоподiбнiстю,
  []
 
 
+
+[33]
+
+[34 <./figures/07_performance_heatmap.pdf>]
+
+[35 <./figures/08_method_differences.pdf>]
 
 [36]
-Overfull \hbox (0.77708pt too wide) in paragraph at lines 1543--1544
-[]\T2A/cmr/m/n/12 PMM2 де-мон-стру№ сут-т№-ве по-кра-ще-н-ня для спе-ци-фi-ка-ц
-iй AR: для ARI-MA(1,1,0)
- []
-
-
 
 [37]
 
 [38]
-Overfull \hbox (6.61496pt too wide) in paragraph at lines 1583--1584
-[]\T2A/cmr/bx/n/12 Out-of-sample ва-лi-да-цiя \T2A/cmr/m/n/12 пiд-твер-джу№ пра
--кти-чну цiн-нiсть PMM2: 11--38% змен-
- []
-
-
 
 [39]
 
 [40]
-Overfull \hbox (54.68816pt too wide) in paragraph at lines 1672--1673
-\T2A/cmr/m/n/12 На осно-вi на-ших ре-зуль-та-тiв, ми ре-ко-мен-ду-№-мо ви-ко-ри
--сто-ву-ва-ти PMM2 за-мiсть OLS/CSS/MLE,
+Overfull \hbox (17.39032pt too wide) in paragraph at lines 1687--1688
+\T2A/cmr/m/n/10.95 На осно-вi на-ших ре-зуль-та-тiв, ми ре-ко-мен-ду-№-мо ви-ко
+-ри-сто-ву-ва-ти PMM2 за-мiсть OLS/CSS/MLE,
  []
 
 
 
 [41]
-Underfull \hbox (badness 1831) in paragraph at lines 1703--1705
-[] []\T2A/cmr/bx/n/12 Використати $[]$ \T2A/cmr/m/n/12 або пе-ре-вi-ри-ти кон-с
-и-стен-тнiсть PMM2 че-рез кросс-
+Overfull \hbox (4.01067pt too wide) in paragraph at lines 1696--1697
+\T2A/cmr/m/n/10.95 стин-ни-ми по-хi-дни-ми за па-ра-ме-тра-ми. Для ве-ли-ких мо
+-де-лей (на-при-клад, ARI-MA(5,1,5))
  []
 
 
 
 [42]
-Overfull \hbox (6.44168pt too wide) in paragraph at lines 1732--1733
-\T2A/cmr/m/n/12 Нашi Monte Carlo екс-пе-ри-мен-ти охо-плю-ють чо-ти-ри ти-пи ро
-з-по-дi-лiв (Gaussi-an, Gamma,
- []
-
-
 
 [43]
-Overfull \hbox (29.0891pt too wide) in paragraph at lines 1782--1783
-\T2A/cmr/m/n/12 Метод PMM2 мо-же бу-ти при-ро-дно роз-ши-ре-ний на се-зон-нi AR
-I-MA мо-де-лi SARIMA$\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 p; d; q\OT1/cmr/m/n/12 )
- \OMS/cmsy/m/n/12 ^^B
- []
-
-
-Overfull \hbox (31.35086pt too wide) in paragraph at lines 1788--1789
-\T2A/cmr/m/n/12 Багато фi-нан-со-вих ча-со-вих ря-дiв де-мон-стру-ють як умов-н
-у ге-те-ро-ске-да-сти-чнiсть (GARCH),
+Overfull \hbox (1.51237pt too wide) in paragraph at lines 1784--1785
+[]\T2A/cmr/m/n/10.95 Майбутнi до-слi-дже-н-ня мо-жуть роз-гля-ну-ти \T2A/cmr/m/
+it/10.95 обме-же-нi \T2A/cmr/m/n/10.95 вер-сiЁ PMM2, якi обме-жу-ють вплив
  []
 
 
 
 [44]
-Overfull \hbox (1.58295pt too wide) in paragraph at lines 1804--1805
-\T2A/cmr/m/n/12 Для за-сто-су-вань ре-аль-но-го ча-су (на-при-клад, ал-го-ри-тм
-i-чна тор-гiв-ля, мо-нi-то-ринг IoT),
- []
-
-
 
 [45]
-Overfull \hbox (3.39703pt too wide) in paragraph at lines 1826--1827
-[]\T2A/cmr/bx/n/12 Обговорили обме-же-н-ня: \T2A/cmr/m/n/12 По-то-чне до-слi-дж
-е-н-ня обме-же-не си-му-ля-цi-я-ми з низь-
- []
-
-
-Overfull \hbox (16.10606pt too wide) in paragraph at lines 1861--1862
-[]\T2A/cmr/m/n/12 Розроблено ефе-ктив-ний об-чи-слю-валь-ний ал-го-ритм (Ал-го-
-ритм [][]1[][]) на осно-вi Newton-
- []
-
-
 
 [46]
 
 [47]
 
 [48]
-
-[49]
-Overfull \hbox (89.20038pt too wide) in paragraph at lines 2013--2016
-[]\T2A/cmr/bx/n/12 СпецифiкацiЁ мо-де-лей. \T2A/cmr/m/n/12 Роз-гля-да-ли кон-фi
--гу-ра-цiЁ $\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 p; q\OT1/cmr/m/n/12 ) \OMS/cmsy/m
-/n/12 2 f\OT1/cmr/m/n/12 (0\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 1)\OML/cmm/m/it/1
-2 ; \OT1/cmr/m/n/12 (1\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 0)\OML/cmm/m/it/12 ; \
-OT1/cmr/m/n/12 (1\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 1)\OML/cmm/m/it/12 ; \OT1/c
-mr/m/n/12 (2\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 1)\OML/cmm/m/it/12 ; \OT1/cmr/m/
-n/12 (1\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 2)\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 
-(2\OML/cmm/m/it/12 ; \OT1/cmr/m/n/12 2)\OMS/cmsy/m/n/12 g$\T2A/cmr/m/n/12 ,
+Overfull \hbox (0.39122pt too wide) in paragraph at lines 1994--1995
+[]\T2A/cmr/bx/n/10.95 Припущення про i.i.d. iн-но-ва-цiЁ: \T2A/cmr/m/n/10.95 На
+-яв-нiсть умов-ноЁ ге-те-ро-ске-да-сти-чно-стi (GARCH
  []
 
 
-Overfull \hbox (8.8682pt too wide) in paragraph at lines 2017--2020
-[]\T2A/cmr/bx/n/12 КритерiЁ по-рiв-ня-н-ня. \T2A/cmr/m/n/12 Вра-хо-ва-но AIC, B
-IC, RMSE, MAE, лог-правдоподiбнiсть,
+
+[49]
+Overfull \hbox (49.81905pt too wide) in paragraph at lines 2028--2031
+[]\T2A/cmr/bx/n/10.95 СпецифiкацiЁ мо-де-лей. \T2A/cmr/m/n/10.95 Роз-гля-да-ли 
+кон-фi-гу-ра-цiЁ $\OT1/cmr/m/n/10.95 (\OML/cmm/m/it/10.95 p; q\OT1/cmr/m/n/10.9
+5 ) \OMS/cmsy/m/n/10.95 2 f\OT1/cmr/m/n/10.95 (0\OML/cmm/m/it/10.95 ; \OT1/cmr/
+m/n/10.95 1)\OML/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.95 (1\OML/cmm/m/it/10.95 ; \O
+T1/cmr/m/n/10.95 0)\OML/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.95 (1\OML/cmm/m/it/10.
+95 ; \OT1/cmr/m/n/10.95 1)\OML/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.95 (2\OML/cmm/m
+/it/10.95 ; \OT1/cmr/m/n/10.95 1)\OML/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.95 (1\OM
+L/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.95 2)\OML/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.9
+5 (2\OML/cmm/m/it/10.95 ; \OT1/cmr/m/n/10.95 2)\OMS/cmsy/m/n/10.95 g$\T2A/cmr/m
+/n/10.95 ,
  []
 
 
 
 [50]
-Overfull \hbox (9.56248pt too wide) in paragraph at lines 2057--2062
-\T2A/cmr/m/n/12 Рисунки [][]4[][] та [][]5[][] пред-став-ля-ють ком-пле-ксну дi
--а-гно-сти-ку най-кра-щоЁ мо-де-лi ARI-MA(1,1,1)
- []
-
-<figures/11_cssml_diagnostics.pdf, id=1188, 867.24pt x 722.7pt>
+<figures/11_cssml_diagnostics.pdf, id=1187, 867.24pt x 722.7pt>
 File: figures/11_cssml_diagnostics.pdf Graphic file (type pdf)
 <use figures/11_cssml_diagnostics.pdf>
 Package pdftex.def Info: figures/11_cssml_diagnostics.pdf  used on input line 2
-065.
+080.
 (pdftex.def)             Requested size: 455.24411pt x 379.36804pt.
-<figures/12_pmm2_diagnostics.pdf, id=1189, 867.24pt x 722.7pt>
+<figures/12_pmm2_diagnostics.pdf, id=1188, 867.24pt x 722.7pt>
 File: figures/12_pmm2_diagnostics.pdf Graphic file (type pdf)
 <use figures/12_pmm2_diagnostics.pdf>
 Package pdftex.def Info: figures/12_pmm2_diagnostics.pdf  used on input line 20
-72.
+87.
 (pdftex.def)             Requested size: 455.24411pt x 379.36804pt.
 
 
@@ -1512,12 +1471,6 @@ Package pdftex.def Info: figures/12_pmm2_diagnostics.pdf  used on input line 20
 [54]
 
 [55]
-Underfull \hbox (badness 3229) in paragraph at lines 205--211
-[]\T2A/cmr/m/n/12 Serhii Zabolotnii, Volodymyr Khotunov, Andrii Chepynoha, and 
-Oleksandr
- []
-
-
 
 [56])
 
@@ -1530,51 +1483,52 @@ Package rerunfilecheck Info: File `PMM2_ARIMA.out' has not changed.
 (rerunfilecheck)             Checksum: 17BB1202898D2704B5728F79EAB4A42B;32084.
  ) 
 Here is how much of TeX's memory you used:
- 36594 strings out of 473190
- 826710 string characters out of 5715800
- 1360533 words of memory out of 5000000
- 58838 multiletter control sequences out of 15000+600000
- 587555 words of font info for 108 fonts, out of 8000000 for 9000
+ 36640 strings out of 473190
+ 827595 string characters out of 5715800
+ 1358339 words of memory out of 5000000
+ 58876 multiletter control sequences out of 15000+600000
+ 588567 words of font info for 108 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  84i,19n,87p,1201b,2293s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb>
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
-/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></
-usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></us
-r/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/
-local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/
-local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb></
-usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></us
-r/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/
-local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/loc
-al/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/
-texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/tex
-live/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texl
-ive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texliv
-e/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/local/te
-xlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/loca
-l/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/
-texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/te
-xlive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texl
-ive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texliv
-e/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/
-2025/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/20
-25/texmf-dist/fonts/type1/public/cm-super/sfrm0700.pfb></usr/local/texlive/2025
-/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2025/t
-exmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2025/tex
-mf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2025/texmf
--dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2025/texmf-d
-ist/fonts/type1/public/cm-super/sfrm1440.pfb></usr/local/texlive/2025/texmf-dis
-t/fonts/type1/public/cm-super/sfrm2074.pfb></usr/local/texlive/2025/texmf-dist/
-fonts/type1/public/cm-super/sfti0600.pfb></usr/local/texlive/2025/texmf-dist/fo
-nts/type1/public/cm-super/sfti0800.pfb></usr/local/texlive/2025/texmf-dist/font
-s/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2025/texmf-dist/fonts/
-type1/public/cm-super/sftt1200.pfb>
-Output written on PMM2_ARIMA.pdf (57 pages, 2383966 bytes).
+/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></u
+sr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr
+/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/l
+ocal/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/loc
+al/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/loc
+al/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmmib8.pfb></usr
+/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/l
+ocal/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/loca
+l/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/t
+exlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texl
+ive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive
+/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/
+2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/20
+25/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2025
+/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb></usr/local/texlive/
+2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texl
+ive/2025/texmf-dist/fonts/type1/public/cm-super/sfbx0900.pfb></usr/local/texliv
+e/2025/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/
+2025/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/20
+25/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2025
+/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2025/t
+exmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2025/tex
+mf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2025/texmf
+-dist/fonts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2025/texmf-d
+ist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2025/texmf-dis
+t/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2025/texmf-dist/
+fonts/type1/public/cm-super/sfrm1728.pfb></usr/local/texlive/2025/texmf-dist/fo
+nts/type1/public/cm-super/sfti0600.pfb></usr/local/texlive/2025/texmf-dist/font
+s/type1/public/cm-super/sfti0800.pfb></usr/local/texlive/2025/texmf-dist/fonts/
+type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2025/texmf-dist/fonts/ty
+pe1/public/cm-super/sfti1095.pfb></usr/local/texlive/2025/texmf-dist/fonts/type
+1/public/cm-super/sftt1095.pfb>
+Output written on PMM2_ARIMA.pdf (57 pages, 2399128 bytes).
 PDF statistics:
- 1471 PDF objects out of 1728 (max. 8388607)
- 1320 compressed objects within 14 object streams
+ 1473 PDF objects out of 1728 (max. 8388607)
+ 1321 compressed objects within 14 object streams
  428 named destinations out of 1000 (max. 500000)
  849 words of extra memory for PDF output out of 10000 (max. 10000000)
 

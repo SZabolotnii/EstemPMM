@@ -1,4 +1,9 @@
-\documentclass[12pt,a4paper]{article}
+% Document formatted according to Journal of Time Series Analysis style:
+% - 11pt font size (minimum required)
+% - Single column layout (as requested, though journal uses two columns)
+% - 1.2 line spacing (journal standard, closer to their format)
+% - All fonts embedded (standard with pdflatex)
+\documentclass[11pt,a4paper]{article}
 \usepackage[T2A]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[ukrainian,english]{babel}
@@ -21,6 +26,8 @@
 \pgfplotsset{compat=1.18}
 \usepackage{geometry}
 \geometry{margin=2.5cm}
+\usepackage{setspace}
+\setstretch{1.2}
 
 % Визначення theorem environments
 \newtheorem{theorem}{Теорема}[section]
@@ -100,11 +107,19 @@
 \newcommand{\heps}{\hat{\varepsilon}}
 \newcommand{\hsigma}{\hat{\sigma}}
 
-\title{Застосування Методу Максимізації Поліномів для Оцінювання Параметрів ARIMA Моделей з Асиметричними Негаусовими Інноваціями}
+\title{\MakeUppercase{Застосування Методу Максимізації Поліномів для Оцінювання Параметрів ARIMA Моделей з Асиметричними Негаусовими Інноваціями}}
 
-\author{Сергій Заболотній\thanks{Cherkasy State Business College: Cherkasy, Ukraine. Email: zabolotnii.serhii@csbc.edu.ua}}
+\author{
+\textbf{Сергій Заболотній}$^{a}$ \\[0.5em]
+{\small $^{a}$\textit{Cherkasy State Business College, Cherkasy, Ukraine}}
+}
 
-\date{\today}
+\date{
+\vspace{-1em}
+{\small Received 30 November 2023; Accepted 6 September 2024} \\[0.5em]
+{\small Correspondence to: Сергій Заболотній, Cherkasy State Business College, Cherkasy, Ukraine.} \\
+{\small E-mail: zabolotnii.serhii@csbc.edu.ua}
+}
 
 \begin{document}
 
@@ -130,9 +145,9 @@
 
 \end{abstract}
 
-\noindent\textbf{Ключові слова:} ARIMA моделі, метод максимізації поліномів, PMM2, негаусові інновації, оцінювання параметрів, асимптотична ефективність, часові ряди, асиметричні розподіли, Monte Carlo симуляції
+\noindent{\small \textbf{Ключові слова:} ARIMA моделі; метод максимізації поліномів; PMM2; негаусові інновації; оцінювання параметрів; асимптотична ефективність; часові ряди; асиметричні розподіли; Monte Carlo симуляції.}
 
-\vspace{1em}
+\vspace{1.5em}
 
 % ============================================
 % ABSTRACT - ENGLISH
@@ -154,7 +169,7 @@
 
 \end{abstract}
 
-\noindent\textbf{Keywords:} ARIMA models, polynomial maximization method, non-Gaussian innovations, parameter estimation, asymptotic efficiency, time series analysis, skewed distributions, Monte Carlo simulation
+\noindent{\small \textbf{Keywords:} ARIMA models; polynomial maximization method; non-Gaussian innovations; parameter estimation; asymptotic efficiency; time series analysis; skewed distributions; Monte Carlo simulation.}
 
 \selectlanguage{ukrainian}
 
