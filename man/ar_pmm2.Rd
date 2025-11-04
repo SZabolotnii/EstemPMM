@@ -45,6 +45,11 @@ ar_pmm2(
 
 \item{verbose}{Logical: whether to print progress information}
 }
+\value{
+An S4 object of class \code{ARPMM2} containing fitted autoregressive
+coefficients, residuals, central moment estimates (m2-m4), model order,
+intercept, original series, and convergence diagnostics.
+}
 \description{
 Fit an AR model using PMM2 (wrapper)
 }

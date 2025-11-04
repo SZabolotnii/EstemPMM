@@ -15,6 +15,12 @@ compare_ma_methods(x, order = 1, include.mean = TRUE, pmm2_args = list())
 
 \item{pmm2_args}{List of additional arguments to pass to ts_pmm2()}
 }
+\value{
+A named list containing the fitted objects for each estimation
+approach (e.g., YW/OLS/MLE or CSS/ML alongside PMM2) plus two data frames:
+\code{coefficients} (side-by-side parameter estimates) and
+\code{residual_stats} (residual RSS, MAE, skewness, and kurtosis).
+}
 \description{
 Compare MA methods
 }

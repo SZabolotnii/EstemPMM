@@ -45,6 +45,11 @@ ma_pmm2(
 
 \item{verbose}{Logical: whether to print progress information}
 }
+\value{
+An S4 object of class \code{MAPMM2} containing moving-average
+coefficients, residual innovations, central moments, model order,
+intercept, original series, and convergence diagnostics.
+}
 \description{
 Fit an MA model using PMM2 (wrapper)
 }

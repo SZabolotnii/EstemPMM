@@ -334,7 +334,10 @@ setMethod("predict", "TS2fit",
 #' @param include.mean Logical, whether to include intercept term
 #' @param pmm2_args List of additional arguments to pass to ts_pmm2()
 #'
-#' @return List with fitted models and comparison tables
+#' @return A named list containing the fitted objects for each estimation
+#'   approach (e.g., YW/OLS/MLE or CSS/ML alongside PMM2) plus two data frames:
+#'   \code{coefficients} (side-by-side parameter estimates) and
+#'   \code{residual_stats} (residual RSS, MAE, skewness, and kurtosis).
 #' @export
 compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "arima"),
                                include.mean = TRUE, pmm2_args = list()) {
@@ -491,6 +494,7 @@ compare_ts_methods <- function(x, order, model_type = c("ar", "ma", "arma", "ari
 #' Compare AR methods
 #'
 #' @inheritParams compare_ts_methods
+#' @inherit compare_ts_methods return
 #' @export
 compare_ar_methods <- function(x, order = 1, include.mean = TRUE, pmm2_args = list()) {
   compare_ts_methods(x, order = order, model_type = "ar",
@@ -500,6 +504,7 @@ compare_ar_methods <- function(x, order = 1, include.mean = TRUE, pmm2_args = li
 #' Compare MA methods
 #'
 #' @inheritParams compare_ts_methods
+#' @inherit compare_ts_methods return
 #' @export
 compare_ma_methods <- function(x, order = 1, include.mean = TRUE, pmm2_args = list()) {
   compare_ts_methods(x, order = order, model_type = "ma",
@@ -509,6 +514,7 @@ compare_ma_methods <- function(x, order = 1, include.mean = TRUE, pmm2_args = li
 #' Compare ARMA methods
 #'
 #' @inheritParams compare_ts_methods
+#' @inherit compare_ts_methods return
 #' @export
 compare_arma_methods <- function(x, order = c(1, 1), include.mean = TRUE, pmm2_args = list()) {
   compare_ts_methods(x, order = order, model_type = "arma",
@@ -518,6 +524,7 @@ compare_arma_methods <- function(x, order = c(1, 1), include.mean = TRUE, pmm2_a
 #' Compare ARIMA methods
 #'
 #' @inheritParams compare_ts_methods
+#' @inherit compare_ts_methods return
 #' @export
 compare_arima_methods <- function(x, order = c(1, 1, 1), include.mean = TRUE, pmm2_args = list()) {
   compare_ts_methods(x, order = order, model_type = "arima",

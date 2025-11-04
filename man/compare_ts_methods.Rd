@@ -24,7 +24,10 @@ compare_ts_methods(
 \item{pmm2_args}{List of additional arguments to pass to ts_pmm2()}
 }
 \value{
-List with fitted models and comparison tables
+A named list containing the fitted objects for each estimation
+approach (e.g., YW/OLS/MLE or CSS/ML alongside PMM2) plus two data frames:
+\code{coefficients} (side-by-side parameter estimates) and
+\code{residual_stats} (residual RSS, MAE, skewness, and kurtosis).
 }
 \description{
 Compare PMM2 with classical time series estimation methods

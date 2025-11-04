@@ -320,6 +320,9 @@ ts_pmm2 <- function(x, order,
 #' Fit an AR model using PMM2 (wrapper)
 #'
 #' @inheritParams ts_pmm2
+#' @return An S4 object of class \code{ARPMM2} containing fitted autoregressive
+#'   coefficients, residuals, central moment estimates (m2-m4), model order,
+#'   intercept, original series, and convergence diagnostics.
 #' @export
 ar_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
                     include.mean = TRUE, initial = NULL, na.action = na.fail,
@@ -334,6 +337,9 @@ ar_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
 #' Fit an MA model using PMM2 (wrapper)
 #'
 #' @inheritParams ts_pmm2
+#' @return An S4 object of class \code{MAPMM2} containing moving-average
+#'   coefficients, residual innovations, central moments, model order,
+#'   intercept, original series, and convergence diagnostics.
 #' @export
 ma_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
                     include.mean = TRUE, initial = NULL, na.action = na.fail,
@@ -348,6 +354,9 @@ ma_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
 #' Fit an ARMA model using PMM2 (wrapper)
 #'
 #' @inheritParams ts_pmm2
+#' @return An S4 object of class \code{ARMAPMM2} containing fitted AR and MA
+#'   coefficients, residuals, central moments, model specification, intercept,
+#'   original series, and convergence diagnostics.
 #' @export
 arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2", max_iter = 50, tol = 1e-6,
                       include.mean = TRUE, initial = NULL, na.action = na.fail,
@@ -362,6 +371,9 @@ arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2", max_iter = 50, tol = 
 #' Fit an ARIMA model using PMM2 (wrapper)
 #'
 #' @inheritParams ts_pmm2
+#' @return An S4 object of class \code{ARIMAPMM2} containing fitted AR and MA
+#'   coefficients, residual series, central moments, differencing order,
+#'   intercept, original series, and convergence diagnostics.
 #' @export
 arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2", max_iter = 50, tol = 1e-6,
                        include.mean = TRUE, initial = NULL, na.action = na.fail,

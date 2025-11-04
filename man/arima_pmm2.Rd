@@ -45,6 +45,11 @@ arima_pmm2(
 
 \item{verbose}{Logical: whether to print progress information}
 }
+\value{
+An S4 object of class \code{ARIMAPMM2} containing fitted AR and MA
+coefficients, residual series, central moments, differencing order,
+intercept, original series, and convergence diagnostics.
+}
 \description{
 Fit an ARIMA model using PMM2 (wrapper)
 }

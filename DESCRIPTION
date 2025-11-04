@@ -14,7 +14,10 @@ Description:
     The 'PMM2' variant achieves lower variance parameter estimates compared to ordinary
     least squares ('OLS') when errors exhibit significant skewness. Includes methods
     for linear regression, 'AR'/'MA'/'ARMA'/'ARIMA' models, and bootstrap inference.
-License: GPL-3 + file LICENSE
+    Methodology described in Zabolotnii, Warsza, and Tkachenko (2018) <doi:10.1007/978-3-319-77179-3_75>,
+    Zabolotnii, Tkachenko, and Warsza (2022) <doi:10.1007/978-3-031-03502-9_37>, and
+    Zabolotnii, Tkachenko, and Warsza (2023) <doi:10.1007/978-3-031-25844-2_21>.
+License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 3.5.0)
 Imports:

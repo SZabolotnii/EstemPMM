@@ -53,17 +53,12 @@ The PMM2 algorithm works as follows:
 PMM2 is especially useful when error terms are not Gaussian.
 }
 \examples{
-\dontrun{
-# Generate sample data with t-distributed errors
-n <- 100
+set.seed(123)
+n <- 80
 x <- rnorm(n)
-y <- 2 + 3*x + rt(n, df=3)
-dat <- data.frame(y=y, x=x)
+y <- 2 + 3 * x + rt(n, df = 3)
+dat <- data.frame(y = y, x = x)
 
-# Fit model using PMM2
-fit <- lm_pmm2(y ~ x, data=dat)
-
-# Summary and statistical inference
-summary(fit, formula=y~x, data=dat)
-}
+fit <- lm_pmm2(y ~ x, data = dat)
+summary(fit, formula = y ~ x, data = dat)
 }

@@ -45,6 +45,11 @@ arma_pmm2(
 
 \item{verbose}{Logical: whether to print progress information}
 }
+\value{
+An S4 object of class \code{ARMAPMM2} containing fitted AR and MA
+coefficients, residuals, central moments, model specification, intercept,
+original series, and convergence diagnostics.
+}
 \description{
 Fit an ARMA model using PMM2 (wrapper)
 }
