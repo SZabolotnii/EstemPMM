@@ -231,9 +231,27 @@ run_mc_replication <- function(true_params, methods = c("ols", "pmm2")) {
   # Compute errors relative to true parameters
   true_coef <- c(true_params$ar_coef, true_params$sar_coef)
 
+  # Diagnostic: check true_coef
+  if (length(true_coef) == 0) {
+    warning("true_coef has length 0! This is incorrect.")
+    return(data.frame())
+  }
+
   result_df <- data.frame()
   for (method in methods) {
     fit <- results[[method]]
+
+    # Check if coefficients are valid
+    if (length(fit$coefficients) == 0) {
+      # No coefficients returned - skip
+      next
+    }
+
+    if (length(fit$coefficients) != length(true_coef)) {
+      warning(sprintf("Method %s: length mismatch - fit has %d coefs, expected %d",
+                      method, length(fit$coefficients), length(true_coef)))
+      next
+    }
 
     if (all(!is.na(fit$coefficients))) {
       bias <- fit$coefficients - true_coef
@@ -317,12 +335,35 @@ run_sar_monte_carlo <- function(n_sim = 100,
   # Combine all results
   combined_results <- do.call(rbind, all_results)
 
+  # Diagnostic: Check if we have any results
+  if (verbose && !is.null(combined_results)) {
+    cat(sprintf("\nDiagnostic: combined_results has %d rows\n", nrow(combined_results)))
+  }
+
   # Compute summary statistics
   summary_stats <- list()
+
+  if (is.null(combined_results) || nrow(combined_results) == 0) {
+    if (verbose) {
+      cat("WARNING: No results were collected from replications!\n")
+      cat("This indicates all model fits failed.\n")
+    }
+    return(list(
+      raw_results = data.frame(),
+      summary = list(),
+      true_params = true_params,
+      n_sim = n_sim,
+      converged_count = converged_count
+    ))
+  }
 
   for (method in methods) {
     method_upper <- toupper(method)
     method_data <- combined_results[combined_results$method == method_upper, ]
+
+    if (verbose) {
+      cat(sprintf("Method %s: %d rows in method_data\n", method_upper, nrow(method_data)))
+    }
 
     if (nrow(method_data) > 0) {
       # Aggregate by parameter
@@ -385,18 +426,27 @@ print_sar_mc_summary <- function(summary_stats, true_params) {
   cat("================================\n\n")
 
   for (i in 1:length(param_names)) {
-    cat(sprintf("%-6s (true = %.3f):\n", param_names[i],
-                true_params$ar_coef[i] %||%
-                  true_params$sar_coef[i - p]))
+    # Get true value correctly: first p values are AR, rest are SAR
+    if (i <= p) {
+      true_val <- true_params$ar_coef[i]
+    } else {
+      true_val <- true_params$sar_coef[i - p]
+    }
 
-    for (method in names(summary_stats)) {
-      stats <- summary_stats[[method]]
-      cat(sprintf("  %-6s: %.4f ± %.4f  (Bias: %.4f, RMSE: %.4f)\n",
-                  stats$method,
-                  stats$mean_estimate[i],
-                  stats$sd_estimate[i],
-                  stats$mean_bias[i],
-                  stats$rmse[i]))
+    cat(sprintf("%-6s (true = %.3f):\n", param_names[i], true_val))
+
+    if (length(summary_stats) > 0) {
+      for (method in names(summary_stats)) {
+        stats <- summary_stats[[method]]
+        if (!is.null(stats) && length(stats$mean_estimate) >= i) {
+          cat(sprintf("  %-6s: %.4f ± %.4f  (Bias: %.4f, RMSE: %.4f)\n",
+                      stats$method,
+                      stats$mean_estimate[i],
+                      stats$sd_estimate[i],
+                      stats$mean_bias[i],
+                      stats$rmse[i]))
+        }
+      }
     }
     cat("\n")
   }
@@ -405,22 +455,30 @@ print_sar_mc_summary <- function(summary_stats, true_params) {
   cat("\nOverall Performance\n")
   cat("===================\n\n")
 
-  cat("Method    Conv.Rate  Avg.RMSE   Avg.Bias\n")
-  cat("------    ---------  --------   --------\n")
+  if (length(summary_stats) == 0) {
+    cat("WARNING: No summary statistics available!\n")
+    cat("This means no successful model fits were obtained.\n")
+    cat("Check for errors in model estimation.\n\n")
+  } else {
+    cat("Method    Conv.Rate  Avg.RMSE   Avg.Bias\n")
+    cat("------    ---------  --------   --------\n")
 
-  for (method in names(summary_stats)) {
-    stats <- summary_stats[[method]]
-    avg_rmse <- mean(stats$rmse)
-    avg_bias <- mean(abs(stats$mean_bias))
+    for (method in names(summary_stats)) {
+      stats <- summary_stats[[method]]
+      if (!is.null(stats) && length(stats$rmse) > 0) {
+        avg_rmse <- mean(stats$rmse, na.rm = TRUE)
+        avg_bias <- mean(abs(stats$mean_bias), na.rm = TRUE)
 
-    cat(sprintf("%-8s  %.2f%%      %.5f   %.5f\n",
-                stats$method,
-                stats$convergence_rate * 100,
-                avg_rmse,
-                avg_bias))
+        cat(sprintf("%-8s  %.2f%%      %.5f   %.5f\n",
+                    stats$method,
+                    stats$convergence_rate * 100,
+                    avg_rmse,
+                    avg_bias))
+      }
+    }
+
+    cat("\n")
   }
-
-  cat("\n")
 
   # Efficiency comparison (PMM2 vs OLS)
   if ("ols" %in% names(summary_stats) && "pmm2" %in% names(summary_stats)) {
