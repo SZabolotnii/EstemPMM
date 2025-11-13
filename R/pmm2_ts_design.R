@@ -550,7 +550,7 @@ compute_ts_residuals <- function(coefs, model_info) {
 #' For a multiplicative AR(p)×SAR(P)_s model (multiplicative=TRUE):
 #'   Includes cross-terms like y_{t-1-s}, y_{t-1-2s}, etc.
 #'
-#' @keywords internal
+#' @export
 #'
 #' @examples
 #' \dontrun{
