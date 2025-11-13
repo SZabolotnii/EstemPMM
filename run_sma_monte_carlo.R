@@ -255,21 +255,21 @@ if (!dir.exists("test_results")) {
   dir.create("test_results")
 }
 
-output_file <- sprintf("test_results/sma_monte_carlo_%s_%dreps.csv",
+output_file <- sprintf("test_results/sma_monte_carlo_%s_%.0freps.csv",
                        format(Sys.Date(), "%Y%m%d"), n_sim)
 write.csv(results_df, output_file, row.names = FALSE)
 cat(sprintf("✓ Results saved to: %s\n\n", output_file))
 
 # Generate markdown report
 cat("→ Generating markdown report...\n")
-report_file <- sprintf("test_results/SMA_Monte_Carlo_Report_%s_%dreps.md",
+report_file <- sprintf("test_results/SMA_Monte_Carlo_Report_%s_%.0freps.md",
                        format(Sys.Date(), "%Y%m%d"), n_sim)
 
 report_content <- sprintf("# Monte Carlo Simulation Report: SMA-PMM2 vs CSS
 
 **Date:** %s
 **Script:** `run_sma_monte_carlo.R`
-**Replications:** %d
+**Replications:** %.0f
 
 ---
 
@@ -294,12 +294,12 @@ report_content <- sprintf("# Monte Carlo Simulation Report: SMA-PMM2 vs CSS
 ### Model Specification
 
 ```
-Model: SMA(%d)_%d (Seasonal Moving Average)
-y_t = μ + ε_t + θ·ε_{t-%d}
+Model: SMA(%.0f)_%.0f (Seasonal Moving Average)
+y_t = μ + ε_t + θ·ε_{t-%.0f}
 
 True coefficient: θ = %.2f
-Time series length: n = %d
-Monte Carlo replications: %d
+Time series length: n = %.0f
+Monte Carlo replications: %.0f
 ```
 
 ### Innovation Distribution
@@ -380,7 +380,7 @@ g = 1 - c₃²/(2 + c₄) = %.4f
 
 ```
 PMM2 Convergence:
-  Success rate:     %.1f%%%% (%d/%d)
+  Success rate:     %.1f%%%% (%.0f/%.0f)
   Mean iterations:  %.2f
   Median iterations: %.0f
   Min iterations:   %.0f
@@ -463,7 +463,7 @@ Simulation results saved to:
 ```
 
 **Columns:**
-- `replication`: Replication number (1-%d)
+- `replication`: Replication number (1-%.0f)
 - `css`: CSS estimate of θ
 - `pmm2`: PMM2 estimate of θ
 - `converged`: PMM2 convergence status
@@ -519,7 +519,7 @@ The Monte Carlo simulation provides %s evidence that:
 ",
   # Header
   format(Sys.time(), "%%B %%d, %%Y"),
-  as.integer(n_sim),
+  n_sim,
 
   # Executive summary
   ifelse(var_reduction > 25, "successfully demonstrates significant variance reduction",
@@ -538,7 +538,7 @@ The Monte Carlo simulation provides %s evidence that:
   ifelse(abs(var_ratio - g_theory) / g_theory < 0.10, "✅ Strong", "⚠️ Weak"),
 
   # Model specification
-  as.integer(Q), as.integer(s), as.integer(s), theta_true, as.integer(n_obs), as.integer(n_sim),
+  Q, s, s, theta_true, n_obs, n_sim,
 
   # Innovation distribution
   innovation_type, c3, c4, g_theory,
@@ -574,7 +574,7 @@ The Monte Carlo simulation provides %s evidence that:
 
   # Algorithm performance
   100 * mean(converged_pmm2[valid_pmm2]),
-  as.integer(sum(converged_pmm2[valid_pmm2])), as.integer(sum(valid_pmm2)),
+  sum(converged_pmm2[valid_pmm2]), sum(valid_pmm2),
   mean(iterations_pmm2, na.rm = TRUE),
   median(iterations_pmm2, na.rm = TRUE),
   min(iterations_pmm2, na.rm = TRUE),
@@ -607,7 +607,7 @@ The Monte Carlo simulation provides %s evidence that:
   100 * (1 - sqrt(var_ratio)),
 
   # Data files
-  output_file, as.integer(n_sim),
+  output_file, n_sim,
 
   # System info
   paste(R.version$major, R.version$minor, sep = "."),
