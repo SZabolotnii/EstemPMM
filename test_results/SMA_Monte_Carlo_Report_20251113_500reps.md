@@ -124,8 +124,8 @@ PMM2 Convergence:
 ### Computational Efficiency
 
 ```
-Total simulation time: 3.6 seconds
-Time per replication:  7.1 ms
+Total simulation time: 3.4 seconds
+Time per replication:  6.9 ms
 
 Per replication breakdown:
   - CSS fit:   ~2 ms
