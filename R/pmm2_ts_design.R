@@ -666,3 +666,153 @@ create_sar_matrix <- function(x, p = 0, P = 1, s = 12, multiplicative = FALSE) {
   colnames(X) <- col_names
   return(X)
 }
+
+#' Create design matrix for seasonal ARMA model
+#'
+#' Constructs a design matrix for Seasonal ARMA (SARMA) models,
+#' combining non-seasonal and seasonal AR and MA components.
+#'
+#' @param x Numeric vector (centered time series)
+#' @param residuals Numeric vector (initial residuals/innovations)
+#' @param p Non-seasonal AR order (default 0)
+#' @param P Seasonal AR order (default 0)
+#' @param q Non-seasonal MA order (default 0)
+#' @param Q Seasonal MA order (default 0)
+#' @param s Seasonal period (e.g., 12 for monthly data)
+#'
+#' @return Design matrix with lagged values. Columns are ordered as:
+#'   - First p columns: non-seasonal AR lags (y_{t-1}, ..., y_{t-p})
+#'   - Next P columns: seasonal AR lags (y_{t-s}, ..., y_{t-Ps})
+#'   - Next q columns: non-seasonal MA lags (ε_{t-1}, ..., ε_{t-q})
+#'   - Last Q columns: seasonal MA lags (ε_{t-s}, ..., ε_{t-Qs})
+#'
+#' @details
+#' For a SARMA(p,q)×(P,Q)_s model:
+#'   y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} +
+#'         Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} +
+#'         θ₁·ε_{t-1} + ... + θ_q·ε_{t-q} +
+#'         Θ₁·ε_{t-s} + ... + Θ_Q·ε_{t-Qs} + ε_t
+#'
+#' Where:
+#'   - p, P are non-seasonal and seasonal AR orders
+#'   - q, Q are non-seasonal and seasonal MA orders
+#'   - s is the seasonal period
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Simple SARMA(1,0)×(1,0)_12 model (AR+SAR, no MA)
+#' x <- rnorm(120)
+#' residuals <- rnorm(120)
+#' X <- create_sarma_matrix(x, residuals, p=1, P=1, q=0, Q=0, s=12)
+#'
+#' # Full SARMA(1,1)×(1,1)_12 model
+#' X <- create_sarma_matrix(x, residuals, p=1, P=1, q=1, Q=1, s=12)
+#' }
+create_sarma_matrix <- function(x, residuals, p = 0, P = 0, q = 0, Q = 0, s = 12) {
+  n <- length(x)
+
+  # Validate inputs
+  if (p < 0 || P < 0 || q < 0 || Q < 0) {
+    stop("All orders (p, P, q, Q) must be non-negative")
+  }
+  if (p == 0 && P == 0 && q == 0 && Q == 0) {
+    stop("At least one order must be positive")
+  }
+  if (s <= 1) {
+    stop("Seasonal period s must be greater than 1")
+  }
+  if (length(residuals) != n) {
+    stop("Length of x and residuals must match")
+  }
+
+  # Calculate maximum lags
+  max_ar_lag <- max(p, P * s)
+  max_ma_lag <- max(q, Q * s)
+  max_lag <- max(max_ar_lag, max_ma_lag)
+
+  # Check data sufficiency
+  if (n <= max_lag) {
+    stop("Insufficient data: need at least ", max_lag + 1, " observations, got ", n)
+  }
+
+  # Number of rows in design matrix
+  nr <- n - max_lag
+
+  # Number of columns
+  ncol <- p + P + q + Q
+
+  # Initialize design matrix
+  X <- matrix(0, nrow = nr, ncol = ncol)
+  col_idx <- 1
+
+  # Add non-seasonal AR lags (if p > 0)
+  if (p > 0) {
+    for (i in seq_len(p)) {
+      X[, col_idx] <- x[(max_lag - i + 1):(n - i)]
+      col_idx <- col_idx + 1
+    }
+  }
+
+  # Add seasonal AR lags (if P > 0)
+  if (P > 0) {
+    for (j in seq_len(P)) {
+      seasonal_lag <- j * s
+      X[, col_idx] <- x[(max_lag - seasonal_lag + 1):(n - seasonal_lag)]
+      col_idx <- col_idx + 1
+    }
+  }
+
+  # Add non-seasonal MA lags (if q > 0)
+  if (q > 0) {
+    for (i in seq_len(q)) {
+      X[, col_idx] <- residuals[(max_lag - i + 1):(n - i)]
+      col_idx <- col_idx + 1
+    }
+  }
+
+  # Add seasonal MA lags (if Q > 0)
+  if (Q > 0) {
+    for (j in seq_len(Q)) {
+      seasonal_lag <- j * s
+      X[, col_idx] <- residuals[(max_lag - seasonal_lag + 1):(n - seasonal_lag)]
+      col_idx <- col_idx + 1
+    }
+  }
+
+  # Set column names
+  col_names <- character(ncol)
+  name_idx <- 1
+
+  if (p > 0) {
+    for (i in seq_len(p)) {
+      col_names[name_idx] <- paste0("ar", i)
+      name_idx <- name_idx + 1
+    }
+  }
+
+  if (P > 0) {
+    for (j in seq_len(P)) {
+      col_names[name_idx] <- paste0("sar", j)
+      name_idx <- name_idx + 1
+    }
+  }
+
+  if (q > 0) {
+    for (i in seq_len(q)) {
+      col_names[name_idx] <- paste0("ma", i)
+      name_idx <- name_idx + 1
+    }
+  }
+
+  if (Q > 0) {
+    for (j in seq_len(Q)) {
+      col_names[name_idx] <- paste0("sma", j)
+      name_idx <- name_idx + 1
+    }
+  }
+
+  colnames(X) <- col_names
+  return(X)
+}

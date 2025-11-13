@@ -81,6 +81,13 @@ fit_sar <- sar_pmm2(y, order = c(1, 1), season = list(period = 12))
 
 # Fit SMA(1)_12 model
 fit_sma <- sma_pmm2(y, order = 1, season = list(period = 12))
+
+# Unified SARMA(1,1)×(1,1)_12 model (combines AR, SAR, MA, SMA)
+fit_sarma <- sarma_pmm2(y, order = c(1, 1, 1, 1), season = list(period = 12))
+
+# Unified SARIMA(1,1,1)×(1,1,1)_12 model with differencing
+fit_sarima <- sarima_pmm2(y, order = c(1, 1, 1, 1),
+                          seasonal = list(order = c(1, 1), period = 12))
 ```
 
 ## Main Functions
@@ -96,6 +103,8 @@ fit_sma <- sma_pmm2(y, order = 1, season = list(period = 12))
 - `arima_pmm2()`: ARIMA(p,d,q) models with differencing
 - `sar_pmm2()`: Seasonal Autoregressive SAR(p,P)_s models
 - `sma_pmm2()`: Seasonal Moving Average SMA(Q)_s models
+- `sarma_pmm2()`: Unified Seasonal ARMA SARMA(p,q)×(P,Q)_s models
+- `sarima_pmm2()`: Unified Seasonal ARIMA SARIMA(p,d,q)×(P,D,Q)_s models
 - `ts_pmm2()`: Universal wrapper for all time series models
 
 ### Comparison Functions
@@ -130,7 +139,7 @@ fit_sma <- sma_pmm2(y, order = 1, season = list(period = 12))
 The package consists of several key R files:
 
 ### Core Implementation (R/)
-- `pmm2_classes.R`: S4 class definitions (PMM2fit, ARPMM2, MAPMM2, ARMAPMM2, ARIMAPMM2, SARPMM2, SMAPMM2)
+- `pmm2_classes.R`: S4 class definitions (PMM2fit, ARPMM2, MAPMM2, ARMAPMM2, ARIMAPMM2, SARPMM2, SMAPMM2, SARMAPMM2, SARIMAPMM2)
 - `pmm2_main.R`: Linear regression with PMM2 (`lm_pmm2`)
 - `pmm2_ts_main.R`: Time series models (AR, MA, ARMA, ARIMA, SAR, SMA, universal wrapper)
 - `pmm2_ts_design.R`: Design matrices and lag structures for time series
