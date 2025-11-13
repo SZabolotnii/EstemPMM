@@ -709,7 +709,7 @@ sar_pmm2 <- function(x,
       diag(XtX) <- diag(XtX) + 1e-6
     }
 
-    b_init <- solve(XtX, Xty)
+    b_init <- as.numeric(solve(XtX, Xty))
 
     if (verbose) {
       cat("Initial coefficients (OLS):\n")
@@ -750,7 +750,7 @@ sar_pmm2 <- function(x,
       verbose = verbose
     )
 
-    b_final <- as.numeric(pmm2_result$coefficients)
+    b_final <- pmm2_result$b  # Already converted to numeric by pmm2_algorithm
     converged <- pmm2_result$convergence
     iterations <- pmm2_result$iterations
 
@@ -767,7 +767,7 @@ sar_pmm2 <- function(x,
 
   } else {
     # Return initial estimates for OLS/CSS methods
-    b_final <- as.numeric(b_init)
+    b_final <- b_init  # Already numeric from line 712
     residuals_final <- residuals_init
     moments_final <- moments
     converged <- TRUE
