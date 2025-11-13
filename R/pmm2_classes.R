@@ -270,3 +270,50 @@ setClass("SARPMM2",
            order = "list"
          ),
          contains = "TS2fit")
+
+#' S4 class for Seasonal MA PMM2 results
+#'
+#' This class stores the results of fitting a Seasonal Moving Average (SMA)
+#' model using the Polynomial Maximization Method (PMM2).
+#'
+#' @slot coefficients Estimated seasonal MA coefficients (Θ₁, Θ₂, ..., Θ_Q)
+#' @slot innovations Estimated innovations (residuals ε_t)
+#' @slot m2 Second central moment (variance) of innovations
+#' @slot m3 Third central moment (skewness indicator) of innovations
+#' @slot m4 Fourth central moment (kurtosis indicator) of innovations
+#' @slot convergence Logical indicating whether PMM2 algorithm converged
+#' @slot iterations Number of iterations required for convergence
+#' @slot call The function call that created this object
+#' @slot model_type Character string "sma"
+#' @slot intercept Model intercept (mean)
+#' @slot original_series Original time series data
+#' @slot order List with Q (seasonal MA order) and s (seasonal period)
+#'
+#' @details
+#' The SMA(Q)_s model is:
+#'   y_t = μ + ε_t + Θ₁·ε_{t-s} + Θ₂·ε_{t-2s} + ... + Θ_Q·ε_{t-Qs}
+#'
+#' Where:
+#'   - Q is the seasonal MA order
+#'   - s is the seasonal period
+#'   - ε_t are innovations
+#'
+#' @seealso \code{\link{sma_pmm2}} for fitting SMA models
+#'
+#' @exportClass SMAPMM2
+setClass("SMAPMM2",
+         slots = c(
+           coefficients = "numeric",
+           innovations = "numeric",
+           m2 = "numeric",
+           m3 = "numeric",
+           m4 = "numeric",
+           convergence = "logical",
+           iterations = "numeric",
+           call = "call",
+           model_type = "character",
+           intercept = "numeric",
+           original_series = "numeric",
+           order = "list"
+         ),
+         contains = "TS2fit")
