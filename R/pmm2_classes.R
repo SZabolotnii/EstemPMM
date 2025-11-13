@@ -216,3 +216,104 @@ setMethod("summary", "TS2fit",
             invisible(object)
           }
 )
+
+
+#' S4 class for Seasonal AR model results with PMM2
+#'
+#' This class stores the results of fitting a Seasonal Autoregressive (SAR)
+#' model using the PMM2 method. It extends the TS2fit class with additional
+#' slots specific to seasonal models.
+#'
+#' @slot coefficients Numeric vector of estimated parameters (AR and SAR coefficients)
+#' @slot residuals Numeric vector of residuals/innovations
+#' @slot m2 Second central moment of residuals
+#' @slot m3 Third central moment of residuals
+#' @slot m4 Fourth central moment of residuals
+#' @slot convergence Logical, whether PMM2 algorithm converged
+#' @slot iterations Integer, number of iterations performed
+#' @slot call Original function call
+#' @slot model_type Character, model type identifier ("sar")
+#' @slot intercept Numeric, intercept/mean term
+#' @slot original_series Numeric vector, original time series data
+#' @slot order List with model specification: list(ar, sar, period)
+#'   \itemize{
+#'     \item ar: Non-seasonal AR order (p)
+#'     \item sar: Seasonal AR order (P)
+#'     \item period: Seasonal period (s)
+#'   }
+#'
+#' @details
+#' The SARPMM2 class represents fitted SAR models of the form:
+#'   y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+#'
+#' Where:
+#'   - p is the non-seasonal AR order
+#'   - P is the seasonal AR order
+#'   - s is the seasonal period
+#'
+#' @seealso \code{\link{sar_pmm2}} for fitting SAR models
+#'
+#' @exportClass SARPMM2
+setClass("SARPMM2",
+         slots = c(
+           coefficients = "numeric",
+           residuals = "numeric",
+           m2 = "numeric",
+           m3 = "numeric",
+           m4 = "numeric",
+           convergence = "logical",
+           iterations = "numeric",
+           call = "call",
+           model_type = "character",
+           intercept = "numeric",
+           original_series = "numeric",
+           order = "list"
+         ),
+         contains = "TS2fit")
+
+#' S4 class for Seasonal MA PMM2 results
+#'
+#' This class stores the results of fitting a Seasonal Moving Average (SMA)
+#' model using the Polynomial Maximization Method (PMM2).
+#'
+#' @slot coefficients Estimated seasonal MA coefficients (Θ₁, Θ₂, ..., Θ_Q)
+#' @slot innovations Estimated innovations (residuals ε_t)
+#' @slot m2 Second central moment (variance) of innovations
+#' @slot m3 Third central moment (skewness indicator) of innovations
+#' @slot m4 Fourth central moment (kurtosis indicator) of innovations
+#' @slot convergence Logical indicating whether PMM2 algorithm converged
+#' @slot iterations Number of iterations required for convergence
+#' @slot call The function call that created this object
+#' @slot model_type Character string "sma"
+#' @slot intercept Model intercept (mean)
+#' @slot original_series Original time series data
+#' @slot order List with Q (seasonal MA order) and s (seasonal period)
+#'
+#' @details
+#' The SMA(Q)_s model is:
+#'   y_t = μ + ε_t + Θ₁·ε_{t-s} + Θ₂·ε_{t-2s} + ... + Θ_Q·ε_{t-Qs}
+#'
+#' Where:
+#'   - Q is the seasonal MA order
+#'   - s is the seasonal period
+#'   - ε_t are innovations
+#'
+#' @seealso \code{\link{sma_pmm2}} for fitting SMA models
+#'
+#' @exportClass SMAPMM2
+setClass("SMAPMM2",
+         slots = c(
+           coefficients = "numeric",
+           innovations = "numeric",
+           m2 = "numeric",
+           m3 = "numeric",
+           m4 = "numeric",
+           convergence = "logical",
+           iterations = "numeric",
+           call = "call",
+           model_type = "character",
+           intercept = "numeric",
+           original_series = "numeric",
+           order = "list"
+         ),
+         contains = "TS2fit")

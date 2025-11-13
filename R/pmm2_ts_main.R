@@ -385,6 +385,188 @@ arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2", max_iter = 50, to
           reg_lambda = reg_lambda, verbose = verbose)
 }
 
+#' Fit a Seasonal MA model using PMM2
+#'
+#' Fits a Seasonal Moving Average (SMA) model using the Polynomial Maximization
+#' Method (PMM2). This is particularly effective when the innovations have
+#' asymmetric or non-Gaussian distributions.
+#'
+#' @param x Numeric vector (time series data)
+#' @param order Seasonal MA order (Q)
+#' @param season List with seasonal specification: list(period = s)
+#' @param method Estimation method: "pmm2" or "css"
+#' @param max_iter Maximum iterations for PMM2 algorithm
+#' @param tol Convergence tolerance
+#' @param include.mean Include intercept in the model
+#' @param na.action Function to handle missing values
+#' @param regularize Add regularization to Jacobian matrix
+#' @param reg_lambda Regularization parameter
+#' @param verbose Print diagnostic information
+#'
+#' @return An S4 object of class \code{SMAPMM2} containing:
+#'   \itemize{
+#'     \item coefficients: Seasonal MA coefficients (Θ₁, Θ₂, ..., Θ_Q)
+#'     \item innovations: Estimated innovations (residuals)
+#'     \item m2, m3, m4: Central moments of innovations
+#'     \item convergence: Convergence status
+#'     \item iterations: Number of iterations performed
+#'     \item intercept: Model intercept
+#'     \item original_series: Original time series
+#'     \item order: Model order list(Q, s)
+#'   }
+#'
+#' @details
+#' The SMA(Q)_s model has the form:
+#'   y_t = μ + ε_t + Θ₁·ε_{t-s} + Θ₂·ε_{t-2s} + ... + Θ_Q·ε_{t-Qs}
+#'
+#' Where:
+#'   - Q is the seasonal MA order
+#'   - s is the seasonal period (12 for monthly, 4 for quarterly)
+#'   - ε_t are innovations (errors)
+#'
+#' The PMM2 method provides more efficient parameter estimates than ML/CSS when
+#' the innovation distribution is asymmetric (non-Gaussian). The expected
+#' variance reduction is given by g = 1 - c₃²/(2 + c₄), where c₃ and c₄
+#' are the skewness and excess kurtosis coefficients.
+#'
+#' @examples
+#' \dontrun{
+#' # Generate synthetic seasonal data
+#' set.seed(123)
+#' n <- 120
+#' s <- 12
+#' theta <- 0.6
+#'
+#' # Gamma innovations (asymmetric)
+#' innov <- rgamma(n, shape = 2, scale = 1) - 2
+#' y <- numeric(n)
+#' for (t in 1:n) {
+#'   ma_term <- if (t > s) theta * innov[t-s] else 0
+#'   y[t] <- innov[t] + ma_term
+#' }
+#'
+#' # Fit SMA(1)_12 model with PMM2
+#' fit <- sma_pmm2(y, order = 1, season = list(period = 12))
+#' summary(fit)
+#'
+#' # Compare with CSS
+#' fit_css <- sma_pmm2(y, order = 1, season = list(period = 12), method = "css")
+#' }
+#'
+#' @seealso \code{\link{ma_pmm2}}, \code{\link{sar_pmm2}}, \code{\link{arima_pmm2}}
+#'
+#' @export
+sma_pmm2 <- function(x,
+                     order = 1,
+                     season = list(period = 12),
+                     method = "pmm2",
+                     max_iter = 50,
+                     tol = 1e-6,
+                     include.mean = TRUE,
+                     na.action = na.fail,
+                     regularize = TRUE,
+                     reg_lambda = 1e-8,
+                     verbose = FALSE) {
+
+  # Validate inputs
+  if (!is.numeric(x)) {
+    stop("x must be a numeric vector")
+  }
+
+  Q <- as.integer(order[1])
+  if (Q < 1) {
+    stop("Seasonal MA order must be at least 1")
+  }
+
+  if (is.null(season$period) || season$period < 2) {
+    stop("season$period must be specified and >= 2")
+  }
+
+  s <- as.integer(season$period)
+
+  # Handle NA values
+  na.action <- match.fun(na.action)
+  x <- na.action(x)
+
+  # Store call and original series
+  cl <- match.call()
+  orig_x <- x
+
+  # Check data sufficiency
+  min_obs <- Q * s + 10
+  if (length(x) < min_obs) {
+    warning(sprintf("Very small sample size. Need at least %d observations, have %d",
+                    min_obs, length(x)))
+  }
+
+  if (verbose) {
+    cat("Fitting SMA(", Q, ")_", s, " model\n", sep = "")
+    cat("Method:", method, "\n")
+    cat("Sample size:", length(x), "\n")
+  }
+
+  # Center data if needed
+  x_mean <- if (include.mean) mean(x) else 0
+  x_centered <- x - x_mean
+
+  # Step 1: Initial CSS estimation
+  css_fit <- sma_css_fit(x, Q, s, include_mean = include.mean, verbose = verbose)
+
+  if (verbose) {
+    cat("Initial CSS coefficients:\n")
+    print(css_fit$coefficients)
+  }
+
+  # Step 2: Apply PMM2 refinement or return CSS
+  if (method == "pmm2") {
+    if (verbose) cat("\nApplying PMM2 refinement...\n")
+
+    pmm2_fit <- sma_pmm2_fit(x, Q, s, css_fit,
+                             max_iter = max_iter,
+                             tol = tol,
+                             verbose = verbose)
+
+    final_coef <- pmm2_fit$coefficients
+    final_innovations <- pmm2_fit$innovations
+    converged <- pmm2_fit$convergence
+    iterations <- pmm2_fit$iterations
+
+  } else {
+    # Return CSS estimates
+    final_coef <- css_fit$coefficients
+    final_innovations <- css_fit$residuals
+    converged <- css_fit$convergence
+    iterations <- css_fit$iterations
+  }
+
+  # Compute final moments
+  final_moments <- compute_moments(final_innovations)
+
+  if (verbose) {
+    cat("\nFinal coefficients:\n")
+    print(final_coef)
+    cat("\nConvergence:", converged, "\n")
+    cat("Iterations:", iterations, "\n")
+  }
+
+  # Create SMAPMM2 object
+  result <- new("SMAPMM2",
+                coefficients = as.numeric(final_coef),
+                innovations = as.numeric(final_innovations),
+                m2 = as.numeric(final_moments$m2),
+                m3 = as.numeric(final_moments$m3),
+                m4 = as.numeric(final_moments$m4),
+                convergence = converged,
+                iterations = as.integer(iterations),
+                call = cl,
+                model_type = "sma",
+                intercept = as.numeric(x_mean),
+                original_series = as.numeric(orig_x),
+                order = list(Q = Q, s = s))
+
+  return(result)
+}
+
 # --- MA utilities ---------------------------------------------------------
 
 ma_css_fit <- function(x, q, include_mean = TRUE, verbose = FALSE) {
@@ -520,6 +702,177 @@ ma_compute_innovations <- function(x, theta, q) {
   innovations
 }
 
+# --- SMA (Seasonal Moving Average) utilities --------------------------------
+
+#' Build design matrix for Seasonal MA model
+#'
+#' @param intercept Model intercept
+#' @param residuals Initial residuals from CSS fit
+#' @param x Time series data
+#' @param Q Seasonal MA order
+#' @param s Seasonal period
+#'
+#' @return List with design matrix X and dependent variable y
+#' @keywords internal
+sma_build_design <- function(intercept, residuals, x, Q, s) {
+  max_lag <- Q * s
+  idx <- seq.int(max_lag + 1L, length(x))
+
+  X <- matrix(1, nrow = length(idx), ncol = Q + 1L)
+
+  # Add seasonal MA lags: ε_{t-s}, ε_{t-2s}, ..., ε_{t-Qs}
+  for (j in seq_len(Q)) {
+    lag_seasonal <- j * s  # KEY DIFFERENCE from MA: j*s instead of j
+    X[, j + 1L] <- residuals[idx - lag_seasonal]
+  }
+
+  y <- x[idx] - intercept
+  list(X = X, y = y)
+}
+
+#' Compute innovations for Seasonal MA model
+#'
+#' @param x Centered time series
+#' @param theta Seasonal MA coefficients
+#' @param Q Seasonal MA order
+#' @param s Seasonal period
+#'
+#' @return Vector of innovations
+#' @keywords internal
+sma_compute_innovations <- function(x, theta, Q, s) {
+  n <- length(x)
+  innovations <- numeric(n)
+
+  for (t in seq_len(n)) {
+    ma_component <- 0
+
+    # Add seasonal MA terms: Θ₁·ε_{t-s} + Θ₂·ε_{t-2s} + ...
+    for (j in seq_len(Q)) {
+      lag_seasonal <- j * s
+      if (t > lag_seasonal) {
+        ma_component <- ma_component + theta[j] * innovations[t - lag_seasonal]
+      }
+    }
+
+    innovations[t] <- x[t] - ma_component
+  }
+
+  innovations
+}
+
+#' Fit Seasonal MA model using PMM2
+#'
+#' @param x Time series data
+#' @param Q Seasonal MA order
+#' @param s Seasonal period
+#' @param css_fit Initial CSS fit
+#' @param max_iter Maximum iterations
+#' @param tol Convergence tolerance
+#' @param verbose Print progress
+#'
+#' @return List with coefficients, intercept, innovations, convergence info
+#' @keywords internal
+sma_pmm2_fit <- function(x, Q, s, css_fit, max_iter = 50, tol = 1e-6, verbose = FALSE) {
+  # Build SMA design matrix
+  design <- sma_build_design(css_fit$intercept, css_fit$residuals, x, Q, s)
+
+  # Compute moments
+  moments <- compute_moments(css_fit$residuals)
+
+  # Initial parameters: [intercept, Θ₁, Θ₂, ..., Θ_Q]
+  b_init <- c(0, css_fit$coefficients)
+
+  # Solve PMM2 (reuse existing MA solver!)
+  solve_res <- ma_solve_pmm2(b_init, design$X, design$y,
+                             moments$m2, moments$m3, moments$m4,
+                             max_iter = max_iter, tol = tol,
+                             verbose = verbose)
+
+  theta <- solve_res$coefficients
+
+  # Compute final innovations with SMA structure
+  innovations <- sma_compute_innovations(x - css_fit$intercept, theta, Q, s)
+
+  list(
+    coefficients = theta,
+    intercept = css_fit$intercept,
+    innovations = innovations,
+    convergence = solve_res$convergence,
+    iterations = solve_res$iterations
+  )
+}
+
+#' CSS fit for Seasonal MA model
+#'
+#' @param x Time series data
+#' @param Q Seasonal MA order
+#' @param s Seasonal period
+#' @param include_mean Include intercept
+#' @param verbose Print diagnostics
+#'
+#' @return List with coefficients, intercept, residuals, convergence info
+#' @keywords internal
+sma_css_fit <- function(x, Q, s, include_mean = TRUE, verbose = FALSE) {
+  fit <- tryCatch(
+    stats::arima(x,
+                 order = c(0, 0, 0),
+                 seasonal = list(order = c(0, 0, Q), period = s),
+                 method = "CSS-ML",
+                 include.mean = include_mean),
+    error = function(e) NULL
+  )
+
+  if (is.null(fit)) {
+    if (verbose) {
+      cat("Failed to estimate SMA model via stats::arima: returning zero coefficients\n")
+    }
+    coef_css <- rep(0, Q)
+    intercept <- if (include_mean) mean(x) else 0
+    residuals <- x - intercept
+    residuals[is.na(residuals)] <- 0
+    return(list(
+      coefficients = coef_css,
+      intercept = intercept,
+      residuals = residuals,
+      convergence = FALSE,
+      iterations = 0L
+    ))
+  }
+
+  # Extract seasonal MA coefficients
+  names_coef <- names(fit$coef)
+  coef_css <- numeric(Q)
+  for (j in seq_len(Q)) {
+    coef_name <- paste0("sma", j)
+    if (coef_name %in% names_coef) {
+      coef_css[j] <- fit$coef[coef_name]
+    } else if (length(fit$coef) >= j) {
+      coef_css[j] <- fit$coef[j]
+    } else {
+      coef_css[j] <- 0
+    }
+  }
+
+  intercept <- 0
+  if (include_mean) {
+    intercept_name <- setdiff(names_coef, paste0("sma", seq_len(Q)))
+    if (length(intercept_name) > 0) {
+      intercept <- as.numeric(fit$coef[intercept_name[1]])
+    }
+  }
+
+  residuals <- as.numeric(fit$residuals)
+  residuals[is.na(residuals)] <- 0
+
+  list(
+    coefficients = coef_css,
+    intercept = intercept,
+    residuals = residuals,
+    convergence = fit$code == 0,
+    iterations = 1L
+  )
+}
+
 arma_build_design <- function(x, residuals, p, q, intercept = 0, include_intercept = FALSE) {
   n <- length(x)
   max_lag <- max(p, q)
@@ -546,4 +899,248 @@ arma_build_design <- function(x, residuals, p, q, intercept = 0, include_interce
   X <- if (length(columns) > 0) do.call(cbind, columns) else matrix(0, length(idx), 0)
   y <- x[idx] - intercept
   list(X = X, y = y)
+}
+
+
+#' Fit Seasonal AR model using PMM2 method
+#'
+#' Fits a Seasonal Autoregressive (SAR) model using the Polynomial Maximization
+#' Method (PMM2). The model can include both non-seasonal and seasonal AR components.
+#'
+#' @param x Numeric vector of time series data
+#' @param order Vector of length 2: c(p, P) where:
+#'   \itemize{
+#'     \item p: Non-seasonal AR order
+#'     \item P: Seasonal AR order
+#'   }
+#' @param season List with seasonal specification: list(period = s)
+#'   where s is the seasonal period (e.g., 12 for monthly data with annual seasonality)
+#' @param method Estimation method: "pmm2" (default), "ols", "css"
+#' @param include.mean Logical, include intercept/mean term (default TRUE)
+#' @param multiplicative Logical, use multiplicative form with cross-terms (default FALSE)
+#' @param max_iter Maximum iterations for PMM2 algorithm (default 50)
+#' @param tol Convergence tolerance (default 1e-6)
+#' @param regularize Logical, use regularization for numerical stability (default TRUE)
+#' @param reg_lambda Regularization parameter (default 1e-8)
+#' @param verbose Logical, print progress information (default FALSE)
+#'
+#' @return S4 object of class SARPMM2 containing:
+#'   \itemize{
+#'     \item coefficients: Estimated AR and SAR parameters
+#'     \item residuals: Model residuals/innovations
+#'     \item m2, m3, m4: Central moments of residuals
+#'     \item convergence: Convergence status
+#'     \item iterations: Number of iterations performed
+#'   }
+#'
+#' @details
+#' The SAR model has the form:
+#'   y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + μ + ε_t
+#'
+#' Where:
+#'   - p is the non-seasonal AR order
+#'   - P is the seasonal AR order
+#'   - s is the seasonal period
+#'   - ε_t are innovations (errors)
+#'
+#' The PMM2 method provides more efficient parameter estimates than OLS when
+#' the innovation distribution is asymmetric (non-Gaussian). The expected
+#' variance reduction is given by g = 1 - c₃²/(2 + c₄), where c₃ and c₄
+#' are the skewness and excess kurtosis coefficients.
+#'
+#' @examples
+#' \dontrun{
+#' # Generate synthetic seasonal data
+#' n <- 120
+#' y <- arima.sim(n = n, list(ar = 0.7, seasonal = list(sar = 0.5, period = 12)))
+#'
+#' # Fit SAR(1,1)_12 model with PMM2
+#' fit <- sar_pmm2(y, order = c(1, 1), season = list(period = 12))
+#' summary(fit)
+#'
+#' # Simple seasonal model (no non-seasonal component)
+#' fit_pure_sar <- sar_pmm2(y, order = c(0, 1), season = list(period = 12))
+#'
+#' # Compare with OLS
+#' fit_ols <- sar_pmm2(y, order = c(1, 1), season = list(period = 12), method = "ols")
+#' }
+#'
+#' @seealso \code{\link{ar_pmm2}}, \code{\link{ts_pmm2}}, \code{\link{compare_sar_methods}}
+#'
+#' @export
+sar_pmm2 <- function(x,
+                     order = c(0, 1),
+                     season = list(period = 12),
+                     method = "pmm2",
+                     include.mean = TRUE,
+                     multiplicative = FALSE,
+                     max_iter = 50,
+                     tol = 1e-6,
+                     regularize = TRUE,
+                     reg_lambda = 1e-8,
+                     verbose = FALSE) {
+
+  # Store original call
+  cl <- match.call()
+
+  # Validate and prepare data
+  x <- as.numeric(x)
+  if (any(is.na(x)) || any(is.infinite(x))) {
+    stop("Time series contains NA or infinite values")
+  }
+
+  # Parse order specification
+  if (length(order) != 2) {
+    stop("'order' must be a vector of length 2: c(p, P)")
+  }
+  p <- as.integer(order[1])  # Non-seasonal AR order
+  P <- as.integer(order[2])  # Seasonal AR order
+
+  if (p < 0 || P < 0) {
+    stop("AR orders must be non-negative")
+  }
+  if (p == 0 && P == 0) {
+    stop("At least one of p or P must be positive")
+  }
+
+  # Parse seasonal specification
+  if (!is.list(season) || is.null(season$period)) {
+    stop("'season' must be a list with 'period' element")
+  }
+  s <- as.integer(season$period)
+
+  if (s <= 1) {
+    stop("Seasonal period must be greater than 1")
+  }
+
+  if (verbose) {
+    cat("Fitting SAR(", p, ",", P, ")_", s, " model\n", sep = "")
+    cat("Method:", method, "\n")
+    cat("Multiplicative:", multiplicative, "\n")
+  }
+
+  # Center data (handle mean)
+  orig_x <- x
+  if (include.mean) {
+    x_mean <- mean(x)
+    x_centered <- x - x_mean
+  } else {
+    x_mean <- 0
+    x_centered <- x
+  }
+
+  # Create design matrix
+  X <- create_sar_matrix(x_centered, p = p, P = P, s = s, multiplicative = multiplicative)
+  max_lag <- max(p, P * s)
+
+  if (multiplicative && p > 0 && P > 0) {
+    max_lag <- max(max_lag, p + P * s)
+  }
+
+  y <- x_centered[(max_lag + 1):length(x_centered)]
+
+  if (verbose) {
+    cat("Design matrix dimensions:", nrow(X), "x", ncol(X), "\n")
+    cat("Effective sample size:", length(y), "\n")
+  }
+
+  # Check for sufficient data
+  if (nrow(X) < ncol(X) + 5) {
+    warning("Very small sample size relative to number of parameters. ",
+            "Need at least ", ncol(X) + 5, " observations after lags, have ", nrow(X))
+  }
+
+  # Step 1: Initial estimation (OLS/CSS)
+  if (method %in% c("pmm2", "css", "ols")) {
+    # Use OLS for initial estimates
+    XtX <- t(X) %*% X
+    Xty <- t(X) %*% y
+
+    # Add small regularization if needed
+    if (det(XtX) < 1e-10) {
+      if (verbose) cat("Adding regularization to X'X for initial fit\n")
+      diag(XtX) <- diag(XtX) + 1e-6
+    }
+
+    b_init <- as.numeric(solve(XtX, Xty))
+
+    if (verbose) {
+      cat("Initial coefficients (OLS):\n")
+      print(b_init)
+    }
+  }
+
+  # Step 2: Compute moments from initial residuals
+  residuals_init <- as.numeric(y - X %*% b_init)
+  moments <- compute_moments(residuals_init)
+
+  if (verbose) {
+    cat("\nMoments from initial residuals:\n")
+    cat("  m2 (variance):", moments$m2, "\n")
+    cat("  m3 (skewness indicator):", moments$m3, "\n")
+    cat("  m4 (kurtosis indicator):", moments$m4, "\n")
+    cat("  c3 (skewness coef):", moments$c3, "\n")
+    cat("  c4 (excess kurtosis):", moments$c4, "\n")
+    cat("  g (variance reduction):", moments$g, "\n")
+  }
+
+  # Step 3: Apply PMM2 algorithm or return initial estimates
+  if (method == "pmm2") {
+    if (verbose) cat("\nApplying PMM2 refinement...\n")
+
+    # Use existing pmm2_algorithm function
+    pmm2_result <- pmm2_algorithm(
+      b_init = b_init,
+      X = X,
+      y = y,
+      m2 = moments$m2,
+      m3 = moments$m3,
+      m4 = moments$m4,
+      max_iter = max_iter,
+      tol = tol,
+      regularize = regularize,
+      reg_lambda = reg_lambda,
+      verbose = verbose
+    )
+
+    b_final <- pmm2_result$b  # Already converted to numeric by pmm2_algorithm
+    converged <- pmm2_result$convergence
+    iterations <- pmm2_result$iterations
+
+    # Compute final residuals
+    residuals_final <- as.numeric(y - X %*% b_final)
+    moments_final <- compute_moments(residuals_final)
+
+    if (verbose) {
+      cat("\nPMM2 converged:", converged, "\n")
+      cat("Iterations:", iterations, "\n")
+      cat("\nFinal coefficients:\n")
+      print(b_final)
+    }
+
+  } else {
+    # Return initial estimates for OLS/CSS methods
+    b_final <- b_init  # Already numeric from line 712
+    residuals_final <- residuals_init
+    moments_final <- moments
+    converged <- TRUE
+    iterations <- 0L
+  }
+
+  # Create SARPMM2 object
+  result <- new("SARPMM2",
+                coefficients = as.numeric(b_final),
+                residuals = as.numeric(residuals_final),
+                m2 = as.numeric(moments_final$m2),
+                m3 = as.numeric(moments_final$m3),
+                m4 = as.numeric(moments_final$m4),
+                convergence = converged,
+                iterations = as.integer(iterations),
+                call = cl,
+                model_type = "sar",
+                intercept = if (include.mean) as.numeric(x_mean) else 0,
+                original_series = as.numeric(orig_x),
+                order = list(ar = p, sar = P, period = s))
+
+  return(result)
 }

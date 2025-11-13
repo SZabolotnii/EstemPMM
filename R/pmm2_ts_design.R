@@ -523,3 +523,146 @@ compute_ts_residuals <- function(coefs, model_info) {
 
   return(final_res)
 }
+
+
+#' Create design matrix for seasonal AR model
+#'
+#' Constructs a design matrix for Seasonal Autoregressive (SAR) models,
+#' optionally including non-seasonal AR lags and multiplicative cross-terms.
+#'
+#' @param x Numeric vector (centered time series)
+#' @param p Non-seasonal AR order (default 0)
+#' @param P Seasonal AR order (must be positive)
+#' @param s Seasonal period (e.g., 12 for monthly data)
+#' @param multiplicative Logical, include multiplicative cross-terms (default FALSE)
+#'
+#' @return Design matrix with lagged values. Columns are:
+#'   - First p columns: non-seasonal lags (y_{t-1}, ..., y_{t-p})
+#'   - Next P columns: seasonal lags (y_{t-s}, ..., y_{t-Ps})
+#'   - If multiplicative=TRUE: additional p*P columns for cross-terms
+#'
+#' @details
+#' For a SAR(P)_s model: y_t = Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+#'
+#' For an additive AR(p)+SAR(P)_s model:
+#'   y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+#'
+#' For a multiplicative AR(p)×SAR(P)_s model (multiplicative=TRUE):
+#'   Includes cross-terms like y_{t-1-s}, y_{t-1-2s}, etc.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Simple SAR(1)_12 model
+#' x <- rnorm(120)
+#' X <- create_sar_matrix(x, p=0, P=1, s=12)
+#'
+#' # AR(1) + SAR(1)_12 additive model
+#' X <- create_sar_matrix(x, p=1, P=1, s=12)
+#'
+#' # AR(1) × SAR(1)_12 multiplicative model
+#' X <- create_sar_matrix(x, p=1, P=1, s=12, multiplicative=TRUE)
+#' }
+create_sar_matrix <- function(x, p = 0, P = 1, s = 12, multiplicative = FALSE) {
+  n <- length(x)
+
+  # Validate inputs
+  if (p < 0 || P < 0) {
+    stop("AR orders (p, P) must be non-negative")
+  }
+  if (p == 0 && P == 0) {
+    stop("At least one of p or P must be positive")
+  }
+  if (s <= 1) {
+    stop("Seasonal period s must be greater than 1")
+  }
+
+  # Calculate maximum lag
+  max_nonseasonal_lag <- p
+  max_seasonal_lag <- P * s
+  max_lag <- max(max_nonseasonal_lag, max_seasonal_lag)
+
+  # For multiplicative form, need additional space for cross-terms
+  if (multiplicative && p > 0 && P > 0) {
+    max_cross_lag <- p + P * s
+    max_lag <- max(max_lag, max_cross_lag)
+  }
+
+  # Check data sufficiency
+  if (n <= max_lag) {
+    stop("Insufficient data: need at least ", max_lag + 1, " observations, got ", n)
+  }
+
+  # Number of rows in design matrix
+  nr <- n - max_lag
+
+  # Number of columns depends on multiplicative option
+  if (multiplicative && p > 0 && P > 0) {
+    ncol <- p + P + (p * P)  # Non-seasonal + Seasonal + Cross-terms
+  } else {
+    ncol <- p + P  # Additive model
+  }
+
+  # Initialize design matrix
+  X <- matrix(0, nrow = nr, ncol = ncol)
+  col_idx <- 1
+
+  # Add non-seasonal AR lags (if p > 0)
+  if (p > 0) {
+    for (i in seq_len(p)) {
+      X[, col_idx] <- x[(max_lag - i + 1):(n - i)]
+      col_idx <- col_idx + 1
+    }
+  }
+
+  # Add seasonal AR lags (if P > 0)
+  if (P > 0) {
+    for (j in seq_len(P)) {
+      seasonal_lag <- j * s
+      X[, col_idx] <- x[(max_lag - seasonal_lag + 1):(n - seasonal_lag)]
+      col_idx <- col_idx + 1
+    }
+  }
+
+  # Add multiplicative cross-terms (if requested)
+  if (multiplicative && p > 0 && P > 0) {
+    for (i in seq_len(p)) {
+      for (j in seq_len(P)) {
+        cross_lag <- i + j * s
+        X[, col_idx] <- x[(max_lag - cross_lag + 1):(n - cross_lag)]
+        col_idx <- col_idx + 1
+      }
+    }
+  }
+
+  # Set column names
+  col_names <- character(ncol)
+  name_idx <- 1
+
+  if (p > 0) {
+    for (i in seq_len(p)) {
+      col_names[name_idx] <- paste0("ar", i)
+      name_idx <- name_idx + 1
+    }
+  }
+
+  if (P > 0) {
+    for (j in seq_len(P)) {
+      col_names[name_idx] <- paste0("sar", j)
+      name_idx <- name_idx + 1
+    }
+  }
+
+  if (multiplicative && p > 0 && P > 0) {
+    for (i in seq_len(p)) {
+      for (j in seq_len(P)) {
+        col_names[name_idx] <- paste0("ar", i, "_sar", j)
+        name_idx <- name_idx + 1
+      }
+    }
+  }
+
+  colnames(X) <- col_names
+  return(X)
+}

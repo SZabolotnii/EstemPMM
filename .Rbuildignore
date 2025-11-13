@@ -18,3 +18,7 @@
 ^\.claude$
 ^articles$
 ^skill$
+^rebuild_package\.R$
+^clean_reinstall\.R$
+^test_sma_quick\.R$
+^test_results/
