@@ -1,5 +1,17 @@
 # EstemPMM News
 
+## Version 0.1.2 (2025-11-13)
+
+### Bug Fixes
+
+- **Fixed `predict()` method for PMM2fit class** - The prediction method now correctly handles arbitrary variable names instead of requiring hardcoded "x1", "x2" names. The method now uses general matrix multiplication approach (`X %*% coefficients`) that works with any variable naming convention.
+- **Improved coefficient name matching** - Enhanced logic to ensure coefficient names always match design matrix columns, with automatic reordering when necessary.
+
+### Improvements
+
+- **More robust prediction algorithm** - Simplified prediction code by removing hardcoded special cases and using a unified matrix multiplication approach for all scenarios.
+- **Better error messages** - Added clearer error messages when design matrix and coefficients don't match.
+
 ## Version 0.1.1 (2025-10-23)
 
 ### Maintenance
