@@ -555,12 +555,20 @@ plot(y, type = "l", main = "SAR(1,1)_12 Process with Skewed Innovations",
      ylab = "Value", xlab = "Time", col = "steelblue", lwd = 1.5)
 
 # Fit SAR model with PMM2
-fit_sar_pmm2 <- sar_pmm2(y, order = 1, seasonal_order = 1,
-                         seasonal_period = 12, method = "pmm2")
+fit_sar_pmm2 <- sar_pmm2(
+  y,
+  order = c(1, 1),
+  season = list(period = 12),
+  method = "pmm2"
+)
 
 # Compare with OLS
-fit_sar_ols <- sar_pmm2(y, order = 1, seasonal_order = 1,
-                        seasonal_period = 12, method = "ols")
+fit_sar_ols <- sar_pmm2(
+  y,
+  order = c(1, 1),
+  season = list(period = 12),
+  method = "ols"
+)
 
 # Display results
 cat("True parameters: phi =", phi, ", Phi =", Phi, "\n\n")
@@ -604,10 +612,20 @@ plot(y, type = "l", main = "SMA(1)_4 Process",
      ylab = "Value", xlab = "Time", col = "darkgreen", lwd = 1.5)
 
 # Fit SMA model with PMM2
-fit_sma_pmm2 <- sma_pmm2(y, order = 1, seasonal_period = 4, method = "pmm2")
+fit_sma_pmm2 <- sma_pmm2(
+  y,
+  order = 1,
+  season = list(period = 4),
+  method = "pmm2"
+)
 
 # Fit with CSS for comparison
-fit_sma_css <- sma_pmm2(y, order = 1, seasonal_period = 4, method = "css")
+fit_sma_css <- sma_pmm2(
+  y,
+  order = 1,
+  season = list(period = 4),
+  method = "css"
+)
 
 # Display results
 cat("True parameter: Theta =", Theta, "\n\n")
@@ -628,12 +646,14 @@ cat("Iterations:", fit_sma_pmm2@iterations, "\n")
 
 ```{r compare_seasonal, eval=FALSE}
 # Systematic comparison of SAR estimation methods
-compare_sar_methods(y, order = 1, seasonal_order = 1, seasonal_period = 12)
+compare_sar_methods(y, order = c(1, 1), period = 12)
 
-# Universal comparison for any time series model
-compare_ts_methods(y, model_type = "sar",
-                   order = 1, seasonal_order = 1,
-                   seasonal_period = 12)
+# Universal comparison for non-seasonal models
+compare_ts_methods(
+  y,
+  model_type = "arima",
+  order = c(1, 0, 1)
+)
 ```
 
 ### Practical Applications of Seasonal Models

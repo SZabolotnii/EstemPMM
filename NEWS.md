@@ -1,5 +1,13 @@
 # EstemPMM News
 
+## Version 0.1.3 (2025-11-13)
+
+### Documentation
+
+- Expanded both `README.md` and `README_uk.md` with organized function tables, seasonal SAR/SMA workflow examples, and refreshed Monte Carlo efficiency results so new users can discover the seasonal functionality faster.
+- Added Part 8 to `vignettes/pmm2_time_series.Rmd`, walking through `sar_pmm2()`/`sma_pmm2()` usage, convergence tips, and practical guidance for seasonal datasets.
+- Captured the seasonal-model release summary directly in `NEWS.md`, keeping the changelog aligned with the refreshed documentation.
+
 ## Version 0.1.2 (2025-11-13)
 
 ### New Features

@@ -77,10 +77,10 @@ compare_ar_methods(y, order = 2)
 
 # Seasonal models example
 # Fit SAR(1,1)_12 model (seasonal lag 12, e.g., monthly data)
-fit_sar <- sar_pmm2(y, order = 1, seasonal_order = 1, seasonal_period = 12)
+fit_sar <- sar_pmm2(y, order = c(1, 1), season = list(period = 12))
 
 # Fit SMA(1)_12 model
-fit_sma <- sma_pmm2(y, order = 1, seasonal_period = 12)
+fit_sma <- sma_pmm2(y, order = 1, season = list(period = 12))
 ```
 
 ## Main Functions
