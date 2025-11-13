@@ -519,7 +519,7 @@ The Monte Carlo simulation provides %s evidence that:
 ",
   # Header
   format(Sys.time(), "%%B %%d, %%Y"),
-  n_sim,
+  as.integer(n_sim),
 
   # Executive summary
   ifelse(var_reduction > 25, "successfully demonstrates significant variance reduction",
@@ -538,7 +538,7 @@ The Monte Carlo simulation provides %s evidence that:
   ifelse(abs(var_ratio - g_theory) / g_theory < 0.10, "✅ Strong", "⚠️ Weak"),
 
   # Model specification
-  Q, s, s, theta_true, n_obs, n_sim,
+  as.integer(Q), as.integer(s), as.integer(s), theta_true, as.integer(n_obs), as.integer(n_sim),
 
   # Innovation distribution
   innovation_type, c3, c4, g_theory,
@@ -574,7 +574,7 @@ The Monte Carlo simulation provides %s evidence that:
 
   # Algorithm performance
   100 * mean(converged_pmm2[valid_pmm2]),
-  sum(converged_pmm2[valid_pmm2]), sum(valid_pmm2),
+  as.integer(sum(converged_pmm2[valid_pmm2])), as.integer(sum(valid_pmm2)),
   mean(iterations_pmm2, na.rm = TRUE),
   median(iterations_pmm2, na.rm = TRUE),
   min(iterations_pmm2, na.rm = TRUE),
@@ -607,7 +607,7 @@ The Monte Carlo simulation provides %s evidence that:
   100 * (1 - sqrt(var_ratio)),
 
   # Data files
-  output_file, n_sim,
+  output_file, as.integer(n_sim),
 
   # System info
   paste(R.version$major, R.version$minor, sep = "."),
