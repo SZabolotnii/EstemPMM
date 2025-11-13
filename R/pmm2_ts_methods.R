@@ -668,6 +668,111 @@ setMethod("summary", "SARPMM2",
           })
 
 
+#' Extract coefficients from SMAPMM2 object
+#'
+#' @param object SMAPMM2 object
+#' @param ... Additional arguments (not used)
+#'
+#' @return Named vector of seasonal MA coefficients
+#' @export
+setMethod("coef", "SMAPMM2",
+          function(object, ...) {
+            coefs <- object@coefficients
+            Q <- object@order$Q
+
+            # Create names for seasonal MA coefficients
+            names(coefs) <- paste0("sma", seq_len(Q))
+
+            return(coefs)
+          })
+
+
+#' Summary method for SMAPMM2 objects
+#'
+#' @param object SMAPMM2 object
+#' @param ... Additional arguments (not used)
+#'
+#' @return Invisibly returns the object
+#' @export
+setMethod("summary", "SMAPMM2",
+          function(object, ...) {
+            cat("\n")
+            cat("=", rep("=", 70), "\n", sep = "")
+            cat("Seasonal MA Model fitted with PMM2\n")
+            cat("=", rep("=", 70), "\n\n", sep = "")
+
+            cat("Call:\n")
+            print(object@call)
+            cat("\n")
+
+            # Model specification
+            cat("Model: SMA(", object@order$Q, ")_", object@order$s, "\n", sep = "")
+            cat("Observations:", length(object@original_series), "\n")
+            cat("Effective sample size:", length(object@innovations), "\n\n")
+
+            # Coefficients
+            cat("Coefficients:\n")
+            cat("-", rep("-", 40), "\n", sep = "")
+            coefs <- coef(object)
+            for (i in seq_along(coefs)) {
+              cat(sprintf("  %-6s: %8.5f\n", names(coefs)[i], coefs[i]))
+            }
+
+            if (object@intercept != 0) {
+              cat(sprintf("  %-6s: %8.5f\n", "Mean", object@intercept))
+            }
+            cat("\n")
+
+            # Innovation moments
+            cat("Innovation Distribution Characteristics:\n")
+            cat("-", rep("-", 40), "\n", sep = "")
+            cat(sprintf("  m2 (variance):       %8.5f\n", object@m2))
+            cat(sprintf("  m3 (skewness ind.):  %8.5f\n", object@m3))
+            cat(sprintf("  m4 (kurtosis ind.):  %8.5f\n", object@m4))
+
+            # Distribution characteristics
+            c3 <- object@m3 / (object@m2^(3/2))
+            c4 <- object@m4 / (object@m2^2) - 3
+            g <- 1 - c3^2 / (2 + c4)
+
+            cat("\n")
+            cat(sprintf("  Skewness coef. (c3): %8.5f\n", c3))
+            cat(sprintf("  Excess kurtosis(c4): %8.5f\n", c4))
+            cat(sprintf("  Var. reduction (g):  %8.5f\n", g))
+
+            if (g < 1 && g > 0) {
+              reduction_pct <- (1 - g) * 100
+              cat(sprintf("\n  => Expected %.1f%% variance reduction vs CSS/ML ✓\n",
+                          reduction_pct))
+            } else if (g >= 1) {
+              cat("\n  => No expected variance reduction (symmetric distribution)\n")
+            }
+            cat("\n")
+
+            # Algorithm information
+            cat("Algorithm Information:\n")
+            cat("-", rep("-", 40), "\n", sep = "")
+            cat(sprintf("  Converged:  %s\n", object@convergence))
+            cat(sprintf("  Iterations: %d\n\n", object@iterations))
+
+            # Innovation statistics
+            cat("Innovation Statistics:\n")
+            cat("-", rep("-", 40), "\n", sep = "")
+            innov_stats <- summary(object@innovations)
+            cat(sprintf("  Min:    %8.4f\n", innov_stats[1]))
+            cat(sprintf("  Q1:     %8.4f\n", innov_stats[2]))
+            cat(sprintf("  Median: %8.4f\n", innov_stats[3]))
+            cat(sprintf("  Mean:   %8.4f\n", innov_stats[4]))
+            cat(sprintf("  Q3:     %8.4f\n", innov_stats[5]))
+            cat(sprintf("  Max:    %8.4f\n", innov_stats[6]))
+
+            cat("\n")
+            cat("=", rep("=", 70), "\n", sep = "")
+
+            invisible(object)
+          })
+
+
 #' Compare SAR model estimation methods
 #'
 #' Compares different estimation methods (OLS, PMM2, CSS, ML) for SAR models
