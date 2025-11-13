@@ -2,15 +2,42 @@
 
 ## Version 0.1.2 (2025-11-13)
 
+### New Features
+
+- **Seasonal Autoregressive Models (`sar_pmm2()`)** - Full implementation of SAR(p,P)_s models for seasonal time series
+  - Supports arbitrary seasonal periods (e.g., 12 for monthly, 4 for quarterly data)
+  - Multiple estimation methods: PMM2, OLS
+  - Demonstrated 20-30% variance reduction with asymmetric innovations
+  - Full integration with S4 class system (`SARPMM2` class)
+
+- **Seasonal Moving Average Models (`sma_pmm2()`)** - Complete SMA(Q)_s implementation
+  - Flexible seasonal lag specification
+  - CSS and PMM2 estimation methods
+  - Empirically validated with 500 Monte Carlo replications
+  - Achieved 34.1% variance reduction (exceeding theoretical predictions)
+  - Robust convergence and computational efficiency
+
+- **Enhanced Comparison Functions**
+  - `compare_sar_methods()` - Compare SAR estimation approaches
+  - `compare_ts_methods()` - Universal wrapper now supports SAR and SMA models
+
+- **Documentation and Validation**
+  - Added comprehensive SAR/SMA documentation in `docs/` directory
+  - Monte Carlo validation reports with detailed efficiency metrics
+  - Ukrainian language analysis reports
+  - Updated both English and Ukrainian READMEs with seasonal models
+
 ### Bug Fixes
 
 - **Fixed `predict()` method for PMM2fit class** - The prediction method now correctly handles arbitrary variable names instead of requiring hardcoded "x1", "x2" names. The method now uses general matrix multiplication approach (`X %*% coefficients`) that works with any variable naming convention.
 - **Improved coefficient name matching** - Enhanced logic to ensure coefficient names always match design matrix columns, with automatic reordering when necessary.
+- **Fixed SAR mean iterations display** - Corrected `sprintf()` call to properly show mean iteration count in comparison output
 
 ### Improvements
 
 - **More robust prediction algorithm** - Simplified prediction code by removing hardcoded special cases and using a unified matrix multiplication approach for all scenarios.
 - **Better error messages** - Added clearer error messages when design matrix and coefficients don't match.
+- **Enhanced `.gitignore`** - Added `test_results/` directory to version control exclusions
 
 ## Version 0.1.1 (2025-10-23)
 
