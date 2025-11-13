@@ -510,7 +510,7 @@ sma_pmm2 <- function(x,
   x_centered <- x - x_mean
 
   # Step 1: Initial CSS estimation
-  css_fit <- sma_css_fit(x, Q, s, include.mean = include.mean, verbose = verbose)
+  css_fit <- sma_css_fit(x, Q, s, include_mean = include.mean, verbose = verbose)
 
   if (verbose) {
     cat("Initial CSS coefficients:\n")
