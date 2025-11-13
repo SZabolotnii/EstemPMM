@@ -536,6 +536,7 @@ The Monte Carlo simulation provides %s evidence that:
   ifelse(mean(converged_pmm2[valid_pmm2]) == 1, "✅ Perfect", "⚠️ Issues"),
   100 * (1 - abs(var_ratio - g_theory) / g_theory),
   ifelse(abs(var_ratio - g_theory) / g_theory < 0.10, "✅ Strong", "⚠️ Weak"),
+  mean(iterations_pmm2, na.rm = TRUE),  # Mean iterations for Key Results table
 
   # Model specification
   Q, s, s, theta_true, n_obs, n_sim,
