@@ -115,13 +115,22 @@ compute_metrics <- function(estimates, true_params) {
 
 #' Safe model fitting wrapper
 safe_fit <- function(fit_func, ...) {
-  tryCatch(
-    fit_func(...),
-    error = function(e) {
-      list(coefficients = NA, convergence = FALSE,
-           m2 = NA, m3 = NA, m4 = NA)
-    }
-  )
+  tryCatch({
+    fit <- fit_func(...)
+    # Convert S4 object to list for easier access
+    list(
+      coefficients = fit@coefficients,
+      residuals = fit@residuals,
+      convergence = fit@convergence,
+      m2 = fit@m2,
+      m3 = fit@m3,
+      m4 = fit@m4
+    )
+  },
+  error = function(e) {
+    list(coefficients = NA, convergence = FALSE,
+         residuals = NA, m2 = NA, m3 = NA, m4 = NA)
+  })
 }
 
 # ==============================================================================
