@@ -54,27 +54,108 @@ ols_fit <- lm(y ~ x, data = data)
 compare_with_ols(y ~ x, data)
 ```
 
+## Time Series Example
+
+```r
+library(EstemPMM)
+
+# Simulate AR(2) process with asymmetric innovations
+set.seed(42)
+n <- 300
+innov <- rgamma(n, shape = 2, scale = 1) - 2  # Centered gamma errors
+y <- numeric(n)
+for (t in 3:n) {
+  y[t] <- 0.5 * y[t-1] - 0.3 * y[t-2] + innov[t]
+}
+
+# Fit AR(2) model using PMM2
+fit_ar <- ar_pmm2(y, order = 2)
+summary(fit_ar)
+
+# Compare with other methods
+compare_ar_methods(y, order = 2)
+
+# Seasonal models example
+# Fit SAR(1,1)_12 model (seasonal lag 12, e.g., monthly data)
+fit_sar <- sar_pmm2(y, order = 1, seasonal_order = 1, seasonal_period = 12)
+
+# Fit SMA(1)_12 model
+fit_sma <- sma_pmm2(y, order = 1, seasonal_period = 12)
+```
+
 ## Main Functions
 
+### Linear Models
 - `lm_pmm2()`: Fit linear regression using PMM for S=2
+- `compare_with_ols()`: Compare PMM2 with OLS estimates
+
+### Time Series Models
+- `ar_pmm2()`: Autoregressive AR(p) models
+- `ma_pmm2()`: Moving Average MA(q) models
+- `arma_pmm2()`: ARMA(p,q) models
+- `arima_pmm2()`: ARIMA(p,d,q) models with differencing
+- `sar_pmm2()`: Seasonal Autoregressive SAR(p,P)_s models
+- `sma_pmm2()`: Seasonal Moving Average SMA(Q)_s models
+- `ts_pmm2()`: Universal wrapper for all time series models
+
+### Comparison Functions
+- `compare_ar_methods()`: Compare AR estimation methods
+- `compare_ma_methods()`: Compare MA estimation methods
+- `compare_arma_methods()`: Compare ARMA estimation methods
+- `compare_arima_methods()`: Compare ARIMA estimation methods
+- `compare_sar_methods()`: Compare SAR estimation methods
+- `compare_ts_methods()`: Universal time series comparison
+
+### Statistical Inference
+- `pmm2_inference()`: Bootstrap inference for linear models
+- `ts_pmm2_inference()`: Bootstrap inference for time series models
+- `plot_pmm2_bootstrap()`: Visualize bootstrap results
+
+### Utilities
+- `compute_moments()`: Calculate sample moments
+- `pmm_skewness()`, `pmm_kurtosis()`: Distribution shape measures
+- `pmm2_variance_factor()`: Theoretical variance reduction factor
+- `pmm2_variance_matrices()`: Compare variance matrices
+- `pmm2_monte_carlo_compare()`: Monte Carlo simulations
+
+### S4 Methods
 - `summary()`: Display fitting results
 - `predict()`: Make predictions based on a PMM model
-- `pmm2_inference()`: Statistical inference through bootstrap
-- `compare_with_ols()`: Compare with OLS estimates
 - `plot()`: Diagnostic plots for PMM models
+- `coef()`, `fitted()`, `residuals()`: Extract model components
+- `AIC()`: Akaike Information Criterion
 
 ## Project Structure
 
 The package consists of several key R files:
-- `pmm2_classes.R`: Defines S4 classes for PMM2 fit results
-- `pmm2_main.R`: Contains linear PMM2 fitting functions
-- `pmm2_ts_main.R`: Provides PMM2 fitting wrappers for time series models
-- `pmm2_utils.R`: Provides optimization utilities for PMM2
-- `pmm2_common.R`: Hosts shared numerical routines used by PMM2 algorithms
-- `pmm2_inference.R`: Implements bootstrap inference for PMM2 fits
-- `pmm2_ts_design.R`: Builds design matrices and helpers for time series estimation
-- `pmm2_simulation.R`: Contains code for Monte Carlo simulations
-- `pmm2_real_data.R`: Applies PMM2 to real-world data (Auto MPG dataset)
+
+### Core Implementation (R/)
+- `pmm2_classes.R`: S4 class definitions (PMM2fit, ARPMM2, MAPMM2, ARMAPMM2, ARIMAPMM2, SARPMM2, SMAPMM2)
+- `pmm2_main.R`: Linear regression with PMM2 (`lm_pmm2`)
+- `pmm2_ts_main.R`: Time series models (AR, MA, ARMA, ARIMA, SAR, SMA, universal wrapper)
+- `pmm2_ts_design.R`: Design matrices and lag structures for time series
+- `pmm2_ts_methods.R`: Comparison functions for all time series models
+- `pmm2_common.R`: Shared numerical routines and optimization
+- `pmm2_utils.R`: Utility functions for moments, variance analysis
+- `pmm2_inference.R`: Bootstrap inference for linear and time series models
+- `pmm2_monte_carlo.R`: Monte Carlo simulation framework
+- `data.R`: Dataset documentation (DCOILWTICO - WTI crude oil prices)
+
+### Documentation
+- `vignettes/`: Three comprehensive tutorials (introduction, time series, bootstrap)
+- `man/`: 30+ help files with examples
+- `docs/`: Extended documentation including SAR/SMA analysis reports
+- `NEWS.md`: Version history and changelog
+
+### Testing & Validation
+- `tests/testthat/`: 36 unit tests across 7 test files
+- `test_results/`: Monte Carlo validation reports with empirical results
+- `demo/`: 8 demonstration scripts for all model types
+
+### Development Scripts
+- `run_sma_monte_carlo.R`: SMA model validation (500 replications)
+- `test_debug_sar.R`: SAR model debugging and verification
+- `test_sma_quick.R`: Quick SMA tests
 
 ## Variance Diagnostics
 
@@ -123,12 +204,24 @@ results <- apply_to_mpg_data()  # For real data analysis
 
 PMM2 is particularly effective for distributions with high asymmetry:
 
+### Linear Models
 | Distribution    | Skewness | Kurtosis | Theoretical Improvement | Actual Improvement |
 |-----------------|----------|----------|------------------------|-------------------|
 | Gamma (a=0.5)   | 2.83     | 12       | 57%                    | ~50%              |
 | Exponential     | 2.00     | 6        | 50%                    | ~45%              |
 | Gamma (a=2)     | 1.41     | 3        | 40%                    | ~35%              |
 | Lognormal       | 1.00     | 1.5      | 29%                    | ~25%              |
+
+### Time Series Models
+
+**Autoregressive (AR) Models:** Similar improvements observed, especially for AR(1) and AR(2) with asymmetric innovations.
+
+**Moving Average (MA) Models:** PMM2 shows substantial improvements when innovation distribution has high skewness.
+
+**Seasonal Models (Validated November 2025):**
+- **SAR Models:** 20-30% variance reduction with gamma innovations
+- **SMA Models:** Up to 34.1% variance reduction (empirically validated with 500 replications), exceeding theoretical predictions for certain parameter combinations
+- Both models show stable convergence and computational efficiency
 
 ## Adaptive Estimation
 
@@ -142,10 +235,20 @@ This approach doesn't require prior knowledge of the error distribution properti
 ## Applications
 
 The method is particularly useful in:
+
+### Regression Analysis
 - Economic and financial modeling with asymmetric error distributions
-- Biological systems analysis
+- Biological systems analysis with skewed measurement errors
 - Technical measurements with non-Gaussian noise
 - Any regression problem where error distributions exhibit significant skewness
+
+### Time Series Analysis
+- Financial time series with asymmetric return distributions
+- Economic indicators with seasonal patterns (GDP, inflation, unemployment)
+- Energy consumption forecasting with seasonal components
+- Climate data analysis with skewed temperature or precipitation distributions
+- Commodity prices (e.g., oil, gas) with asymmetric shocks
+- Any time series where innovations deviate substantially from normality
 
 ## Authors
 
