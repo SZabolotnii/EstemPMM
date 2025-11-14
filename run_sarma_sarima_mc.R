@@ -153,6 +153,7 @@ scenarios <- list(sarma = true_sarma, sarima = true_sarima)
 
 all_results <- list()
 summary_rows <- list()
+METHODS <- c("pmm2", "css", "mle")
 
 for (innov_type in INNOVATION_TYPES) {
   cat("-----------------------------------------------------------------------------\n")
@@ -170,38 +171,32 @@ for (innov_type in INNOVATION_TYPES) {
     for (n in SAMPLE_SIZES) {
       cat("  Sample size:", n, "\n")
 
-      pmm2_coef <- matrix(NA_real_, N_REPLICATIONS, length(scenario$params))
-      css_coef <- matrix(NA_real_, N_REPLICATIONS, length(scenario$params))
+      coef_store <- lapply(METHODS, function(m) {
+        matrix(NA_real_, N_REPLICATIONS, length(scenario$params))
+      })
+      names(coef_store) <- METHODS
+
+      convergence_counts <- setNames(numeric(length(METHODS)), METHODS)
       pmm2_g <- numeric(N_REPLICATIONS)
-      pmm2_converged <- 0
-      css_converged <- 0
 
       pb <- txtProgressBar(min = 0, max = N_REPLICATIONS, style = 3)
       for (i in seq_len(N_REPLICATIONS)) {
         series <- scenario$generator(n, innovation_type = innov_type)
 
-        fit_pmm2 <- safe_fit(scenario$fit_fun, series, method = "pmm2")
-        if (length(fit_pmm2$coefficients) == length(scenario$params) &&
-            !any(is.na(fit_pmm2$coefficients))) {
-          pmm2_coef[i, ] <- fit_pmm2$coefficients
-          if (!any(is.na(c(fit_pmm2$m2, fit_pmm2$m3, fit_pmm2$m4)))) {
-            pmm2_g[i] <- pmm2_variance_factor(
-              fit_pmm2$m2, fit_pmm2$m3, fit_pmm2$m4
-            )$g
-          } else {
-            pmm2_g[i] <- NA
-          }
-          if (isTRUE(fit_pmm2$convergence)) {
-            pmm2_converged <- pmm2_converged + 1
-          }
-        }
-
-        fit_css <- safe_fit(scenario$fit_fun, series, method = "css")
-        if (length(fit_css$coefficients) == length(scenario$params) &&
-            !any(is.na(fit_css$coefficients))) {
-          css_coef[i, ] <- fit_css$coefficients
-          if (isTRUE(fit_css$convergence)) {
-            css_converged <- css_converged + 1
+        for (method in METHODS) {
+          fit <- safe_fit(scenario$fit_fun, series, method = method)
+          if (length(fit$coefficients) == length(scenario$params) &&
+              !any(is.na(fit$coefficients))) {
+            coef_store[[method]][i, ] <- fit$coefficients
+            if (isTRUE(fit$convergence)) {
+              convergence_counts[method] <- convergence_counts[method] + 1
+            }
+            if (method == "pmm2" &&
+                !any(is.na(c(fit$m2, fit$m3, fit$m4)))) {
+              pmm2_g[i] <- pmm2_variance_factor(
+                fit$m2, fit$m3, fit$m4
+              )$g
+            }
           }
         }
 
@@ -209,71 +204,71 @@ for (innov_type in INNOVATION_TYPES) {
       }
       close(pb)
 
-      valid_pmm2 <- stats::complete.cases(pmm2_coef)
-      valid_css <- stats::complete.cases(css_coef)
+valid_mask <- lapply(coef_store, stats::complete.cases)
+names(valid_mask) <- names(coef_store)
 
-      metrics_pmm2 <- lapply(seq_along(scenario$params), function(j) {
-        compute_metrics(pmm2_coef[valid_pmm2, j], scenario$params[j])
+      metrics <- lapply(METHODS, function(method) {
+        lapply(seq_along(scenario$params), function(j) {
+          compute_metrics(coef_store[[method]][valid_mask[[method]], j],
+                          scenario$params[j])
+        })
       })
-      metrics_css <- lapply(seq_along(scenario$params), function(j) {
-        compute_metrics(css_coef[valid_css, j], scenario$params[j])
+      names(metrics) <- METHODS
+
+      css_variances <- sapply(seq_along(scenario$params), function(j) {
+        metrics$css[[j]]$variance
       })
 
       scenario_store[[paste0("n", n)]] <- list(
         pmm2 = list(
-          coefficients = metrics_pmm2,
-          convergence_rate = pmm2_converged / N_REPLICATIONS,
-          mean_g = mean(pmm2_g[valid_pmm2], na.rm = TRUE)
+          coefficients = metrics$pmm2,
+          convergence_rate = convergence_counts["pmm2"] / N_REPLICATIONS,
+          mean_g = mean(pmm2_g[valid_mask$pmm2], na.rm = TRUE)
         ),
         css = list(
-          coefficients = metrics_css,
-          convergence_rate = css_converged / N_REPLICATIONS
+          coefficients = metrics$css,
+          convergence_rate = convergence_counts["css"] / N_REPLICATIONS
+        ),
+        mle = list(
+          coefficients = metrics$mle,
+          convergence_rate = convergence_counts["mle"] / N_REPLICATIONS
         )
       )
 
-      for (j in seq_along(scenario$params)) {
-        metric_names <- c("bias", "rmse", "variance", "mae")
-        p_vals <- metrics_pmm2[[j]]
-        c_vals <- metrics_css[[j]]
-        var_reduction <- 1 - p_vals$variance / c_vals$variance
+      for (method in METHODS) {
+        method_pretty <- toupper(method)
+        method_pretty <- if (method_pretty == "PMM2") "PMM2" else method_pretty
 
-        summary_rows[[length(summary_rows) + 1]] <- data.frame(
-          innovation = innov_type,
-          scenario = scenario$name,
-          sample_size = n,
-          parameter = scenario$param_names[j],
-          method = "PMM2",
-          bias = p_vals$bias,
-          rmse = p_vals$rmse,
-          variance = p_vals$variance,
-          mae = p_vals$mae,
-          convergence = scenario_store[[paste0("n", n)]]$pmm2$convergence_rate,
-          mean_g = scenario_store[[paste0("n", n)]]$pmm2$mean_g,
-          variance_reduction = var_reduction
-        )
+        for (j in seq_along(scenario$params)) {
+          vals <- metrics[[method]][[j]]
+          var_reduction <- if (method == "css") {
+            NA
+          } else {
+            1 - vals$variance / css_variances[j]
+          }
 
-        summary_rows[[length(summary_rows) + 1]] <- data.frame(
-          innovation = innov_type,
-          scenario = scenario$name,
-          sample_size = n,
-          parameter = scenario$param_names[j],
-          method = "CSS",
-          bias = c_vals$bias,
-          rmse = c_vals$rmse,
-          variance = c_vals$variance,
-          mae = c_vals$mae,
-          convergence = scenario_store[[paste0("n", n)]]$css$convergence_rate,
-          mean_g = NA,
-          variance_reduction = NA
-        )
+          summary_rows[[length(summary_rows) + 1]] <- data.frame(
+            innovation = innov_type,
+            scenario = scenario$name,
+            sample_size = n,
+            parameter = scenario$param_names[j],
+            method = method_pretty,
+            bias = vals$bias,
+            rmse = vals$rmse,
+            variance = vals$variance,
+            mae = vals$mae,
+            convergence = scenario_store[[paste0("n", n)]][[method]]$convergence_rate,
+            mean_g = if (method == "pmm2") scenario_store[[paste0("n", n)]]$pmm2$mean_g else NA,
+            variance_reduction = var_reduction
+          )
+        }
       }
 
-      cat("    PMM2 convergence rate:",
-          round(scenario_store[[paste0("n", n)]]$pmm2$convergence_rate * 100, 1),
-          "%\n")
-      cat("    CSS convergence rate:",
-          round(scenario_store[[paste0("n", n)]]$css$convergence_rate * 100, 1),
-          "%\n")
+      for (method in METHODS) {
+        cat("    ", toupper(method), " convergence rate:",
+            round(scenario_store[[paste0("n", n)]][[method]]$convergence_rate * 100, 1),
+            "%\n", sep = "")
+      }
     }
 
     scenario_results[[scenario_name]] <- scenario_store
@@ -325,7 +320,7 @@ format_percent <- function(x) {
   ifelse(is.na(x), "NA", sprintf("%.1f", 100 * x))
 }
 
-pm_summary <- subset(summary_df, method == "PMM2")
+md_data <- summary_df
 md_lines <- c(
   "# SARMA/SARIMA Monte Carlo Report",
   "",
@@ -338,31 +333,33 @@ md_lines <- c(
   "## Summary by scenario and innovation"
 )
 
-for (innov in unique(pm_summary$innovation)) {
+for (innov in unique(md_data$innovation)) {
   md_lines <- c(md_lines, "", sprintf("### Innovation: %s", innov))
-  innov_df <- pm_summary[pm_summary$innovation == innov, ]
+  innov_df <- md_data[md_data$innovation == innov, ]
 
   for (scenario in unique(innov_df$scenario)) {
     scenario_df <- innov_df[innov_df$scenario == scenario, ]
     scenario_df <- scenario_df[order(scenario_df$sample_size,
-                                     scenario_df$parameter), ]
+                                     scenario_df$parameter,
+                                     scenario_df$method), ]
 
     md_lines <- c(
       md_lines,
       "",
       sprintf("#### %s", scenario),
       "",
-      "| n | Parameter | Bias | RMSE | Variance | MAE | Var Red (%) | Convergence | mean g |",
-      "|---|-----------|------|------|----------|-----|-------------|-------------|--------|"
+      "| n | Parameter | Method | Bias | RMSE | Variance | MAE | Var Red (%) | Convergence | mean g |",
+      "|---|-----------|--------|------|------|----------|-----|-------------|-------------|--------|"
     )
 
     for (row_idx in seq_len(nrow(scenario_df))) {
       row <- scenario_df[row_idx, ]
       md_lines <- c(
         md_lines,
-        sprintf("| %d | %s | %s | %s | %s | %s | %s | %s | %s |",
+        sprintf("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s |",
                 row$sample_size,
                 row$parameter,
+                row$method,
                 format_metric(row$bias),
                 format_metric(row$rmse),
                 format_metric(row$variance),
