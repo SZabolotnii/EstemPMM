@@ -14,3 +14,4 @@ skill/
 test_results/
 
 .claude
+.env
