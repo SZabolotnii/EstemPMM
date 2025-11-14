@@ -22,3 +22,7 @@
 ^clean_reinstall\.R$
 ^test_sma_quick\.R$
 ^test_results/
+^run_coverage_analysis\.R$
+^coverage_report\.html$
+^coverage_data\.rds$
+^tests/TESTING_GUIDE\.md$
