@@ -10,8 +10,9 @@ model using the PMM2 method. It extends the TS2fit class with additional
 slots specific to seasonal models.
 }
 \details{
-The SARPMM2 class represents fitted SAR models of the form:
-y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+The SARPMM2 class represents fitted SAR models of the form
+\deqn{y_t = \phi_1 y_{t-1} + \dots + \phi_p y_{t-p} +
+            \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} + \epsilon_t.}
 
 Where:
 \itemize{

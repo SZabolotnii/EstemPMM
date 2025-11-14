@@ -44,7 +44,7 @@ sma_pmm2(
 \value{
 An S4 object of class \code{SMAPMM2} containing:
 \itemize{
-\item coefficients: Seasonal MA coefficients (Θ₁, Θ₂, ..., Θ_Q)
+\item coefficients: Seasonal MA coefficients (Theta_1, Theta_2, ..., Theta_Q)
 \item innovations: Estimated innovations (residuals)
 \item m2, m3, m4: Central moments of innovations
 \item convergence: Convergence status
@@ -60,19 +60,20 @@ Method (PMM2). This is particularly effective when the innovations have
 asymmetric or non-Gaussian distributions.
 }
 \details{
-The SMA(Q)\emph{s model has the form:
-y_t = μ + ε_t + Θ₁·ε}{t-s} + Θ₂·ε_{t-2s} + ... + Θ_Q·ε_{t-Qs}
+The SMA(Q)_s model has the form
+\deqn{y_t = \mu + \epsilon_t + \Theta_1 \epsilon_{t-s} +
+            \Theta_2 \epsilon_{t-2s} + \dots + \Theta_Q \epsilon_{t-Qs}.}
 
 Where:
 \itemize{
 \item Q is the seasonal MA order
 \item s is the seasonal period (12 for monthly, 4 for quarterly)
-\item ε_t are innovations (errors)
+\item epsilon_t are innovations (errors)
 }
 
 The PMM2 method provides more efficient parameter estimates than ML/CSS when
 the innovation distribution is asymmetric (non-Gaussian). The expected
-variance reduction is given by g = 1 - c₃²/(2 + c₄), where c₃ and c₄
+variance reduction is given by g = 1 - c3^2 / (2 + c4), where c3 and c4
 are the skewness and excess kurtosis coefficients.
 }
 \examples{

@@ -1,139 +1,53 @@
-# CRAN Submission: Critical Issues and Instructions
+# CRAN Submission: Current Checklist (v0.1.3)
 
-## Critical Issue Found: Ukrainian Documentation
+The translation work called out in earlier notes has been completed. All roxygen blocks, vignettes, and README files are now in English, so the remaining CRAN-prep focus is on **validation**, **documentation freshness**, and **submission hygiene**.
 
-**CRAN REQUIREMENT**: All package documentation must be in English.
+## 1. Align Monte Carlo Evidence
+- Canonical SMA benchmark lives in `run_sma_monte_carlo.R` (n = 120, γ-innovations). Keep this script as the reference when CRAN asks about statistical validation.  
+- The combined script `monte_carlo_seasonal_comparison.R` is broader (multiple n and scenarios). Document both in README/NEWS so reviewers understand the longer run time.
 
-### Problem
-All R source files currently contain Ukrainian text in:
-- Roxygen documentation comments (`#'`)
-- Function parameter descriptions
-- Examples
-- Internal comments in user-facing functions
-
-### Files Affected
-The following R files contain Ukrainian documentation:
-- `R/pmm2_package.R` - **FIXED**
-- `R/pmm2_main.R`
-- `R/pmm2_classes.R`
-- `R/pmm2_common.R`
-- `R/pmm2_inference.R`
-- `R/pmm2_monte_carlo.R`
-- `R/pmm2_ts_design.R`
-- `R/pmm2_ts_main.R`
-- `R/pmm2_ts_methods.R`
-- `R/pmm2_utils.R`
-
-## Required Actions
-
-### 1. Translate All Documentation to English
-
-You need to translate all roxygen documentation (`#'` comments) in the R files listed above from Ukrainian to English.
-
-**Important**:
-- Keep the same structure and roxygen tags (@param, @return, @export, etc.)
-- Translate parameter descriptions, function descriptions, details, and examples
-- Internal code comments (non-roxygen `#` comments) can remain in Ukrainian if they're not user-facing, but it's better to translate them too
-
-### 2. Regenerate Documentation
-
-After translating the R source files, regenerate the man pages:
-
+## 2. Regenerate Documentation
 ```r
-# Install roxygen2 if needed
-install.packages("roxygen2")
-
-# Regenerate documentation
-roxygen2::roxygenize()
-
-# Or use devtools
 library(devtools)
-document()
+document()      # roxygen → man/
+build_vignettes()
 ```
+Make sure `inst/doc/` is cleaned before running `build_vignettes()` (the directory is auto-populated by `R CMD build`).
 
-### 3. Run R CMD check --as-cran
-
+## 3. Build + Check
 ```bash
-# Build the package
 R CMD build .
-
-# Check with CRAN standards
-R CMD check --as-cran EstemPMM_0.1.0.tar.gz
+R CMD check --as-cran EstemPMM_0.1.3.tar.gz
 ```
+Expected outcome: 0 errors, 0 warnings, ≤2 notes ("new submission" + possible spelling note for "PMM").
 
-### 4. Fix Any Warnings/Errors
+## 4. GitHub Actions / External Checks
+- Push to GitHub to trigger `.github/workflows/R-CMD-check.yaml` (Ubuntu + macOS + Windows).  
+- Optional but recommended: `devtools::check_win_devel()` and `rhub::check_for_cran()`.
 
-Review the check output and fix any issues. Common CRAN notes that are acceptable:
-- "New submission" NOTE
-- "Non-standard directory 'docs'" (can be ignored if docs is in .Rbuildignore)
+## 5. Update Submission Artifacts
+- `README.md` / `README_uk.md`: include CRAN install snippet (`install.packages("EstemPMM")`) and mention how to rebuild documentation/tests.
+- `NEWS.md`: ensure 0.1.3 section highlights documentation refresh + seasonal Monte Carlo evidence.
+- `cran-comments.md`: describe the environments and provide a short bullet list of notes (see template in file).
+- `CRAN_SUBMISSION_CHECKLIST.md`: mark the new version + date.
 
-### 5. Alternative: Use devtools
+## 6. Pre-Submission Clean-up
+- Delete `inst/doc/*`, `vignettes/*.html`, and any `.DS_Store` before building.  
+- Ensure `.Rbuildignore` excludes `docs/`, `test_results/`, `.github/`, Monte Carlo artifacts, and large PDFs.  
+- Confirm no files > 5 MB remain under version control (CRAN auto-check complains about bloated tarballs).
 
-```r
-# Install devtools if needed
-install.packages("devtools")
+## 7. Suggested Release Order
+1. `document()` + `build_vignettes()`  
+2. `devtools::check()` (quick sanity)  
+3. `R CMD build`  
+4. `R CMD check --as-cran` on the tarball  
+5. Update `cran-comments.md` with actual check output  
+6. Tag release / create `EstemPMM_0.1.3.tar.gz` for upload  
+7. Submit via https://cran.r-project.org/submit.html (attach tarball + `cran-comments.md`)
 
-# Run CRAN checks
-library(devtools)
-check(cran = TRUE)
-```
-
-### 6. Pre-build cleanup (required)
-
-- Update `DESCRIPTION` with the new version number before calling `R CMD build` (e.g., 0.1.1) so the resulting tarball matches the intended release.
-- Remove generated artifacts from previous vignette builds: delete the contents of `inst/doc/` (they will be regenerated automatically).
-- Delete `demo/README.md` or move its content elsewhere—`demo/` may only contain `.R`/`.Rout` files and an optional `00Index`.
-- Verify that only portable file names remain (ASCII letters/digits plus `_` or `.`, no spaces) to avoid "invalid file names" warnings during `R CMD check`.
-
-## Files Already Modified
-
-The following files have been updated for CRAN compliance:
-1. **cran-comments.md** - Created with submission information
-2. **.Rbuildignore** - Updated to exclude non-package files (.github, docs, etc.)
-3. **R/pmm2_package.R** - Translated from Ukrainian to English
-4. **.github/workflows/R-CMD-check.yaml** - Added GitHub Actions workflow for automated CRAN checks
-
-## GitHub Actions Workflow
-
-A GitHub Actions workflow has been added that will automatically run R CMD check --as-cran on multiple platforms:
-- Ubuntu (R release, R devel, R oldrel-1)
-- Windows (R release)
-- macOS (R release)
-
-This will run automatically when you push to branches matching `claude/**` or to `main`/`master`.
-
-## Translation Example
-
-**Before (Ukrainian)**:
-```r
-#' Pidhaniaie liniinu model za dopomohoiu PMM2
-#'
-#' @param formula Formula R dlia modeli
-#' @param data data.frame, shcho mistyt zminni u formuli
-#' @return Ob'iekt S4 \code{PMM2fit}
-```
-
-**After (English)**:
-```r
-#' Fit linear model using PMM2
-#'
-#' @param formula R formula for the model
-#' @param data data.frame containing variables in the formula
-#' @return S4 object of class \code{PMM2fit}
-```
-
-## Next Steps
-
-1. Translate all roxygen documentation in the R files listed above
-2. Run `roxygen2::roxygenize()` to regenerate man pages
-3. Run `R CMD check --as-cran EstemPMM_*.tar.gz` locally
-4. Fix any warnings or errors
-5. Commit and push changes
-6. Review GitHub Actions check results
-7. When all checks pass, proceed with CRAN submission
-
-## Useful Resources
-
-- CRAN Repository Policy: https://cran.r-project.org/web/packages/policies.html
-- Writing R Extensions: https://cran.r-project.org/doc/manuals/r-release/R-exts.html
+## 8. Useful Resources
+- CRAN policy: https://cran.r-project.org/web/packages/policies.html  
+- Submission checklist: https://cran.r-project.org/web/packages/submission_checklist.html  
 - R Packages book: https://r-pkgs.org/
+
+_Last updated: 2025-11-14_

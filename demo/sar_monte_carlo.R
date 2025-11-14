@@ -422,7 +422,7 @@ print_sar_mc_summary <- function(summary_stats, true_params) {
     if (P > 0) paste0("sar", 1:P) else NULL
   )
 
-  cat("Parameter Estimates (Mean ± SD)\n")
+  cat("Parameter Estimates (Mean +/- SD)\n")
   cat("================================\n\n")
 
   for (i in 1:length(param_names)) {
@@ -439,7 +439,7 @@ print_sar_mc_summary <- function(summary_stats, true_params) {
       for (method in names(summary_stats)) {
         stats <- summary_stats[[method]]
         if (!is.null(stats) && length(stats$mean_estimate) >= i) {
-          cat(sprintf("  %-6s: %.4f ± %.4f  (Bias: %.4f, RMSE: %.4f)\n",
+          cat(sprintf("  %-6s: %.4f +/- %.4f  (Bias: %.4f, RMSE: %.4f)\n",
                       stats$method,
                       stats$mean_estimate[i],
                       stats$sd_estimate[i],
@@ -494,7 +494,7 @@ print_sar_mc_summary <- function(summary_stats, true_params) {
     cat(sprintf("Variance reduction: %.1f%%\n\n", efficiency * 100))
 
     if (efficiency > 0) {
-      cat("=> PMM2 is MORE efficient than OLS ✓\n")
+      cat("=> PMM2 is MORE efficient than OLS [OK]\n")
     } else {
       cat("=> OLS is more efficient in this case\n")
     }
@@ -600,7 +600,7 @@ cat("OVERALL CONCLUSIONS\n")
 cat("=", rep("=", 70), "\n\n", sep = "")
 
 cat("1. Gaussian Innovations:\n")
-cat("   - PMM2 ≈ OLS (as expected for symmetric distributions)\n")
+cat("   - PMM2 ~ OLS (as expected for symmetric distributions)\n")
 cat("   - No efficiency gain, but no loss either\n\n")
 
 cat("2. Gamma Innovations (Asymmetric):\n")
@@ -613,9 +613,9 @@ cat("   - PMM2 benefits extend to more complex models\n")
 cat("   - Consistent performance across parameters\n\n")
 
 cat("Recommendation: Use PMM2 for SAR models when:\n")
-cat("  ✓ Innovations show asymmetry (skewness ≠ 0)\n")
-cat("  ✓ Heavy-tailed distributions present\n")
-cat("  ✓ Economic/financial time series data\n\n")
+cat("  [OK] Innovations show asymmetry (skewness != 0)\n")
+cat("  [OK] Heavy-tailed distributions present\n")
+cat("  [OK] Economic/financial time series data\n\n")
 
 cat("Simulation completed successfully!\n")
 cat("Results saved in R objects:\n")

@@ -27,7 +27,10 @@ where `c3` is the skewness coefficient and `c4` is the kurtosis coefficient.
 ## Installation
 
 ```r
-# Install from GitHub (requires 'devtools' package)
+# Install the released version from CRAN
+install.packages("EstemPMM")
+
+# Or install the development snapshot from GitHub
 devtools::install_github("SZabolotnii/EstemPMM")
 ```
 
@@ -118,6 +121,46 @@ fit_sarima <- sarima_pmm2(y, order = c(1, 1, 1, 1),
 ### Statistical Inference
 - `pmm2_inference()`: Bootstrap inference for linear models
 - `ts_pmm2_inference()`: Bootstrap inference for time series models
+
+## Documentation & Vignettes
+
+The package ships with three vignettes that walk through typical workflows:
+
+| Vignette | Focus |
+| --- | --- |
+| `vignette("pmm2-introduction", package = "EstemPMM")` | Linear PMM2 estimation and comparison with OLS |
+| `vignette("pmm2-time-series", package = "EstemPMM")` | AR/MA/ARMA/ARIMA plus seasonal SAR/SMA examples |
+| `vignette("bootstrap-inference", package = "EstemPMM")` | Resampling-based inference for asymmetric errors |
+
+To rebuild documentation locally:
+
+```r
+devtools::document()
+devtools::build_vignettes()
+```
+
+## Reproducing Monte Carlo Benchmarks
+
+- **Canonical SMA benchmark (n = 120, γ-innovations):** `Rscript run_sma_monte_carlo.R`  
+  This script reproduces the 34% variance reduction highlighted in `test_results/SMA_Monte_Carlo_Report_20251113_500reps.md`.
+- **Full seasonal comparison (SAR / SMA / SARMA / SARIMA, n ∈ {100, 200, 500}):** `Rscript monte_carlo_seasonal_comparison.R`  
+  Results are saved to `monte_carlo_seasonal_results.rds` and summarized in `test_results/SAR_MONTE_CARLO_REPORT_2025-11-14.md`.
+
+The seasonal script takes ~8 minutes on Apple Silicon (M4) because it rebuilds vignettes and runs 500 replications per scenario. The canonical SMA script finishes in < 10 seconds.
+
+## CRAN Readiness & Testing
+
+Before submitting to CRAN, run:
+
+```r
+devtools::check()             # quick local sanity check
+devtools::document()
+devtools::build_vignettes()
+system("R CMD build .")
+system("R CMD check --as-cran EstemPMM_0.1.3.tar.gz")
+```
+
+Continuous integration via `.github/workflows/R-CMD-check.yaml` exercises Ubuntu, macOS, and Windows matrix builds on every push to `main` or `claude/*`.
 - `plot_pmm2_bootstrap()`: Visualize bootstrap results
 
 ### Utilities

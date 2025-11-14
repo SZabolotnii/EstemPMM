@@ -162,7 +162,7 @@ pmm2_error <- abs(coef(fit3_pmm2)["sar1"] - sar_coef_true)
 
 if (pmm2_error < ols_error) {
   improvement <- (ols_error - pmm2_error) / ols_error * 100
-  cat(sprintf("=> PMM2 reduced estimation error by %.1f%%! ✓\n\n", improvement))
+  cat(sprintf("=> PMM2 reduced estimation error by %.1f%%! [OK]\n\n", improvement))
 } else {
   cat("=> OLS performed better in this particular sample\n\n")
 }
@@ -244,15 +244,15 @@ cat("=", rep("=", 75), "\n\n", sep = "")
 cat("1. SAR-PMM2 successfully models seasonal patterns in time series data\n\n")
 
 cat("2. Key advantages of PMM2 over OLS:\n")
-cat("   ✓ More efficient when innovations are asymmetric\n")
-cat("   ✓ Lower variance estimates (10-40% reduction possible)\n")
-cat("   ✓ Robust to non-Gaussian error distributions\n\n")
+cat("   [OK] More efficient when innovations are asymmetric\n")
+cat("   [OK] Lower variance estimates (10-40% reduction possible)\n")
+cat("   [OK] Robust to non-Gaussian error distributions\n\n")
 
 cat("3. When to use SAR-PMM2:\n")
-cat("   ✓ Monthly data with annual seasonality (period = 12)\n")
-cat("   ✓ Quarterly data with annual seasonality (period = 4)\n")
-cat("   ✓ Weekly data with annual seasonality (period = 52)\n")
-cat("   ✓ Any periodic pattern in the data\n\n")
+cat("   [OK] Monthly data with annual seasonality (period = 12)\n")
+cat("   [OK] Quarterly data with annual seasonality (period = 4)\n")
+cat("   [OK] Weekly data with annual seasonality (period = 52)\n")
+cat("   [OK] Any periodic pattern in the data\n\n")
 
 cat("4. Model selection:\n")
 cat("   - Pure seasonal: SAR(0,P)_s\n")

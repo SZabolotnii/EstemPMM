@@ -234,7 +234,7 @@ setMethod("summary", "SARMAPMM2",
             s <- object@order$period
 
             cat("PMM2 Seasonal ARMA estimation results\n")
-            cat("Model type: SARMA(", p, ",", q, ")×(", P, ",", Q, ")_", s, "\n", sep = "")
+            cat("Model type: SARMA(", p, ",", q, ")x(", P, ",", Q, ")_", s, "\n", sep = "")
 
             if(!is.null(object@call)) {
               cat("Call:\n")
@@ -320,7 +320,7 @@ setMethod("summary", "SARIMAPMM2",
             s <- object@order$period
 
             cat("PMM2 Seasonal ARIMA estimation results\n")
-            cat("Model type: SARIMA(", p, ",", d, ",", q, ")×(", P, ",", D, ",", Q, ")_", s, "\n", sep = "")
+            cat("Model type: SARIMA(", p, ",", d, ",", q, ")x(", P, ",", D, ",", Q, ")_", s, "\n", sep = "")
 
             if(!is.null(object@call)) {
               cat("Call:\n")
@@ -413,8 +413,9 @@ setMethod("summary", "SARIMAPMM2",
 #'   }
 #'
 #' @details
-#' The SARPMM2 class represents fitted SAR models of the form:
-#'   y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+#' The SARPMM2 class represents fitted SAR models of the form
+#' \deqn{y_t = \phi_1 y_{t-1} + \dots + \phi_p y_{t-p} +
+#'             \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} + \epsilon_t.}
 #'
 #' Where:
 #'   - p is the non-seasonal AR order
@@ -446,8 +447,8 @@ setClass("SARPMM2",
 #' This class stores the results of fitting a Seasonal Moving Average (SMA)
 #' model using the Polynomial Maximization Method (PMM2).
 #'
-#' @slot coefficients Estimated seasonal MA coefficients (Θ₁, Θ₂, ..., Θ_Q)
-#' @slot innovations Estimated innovations (residuals ε_t)
+#' @slot coefficients Estimated seasonal MA coefficients (Theta_1, Theta_2, ..., Theta_Q)
+#' @slot innovations Estimated innovations (residuals epsilon_t)
 #' @slot m2 Second central moment (variance) of innovations
 #' @slot m3 Third central moment (skewness indicator) of innovations
 #' @slot m4 Fourth central moment (kurtosis indicator) of innovations
@@ -460,13 +461,13 @@ setClass("SARPMM2",
 #' @slot order List with Q (seasonal MA order) and s (seasonal period)
 #'
 #' @details
-#' The SMA(Q)_s model is:
-#'   y_t = μ + ε_t + Θ₁·ε_{t-s} + Θ₂·ε_{t-2s} + ... + Θ_Q·ε_{t-Qs}
+#' The SMA(Q)_s model is expressed as
+#' \deqn{y_t = \mu + \epsilon_t + \Theta_1 \epsilon_{t-s} + \Theta_2 \epsilon_{t-2s} + \dots + \Theta_Q \epsilon_{t-Qs}.}
 #'
 #' Where:
 #'   - Q is the seasonal MA order
 #'   - s is the seasonal period
-#'   - ε_t are innovations
+#'   - epsilon_t are innovations
 #'
 #' @seealso \code{\link{sma_pmm2}} for fitting SMA models
 #'
@@ -516,10 +517,12 @@ setClass("SMAPMM2",
 #'
 #' @details
 #' The SARMAPMM2 class represents fitted SARMA models combining:
-#'   - AR(p): φ₁·y_{t-1} + ... + φ_p·y_{t-p}
-#'   - SAR(P)_s: Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps}
-#'   - MA(q): θ₁·ε_{t-1} + ... + θ_q·ε_{t-q}
-#'   - SMA(Q)_s: Θ₁·ε_{t-s} + ... + Θ_Q·ε_{t-Qs}
+#' \itemize{
+#'   \item AR(p): \eqn{\phi_1 y_{t-1} + \dots + \phi_p y_{t-p}}
+#'   \item Seasonal AR component: \eqn{\Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps}}
+#'   \item MA(q): \eqn{\theta_1 \epsilon_{t-1} + \dots + \theta_q \epsilon_{t-q}}
+#'   \item Seasonal MA component: \eqn{\Theta_1 \epsilon_{t-s} + \dots + \Theta_Q \epsilon_{t-Qs}}
+#' }
 #'
 #' @seealso \code{\link{sarma_pmm2}} for fitting SARMA models
 #'
@@ -570,9 +573,8 @@ setClass("SARMAPMM2",
 #'   }
 #'
 #' @details
-#' The SARIMAPMM2 class represents fitted SARIMA(p,d,q)×(P,D,Q)_s models:
-#'   (1-φ₁B-...-φ_pB^p)(1-Φ₁B^s-...-Φ_PB^{Ps})(1-B)^d(1-B^s)^D y_t =
-#'   (1+θ₁B+...+θ_qB^q)(1+Θ₁B^s+...+Θ_QB^{Qs}) ε_t
+#' The SARIMAPMM2 class represents fitted SARIMA(p,d,q) x (P,D,Q)_s models:
+#' \deqn{(1 - \phi_1 B - \dots - \phi_p B^p)(1 - \Phi_1 B^s - \dots - \Phi_P B^{Ps})(1 - B)^d (1 - B^s)^D y_t = (1 + \theta_1 B + \dots + \theta_q B^q)(1 + \Theta_1 B^s + \dots + \Theta_Q B^{Qs}) \epsilon_t.}
 #'
 #' Where B is the backshift operator.
 #'

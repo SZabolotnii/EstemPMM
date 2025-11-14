@@ -405,7 +405,7 @@ arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2", max_iter = 50, to
 #'
 #' @return An S4 object of class \code{SMAPMM2} containing:
 #'   \itemize{
-#'     \item coefficients: Seasonal MA coefficients (Θ₁, Θ₂, ..., Θ_Q)
+#'     \item coefficients: Seasonal MA coefficients (Theta_1, Theta_2, ..., Theta_Q)
 #'     \item innovations: Estimated innovations (residuals)
 #'     \item m2, m3, m4: Central moments of innovations
 #'     \item convergence: Convergence status
@@ -416,17 +416,18 @@ arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2", max_iter = 50, to
 #'   }
 #'
 #' @details
-#' The SMA(Q)_s model has the form:
-#'   y_t = μ + ε_t + Θ₁·ε_{t-s} + Θ₂·ε_{t-2s} + ... + Θ_Q·ε_{t-Qs}
+#' The SMA(Q)_s model has the form
+#' \deqn{y_t = \mu + \epsilon_t + \Theta_1 \epsilon_{t-s} +
+#'             \Theta_2 \epsilon_{t-2s} + \dots + \Theta_Q \epsilon_{t-Qs}.}
 #'
 #' Where:
 #'   - Q is the seasonal MA order
 #'   - s is the seasonal period (12 for monthly, 4 for quarterly)
-#'   - ε_t are innovations (errors)
+#'   - epsilon_t are innovations (errors)
 #'
 #' The PMM2 method provides more efficient parameter estimates than ML/CSS when
 #' the innovation distribution is asymmetric (non-Gaussian). The expected
-#' variance reduction is given by g = 1 - c₃²/(2 + c₄), where c₃ and c₄
+#' variance reduction is given by g = 1 - c3^2 / (2 + c4), where c3 and c4
 #' are the skewness and excess kurtosis coefficients.
 #'
 #' @examples
@@ -720,7 +721,7 @@ sma_build_design <- function(intercept, residuals, x, Q, s) {
 
   X <- matrix(1, nrow = length(idx), ncol = Q + 1L)
 
-  # Add seasonal MA lags: ε_{t-s}, ε_{t-2s}, ..., ε_{t-Qs}
+  # Add seasonal MA lags: epsilon_{t-s}, epsilon_{t-2s}, ..., epsilon_{t-Qs}
   for (j in seq_len(Q)) {
     lag_seasonal <- j * s  # KEY DIFFERENCE from MA: j*s instead of j
     X[, j + 1L] <- residuals[idx - lag_seasonal]
@@ -746,7 +747,7 @@ sma_compute_innovations <- function(x, theta, Q, s) {
   for (t in seq_len(n)) {
     ma_component <- 0
 
-    # Add seasonal MA terms: Θ₁·ε_{t-s} + Θ₂·ε_{t-2s} + ...
+    # Add seasonal MA terms: Theta_1 * epsilon_{t-s} + Theta_2 * epsilon_{t-2s} + ...
     for (j in seq_len(Q)) {
       lag_seasonal <- j * s
       if (t > lag_seasonal) {
@@ -779,7 +780,7 @@ sma_pmm2_fit <- function(x, Q, s, css_fit, max_iter = 50, tol = 1e-6, verbose = 
   # Compute moments
   moments <- compute_moments(css_fit$residuals)
 
-  # Initial parameters: [intercept, Θ₁, Θ₂, ..., Θ_Q]
+  # Initial parameters: [intercept, Theta_1, Theta_2, ..., Theta_Q]
   b_init <- c(0, css_fit$coefficients)
 
   # Solve PMM2 (reuse existing MA solver!)
@@ -934,18 +935,19 @@ arma_build_design <- function(x, residuals, p, q, intercept = 0, include_interce
 #'   }
 #'
 #' @details
-#' The SAR model has the form:
-#'   y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + μ + ε_t
+#' The SAR model has the form
+#' \deqn{y_t = \phi_1 y_{t-1} + \dots + \phi_p y_{t-p} +
+#'             \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} + \mu + \epsilon_t.}
 #'
 #' Where:
 #'   - p is the non-seasonal AR order
 #'   - P is the seasonal AR order
 #'   - s is the seasonal period
-#'   - ε_t are innovations (errors)
+#'   - epsilon_t are innovations (errors)
 #'
 #' The PMM2 method provides more efficient parameter estimates than OLS when
 #' the innovation distribution is asymmetric (non-Gaussian). The expected
-#' variance reduction is given by g = 1 - c₃²/(2 + c₄), where c₃ and c₄
+#' variance reduction is given by g = 1 - c3^2 / (2 + c4), where c3 and c4
 #' are the skewness and excess kurtosis coefficients.
 #'
 #' @examples
@@ -1019,25 +1021,25 @@ sar_pmm2 <- function(x,
     cat("Multiplicative:", multiplicative, "\n")
   }
 
-  # Center data (handle mean)
+  # Prepare data and design matrix
   orig_x <- x
-  if (include.mean) {
-    x_mean <- mean(x)
-    x_centered <- x - x_mean
-  } else {
-    x_mean <- 0
-    x_centered <- x
-  }
+  x_work <- x
 
-  # Create design matrix
-  X <- create_sar_matrix(x_centered, p = p, P = P, s = s, multiplicative = multiplicative)
+  X_base <- create_sar_matrix(x_work, p = p, P = P, s = s, multiplicative = multiplicative)
   max_lag <- max(p, P * s)
 
   if (multiplicative && p > 0 && P > 0) {
     max_lag <- max(max_lag, p + P * s)
   }
 
-  y <- x_centered[(max_lag + 1):length(x_centered)]
+  if (include.mean) {
+    intercept_col <- rep(1, nrow(X_base))
+    X <- cbind(`(Intercept)` = intercept_col, X_base)
+  } else {
+    X <- X_base
+  }
+
+  y <- x_work[(max_lag + 1):length(x_work)]
 
   if (verbose) {
     cat("Design matrix dimensions:", nrow(X), "x", ncol(X), "\n")
@@ -1127,9 +1129,17 @@ sar_pmm2 <- function(x,
     iterations <- 0L
   }
 
+  if (include.mean) {
+    intercept_est <- as.numeric(b_final[1])
+    coef_est <- as.numeric(b_final[-1])
+  } else {
+    intercept_est <- 0
+    coef_est <- as.numeric(b_final)
+  }
+
   # Create SARPMM2 object
   result <- new("SARPMM2",
-                coefficients = as.numeric(b_final),
+                coefficients = coef_est,
                 residuals = as.numeric(residuals_final),
                 m2 = as.numeric(moments_final$m2),
                 m3 = as.numeric(moments_final$m3),
@@ -1138,7 +1148,7 @@ sar_pmm2 <- function(x,
                 iterations = as.integer(iterations),
                 call = cl,
                 model_type = "sar",
-                intercept = if (include.mean) as.numeric(x_mean) else 0,
+                intercept = intercept_est,
                 original_series = as.numeric(orig_x),
                 order = list(ar = p, sar = P, period = s))
 
@@ -1180,10 +1190,10 @@ sar_pmm2 <- function(x,
 #'
 #' @details
 #' The SARMA model combines four components:
-#'   - AR(p): φ₁·y_{t-1} + ... + φ_p·y_{t-p}
-#'   - SAR(P)_s: Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps}
-#'   - MA(q): θ₁·ε_{t-1} + ... + θ_q·ε_{t-q}
-#'   - SMA(Q)_s: Θ₁·ε_{t-s} + ... + Θ_Q·ε_{t-Qs}
+#'   - AR(p): \eqn{\phi_1 y_{t-1} + \dots + \phi_p y_{t-p}}
+#'   - Seasonal AR: \eqn{\Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps}}
+#'   - MA(q): \eqn{\theta_1 \epsilon_{t-1} + \dots + \theta_q \epsilon_{t-q}}
+#'   - Seasonal MA: \eqn{\Theta_1 \epsilon_{t-s} + \dots + \Theta_Q \epsilon_{t-Qs}}
 #'
 #' The PMM2 method provides more efficient parameter estimates than ML/CSS when
 #' the innovation distribution is asymmetric (non-Gaussian).
@@ -1254,19 +1264,12 @@ sarma_pmm2 <- function(x,
   }
 
   if (verbose) {
-    cat("Fitting SARMA(", p, ",", q, ")×(", P, ",", Q, ")_", s, " model\n", sep = "")
+    cat("Fitting SARMA(", p, ",", q, ")x(", P, ",", Q, ")_", s, " model\n", sep = "")
     cat("Method:", method, "\n")
   }
 
-  # Center data (handle mean)
   orig_x <- x
-  if (include.mean) {
-    x_mean <- mean(x)
-    x_centered <- x - x_mean
-  } else {
-    x_mean <- 0
-    x_centered <- x
-  }
+  x_work <- x
 
   # Step 1: Get initial estimates using stats::arima
   arima_fit <- tryCatch(
@@ -1298,7 +1301,18 @@ sarma_pmm2 <- function(x,
   ma_init[is.na(ma_init)] <- 0
   sma_init[is.na(sma_init)] <- 0
 
-  b_init <- c(ar_init, sar_init, ma_init, sma_init)
+  intercept_init <- 0
+  if (include.mean && "intercept" %in% coef_names) {
+    intercept_init <- as.numeric(arima_fit$coef["intercept"])
+  } else if (include.mean) {
+    intercept_init <- mean(x)
+  }
+
+  if (include.mean) {
+    b_init <- c(intercept_init, ar_init, sar_init, ma_init, sma_init)
+  } else {
+    b_init <- c(ar_init, sar_init, ma_init, sma_init)
+  }
 
   # Get initial residuals
   residuals_init <- as.numeric(arima_fit$residuals)
@@ -1323,109 +1337,124 @@ sarma_pmm2 <- function(x,
   }
 
   # If method is not pmm2, return initial estimates
-  if (method != "pmm2") {
-    return(new("SARMAPMM2",
-               coefficients = as.numeric(b_init),
-               residuals = as.numeric(residuals_init),
-               m2 = as.numeric(moments$m2),
-               m3 = as.numeric(moments$m3),
-               m4 = as.numeric(moments$m4),
-               convergence = TRUE,
-               iterations = 0L,
-               call = cl,
-               model_type = "sarma",
-               intercept = if (include.mean) as.numeric(x_mean) else 0,
-               original_series = as.numeric(orig_x),
-               order = list(ar = p, sar = P, ma = q, sma = Q, period = s)))
+  if (method == "pmm2") {
+    # Step 2: Build design matrix for PMM2
+    X_base <- create_sarma_matrix(x_work, residuals_init,
+                                  p = p, P = P, q = q, Q = Q, s = s)
+
+    if (include.mean) {
+      X <- cbind(`(Intercept)` = rep(1, nrow(X_base)), X_base)
+    } else {
+      X <- X_base
+    }
+
+    max_ar_lag <- max(p, P * s)
+    max_ma_lag <- max(q, Q * s)
+    max_lag <- max(max_ar_lag, max_ma_lag)
+
+    y <- x_work[(max_lag + 1):length(x_work)]
+
+    if (verbose) {
+      cat("\nDesign matrix dimensions:", nrow(X), "x", ncol(X), "\n")
+      cat("Effective sample size:", length(y), "\n")
+    }
+
+    # Check for sufficient data
+    if (nrow(X) < ncol(X) + 5) {
+      warning("Very small sample size relative to number of parameters.")
+    }
+
+    # Step 3: Apply PMM2 algorithm
+    if (verbose) cat("\nApplying PMM2 refinement...\n")
+
+    pmm2_result <- pmm2_algorithm(
+      b_init = b_init,
+      X = X,
+      y = y,
+      m2 = moments$m2,
+      m3 = moments$m3,
+      m4 = moments$m4,
+      max_iter = max_iter,
+      tol = tol,
+      regularize = regularize,
+      reg_lambda = reg_lambda,
+      verbose = verbose
+    )
+
+    b_final <- pmm2_result$b
+    converged <- pmm2_result$convergence
+    iterations <- pmm2_result$iterations
+
+    # Compute final residuals using stats::arima with fixed parameters
+    final_coef_names <- c(
+      if (p > 0) paste0("ar", 1:p) else NULL,
+      if (P > 0) paste0("sar", 1:P) else NULL,
+      if (q > 0) paste0("ma", 1:q) else NULL,
+      if (Q > 0) paste0("sma", 1:Q) else NULL
+    )
+  } else {
+    b_final <- b_init
+    converged <- TRUE
+    iterations <- 0L
   }
-
-  # Step 2: Build design matrix for PMM2
-  X <- create_sarma_matrix(x_centered, residuals_init,
-                           p = p, P = P, q = q, Q = Q, s = s)
-
-  max_ar_lag <- max(p, P * s)
-  max_ma_lag <- max(q, Q * s)
-  max_lag <- max(max_ar_lag, max_ma_lag)
-
-  y <- x_centered[(max_lag + 1):length(x_centered)]
-
-  if (verbose) {
-    cat("\nDesign matrix dimensions:", nrow(X), "x", ncol(X), "\n")
-    cat("Effective sample size:", length(y), "\n")
-  }
-
-  # Check for sufficient data
-  if (nrow(X) < ncol(X) + 5) {
-    warning("Very small sample size relative to number of parameters.")
-  }
-
-  # Step 3: Apply PMM2 algorithm
-  if (verbose) cat("\nApplying PMM2 refinement...\n")
-
-  pmm2_result <- pmm2_algorithm(
-    b_init = b_init,
-    X = X,
-    y = y,
-    m2 = moments$m2,
-    m3 = moments$m3,
-    m4 = moments$m4,
-    max_iter = max_iter,
-    tol = tol,
-    regularize = regularize,
-    reg_lambda = reg_lambda,
-    verbose = verbose
-  )
-
-  b_final <- pmm2_result$b
-  converged <- pmm2_result$convergence
-  iterations <- pmm2_result$iterations
-
-  # Compute final residuals using stats::arima with fixed parameters
-  final_coef_names <- c(
-    if (p > 0) paste0("ar", 1:p) else NULL,
-    if (P > 0) paste0("sar", 1:P) else NULL,
-    if (q > 0) paste0("ma", 1:q) else NULL,
-    if (Q > 0) paste0("sma", 1:Q) else NULL
-  )
 
   if (include.mean) {
-    final_coef_names <- c(final_coef_names, "intercept")
-    final_coef_values <- c(b_final, x_mean)
+    intercept_est <- as.numeric(b_final[1])
+    coef_est <- as.numeric(b_final[-1])
   } else {
-    final_coef_values <- b_final
+    intercept_est <- 0
+    coef_est <- as.numeric(b_final)
   }
 
-  names(final_coef_values) <- final_coef_names
+  if (method == "pmm2") {
+    final_coef_values <- coef_est
+    final_coef_names <- c(
+      if (p > 0) paste0("ar", 1:p) else NULL,
+      if (P > 0) paste0("sar", 1:P) else NULL,
+      if (q > 0) paste0("ma", 1:q) else NULL,
+      if (Q > 0) paste0("sma", 1:Q) else NULL
+    )
 
-  final_fit <- tryCatch(
-    stats::arima(x,
-                 order = c(p, 0, q),
-                 seasonal = list(order = c(P, 0, Q), period = s),
-                 fixed = final_coef_values,
-                 include.mean = FALSE),  # Mean already included in fixed
-    error = function(e) {
-      if (verbose) cat("Warning: Final fit failed, using PMM2 residuals\n")
-      list(residuals = pmm2_result$residuals)
+    if (include.mean) {
+      final_coef_names <- c(final_coef_names, "intercept")
+      final_coef_values <- c(final_coef_values, intercept_est)
     }
-  )
 
-  residuals_final <- as.numeric(final_fit$residuals)
-  if (length(residuals_final) < length(x)) {
-    residuals_final <- c(rep(NA, length(x) - length(residuals_final)), residuals_final)
-  }
+    names(final_coef_values) <- final_coef_names
 
-  moments_final <- compute_moments(residuals_final[!is.na(residuals_final)])
+    final_fit <- tryCatch(
+      stats::arima(x,
+                   order = c(p, 0, q),
+                   seasonal = list(order = c(P, 0, Q), period = s),
+                   fixed = final_coef_values,
+                   include.mean = FALSE),  # Mean already included in fixed
+      error = function(e) {
+        if (verbose) cat("Warning: Final fit failed, using PMM2 residuals\n")
+        list(residuals = pmm2_result$residuals)
+      }
+    )
 
-  if (verbose) {
-    cat("\nPMM2 converged:", converged, "\n")
-    cat("Iterations:", iterations, "\n")
-    cat("\nFinal coefficients:\n")
-    print(b_final)
+    residuals_final <- as.numeric(final_fit$residuals)
+    if (length(residuals_final) < length(x)) {
+      residuals_final <- c(rep(NA, length(x) - length(residuals_final)), residuals_final)
+    }
+
+    moments_final <- compute_moments(residuals_final[!is.na(residuals_final)])
+
+    if (verbose) {
+      cat("\nPMM2 converged:", converged, "\n")
+      cat("Iterations:", iterations, "\n")
+      cat("\nFinal coefficients:\n")
+      print(b_final)
+    }
+  } else {
+    residuals_final <- residuals_init
+    moments_final <- moments
   }
 
   # Create SARMAPMM2 object
   result <- new("SARMAPMM2",
-                coefficients = as.numeric(b_final),
+                coefficients = coef_est,
                 residuals = as.numeric(residuals_final),
                 m2 = as.numeric(moments_final$m2),
                 m3 = as.numeric(moments_final$m3),
@@ -1434,7 +1463,7 @@ sarma_pmm2 <- function(x,
                 iterations = as.integer(iterations),
                 call = cl,
                 model_type = "sarma",
-                intercept = if (include.mean) as.numeric(x_mean) else 0,
+                intercept = intercept_est,
                 original_series = as.numeric(orig_x),
                 order = list(ar = p, sar = P, ma = q, sma = Q, period = s))
 
@@ -1471,9 +1500,8 @@ sarma_pmm2 <- function(x,
 #' @return S4 object of class SARIMAPMM2 containing fitted model results
 #'
 #' @details
-#' The SARIMA(p,d,q)×(P,D,Q)_s model is:
-#'   (1-φ₁B-...-φ_pB^p)(1-Φ₁B^s-...-Φ_PB^{Ps})(1-B)^d(1-B^s)^D y_t =
-#'   (1+θ₁B+...+θ_qB^q)(1+Θ₁B^s+...+Θ_QB^{Qs}) ε_t
+#' The SARIMA(p,d,q) x (P,D,Q)_s model satisfies
+#' \deqn{(1 - \phi_1 B - \dots - \phi_p B^p)(1 - \Phi_1 B^s - \dots - \Phi_P B^{Ps})(1 - B)^d (1 - B^s)^D y_t = (1 + \theta_1 B + \dots + \theta_q B^q)(1 + \Theta_1 B^s + \dots + \Theta_Q B^{Qs}) \epsilon_t.}
 #'
 #' Where B is the backshift operator. The model combines:
 #'   - Non-seasonal differencing: (1-B)^d
@@ -1489,7 +1517,7 @@ sarma_pmm2 <- function(x,
 #' y <- arima.sim(n = n, list(order = c(1, 1, 1),
 #'                             seasonal = list(order = c(1, 1, 1), period = 12)))
 #'
-#' # Fit SARIMA(1,1,1)×(1,1,1)_12 model
+#' # Fit SARIMA(1,1,1) x (1,1,1)_12 model
 #' fit <- sarima_pmm2(y, order = c(1, 1, 1, 1),
 #'                    seasonal = list(order = c(1, 1), period = 12))
 #' summary(fit)
@@ -1552,7 +1580,7 @@ sarima_pmm2 <- function(x,
   }
 
   if (verbose) {
-    cat("Fitting SARIMA(", p, ",", d, ",", q, ")×(", P, ",", D, ",", Q, ")_", s, " model\n", sep = "")
+    cat("Fitting SARIMA(", p, ",", d, ",", q, ")x(", P, ",", D, ",", Q, ")_", s, " model\n", sep = "")
     cat("Method:", method, "\n")
     cat("Include mean:", include.mean, "\n")
   }
@@ -1591,14 +1619,18 @@ sarima_pmm2 <- function(x,
   sma_init[is.na(sma_init)] <- 0
 
   # Extract mean/drift if present
-  x_mean <- 0
+  intercept_init <- 0
   if (include.mean && "intercept" %in% coef_names) {
-    x_mean <- as.numeric(arima_fit$coef["intercept"])
+    intercept_init <- as.numeric(arima_fit$coef["intercept"])
   } else if (include.mean && "drift" %in% coef_names) {
-    x_mean <- as.numeric(arima_fit$coef["drift"])
+    intercept_init <- as.numeric(arima_fit$coef["drift"])
   }
 
-  b_init <- c(ar_init, sar_init, ma_init, sma_init)
+  if (include.mean) {
+    b_init <- c(intercept_init, ar_init, sar_init, ma_init, sma_init)
+  } else {
+    b_init <- c(ar_init, sar_init, ma_init, sma_init)
+  }
 
   # Get initial residuals
   residuals_init <- as.numeric(arima_fit$residuals)
@@ -1610,7 +1642,7 @@ sarima_pmm2 <- function(x,
     cat("  SAR:", sar_init, "\n")
     cat("  MA:", ma_init, "\n")
     cat("  SMA:", sma_init, "\n")
-    if (include.mean) cat("  Mean/Drift:", x_mean, "\n")
+    if (include.mean) cat("  Mean/Drift:", intercept_init, "\n")
   }
 
   # Compute moments from initial residuals
@@ -1623,118 +1655,117 @@ sarima_pmm2 <- function(x,
     cat("  m4:", moments$m4, "\n")
   }
 
-  # If method is not pmm2, return initial estimates
-  if (method != "pmm2") {
-    return(new("SARIMAPMM2",
-               coefficients = as.numeric(b_init),
-               residuals = as.numeric(residuals_init),
-               m2 = as.numeric(moments$m2),
-               m3 = as.numeric(moments$m3),
-               m4 = as.numeric(moments$m4),
-               convergence = TRUE,
-               iterations = 0L,
-               call = cl,
-               model_type = "sarima",
-               intercept = if (include.mean) as.numeric(x_mean) else 0,
-               original_series = as.numeric(orig_x),
-               order = list(ar = p, sar = P, ma = q, sma = Q,
-                           d = d, D = D, period = s)))
+  if (method == "pmm2") {
+    # Apply differencing to get stationary series
+    x_diff <- x
+    if (d > 0) {
+      x_diff <- diff(x_diff, differences = d)
+    }
+    if (D > 0) {
+      x_diff <- diff(x_diff, lag = s, differences = D)
+    }
+
+    # Align residuals with differenced series
+    residuals_diff <- tail(residuals_init, length(x_diff))
+
+    # Step 2: Build design matrix for PMM2
+    X_base <- create_sarma_matrix(x_diff, residuals_diff,
+                                  p = p, P = P, q = q, Q = Q, s = s)
+    if (include.mean) {
+      X <- cbind(`(Intercept)` = rep(1, nrow(X_base)), X_base)
+    } else {
+      X <- X_base
+    }
+
+    max_ar_lag <- max(p, P * s)
+    max_ma_lag <- max(q, Q * s)
+    max_lag <- max(max_ar_lag, max_ma_lag)
+
+    y <- x_diff[(max_lag + 1):length(x_diff)]
+
+    if (verbose) {
+      cat("\nDesign matrix dimensions:", nrow(X), "x", ncol(X), "\n")
+      cat("Effective sample size:", length(y), "\n")
+    }
+
+    # Step 3: Apply PMM2 algorithm
+    if (verbose) cat("\nApplying PMM2 refinement...\n")
+
+    pmm2_result <- pmm2_algorithm(
+      b_init = b_init,
+      X = X,
+      y = y,
+      m2 = moments$m2,
+      m3 = moments$m3,
+      m4 = moments$m4,
+      max_iter = max_iter,
+      tol = tol,
+      regularize = regularize,
+      reg_lambda = reg_lambda,
+      verbose = verbose
+    )
+
+    b_final <- pmm2_result$b
+    converged <- pmm2_result$convergence
+    iterations <- pmm2_result$iterations
+  } else {
+    b_final <- b_init
+    converged <- TRUE
+    iterations <- 0L
   }
-
-  # Apply differencing to get stationary series
-  x_diff <- x
-  if (d > 0) {
-    x_diff <- diff(x_diff, differences = d)
-  }
-  if (D > 0) {
-    x_diff <- diff(x_diff, lag = s, differences = D)
-  }
-
-  # Center if needed
-  if (include.mean && d + D == 0) {
-    x_diff <- x_diff - mean(x_diff)
-  }
-
-  # Align residuals with differenced series
-  residuals_diff <- tail(residuals_init, length(x_diff))
-
-  # Step 2: Build design matrix for PMM2
-  X <- create_sarma_matrix(x_diff, residuals_diff,
-                           p = p, P = P, q = q, Q = Q, s = s)
-
-  max_ar_lag <- max(p, P * s)
-  max_ma_lag <- max(q, Q * s)
-  max_lag <- max(max_ar_lag, max_ma_lag)
-
-  y <- x_diff[(max_lag + 1):length(x_diff)]
-
-  if (verbose) {
-    cat("\nDesign matrix dimensions:", nrow(X), "x", ncol(X), "\n")
-    cat("Effective sample size:", length(y), "\n")
-  }
-
-  # Step 3: Apply PMM2 algorithm
-  if (verbose) cat("\nApplying PMM2 refinement...\n")
-
-  pmm2_result <- pmm2_algorithm(
-    b_init = b_init,
-    X = X,
-    y = y,
-    m2 = moments$m2,
-    m3 = moments$m3,
-    m4 = moments$m4,
-    max_iter = max_iter,
-    tol = tol,
-    regularize = regularize,
-    reg_lambda = reg_lambda,
-    verbose = verbose
-  )
-
-  b_final <- pmm2_result$b
-  converged <- pmm2_result$convergence
-  iterations <- pmm2_result$iterations
-
-  # Compute final residuals
-  final_coef_names <- c(
-    if (p > 0) paste0("ar", 1:p) else NULL,
-    if (P > 0) paste0("sar", 1:P) else NULL,
-    if (q > 0) paste0("ma", 1:q) else NULL,
-    if (Q > 0) paste0("sma", 1:Q) else NULL
-  )
 
   if (include.mean) {
-    final_coef_names <- c(final_coef_names, if (d + D == 0) "intercept" else "drift")
-    final_coef_values <- c(b_final, x_mean)
+    intercept_est <- as.numeric(b_final[1])
+    coef_est <- as.numeric(b_final[-1])
   } else {
-    final_coef_values <- b_final
+    intercept_est <- 0
+    coef_est <- as.numeric(b_final)
   }
 
-  names(final_coef_values) <- final_coef_names
+  if (method == "pmm2") {
+    final_coef_names <- c(
+      if (p > 0) paste0("ar", 1:p) else NULL,
+      if (P > 0) paste0("sar", 1:P) else NULL,
+      if (q > 0) paste0("ma", 1:q) else NULL,
+      if (Q > 0) paste0("sma", 1:Q) else NULL
+    )
 
-  final_fit <- tryCatch(
-    stats::arima(x,
-                 order = c(p, d, q),
-                 seasonal = list(order = c(P, D, Q), period = s),
-                 fixed = final_coef_values,
-                 include.mean = FALSE),
-    error = function(e) {
-      if (verbose) cat("Warning: Final fit failed\n")
-      list(residuals = c(rep(NA, length(x) - length(pmm2_result$residuals)),
-                        pmm2_result$residuals))
+    final_coef_values <- coef_est
+    if (include.mean) {
+      final_coef_names <- c(final_coef_names, if (d + D == 0) "intercept" else "drift")
+      final_coef_values <- c(final_coef_values, intercept_est)
     }
-  )
 
-  residuals_final <- as.numeric(final_fit$residuals)
-  moments_final <- compute_moments(residuals_final[!is.na(residuals_final)])
+    names(final_coef_values) <- final_coef_names
 
-  if (verbose) {
-    cat("\nPMM2 converged:", converged, "\n")
-    cat("Iterations:", iterations, "\n")
+    final_fit <- tryCatch(
+      stats::arima(x,
+                   order = c(p, d, q),
+                   seasonal = list(order = c(P, D, Q), period = s),
+                   fixed = final_coef_values,
+                   include.mean = FALSE),
+      error = function(e) {
+        if (verbose) cat("Warning: Final fit failed\n")
+        list(residuals = c(rep(NA, length(x) - length(pmm2_result$residuals)),
+                          pmm2_result$residuals))
+      }
+    )
+
+    residuals_final <- as.numeric(final_fit$residuals)
+    moments_final <- compute_moments(residuals_final[!is.na(residuals_final)])
+
+    if (verbose) {
+      cat("\nPMM2 converged:", converged, "\n")
+      cat("Iterations:", iterations, "\n")
+    }
+  } else {
+    residuals_final <- residuals_init
+    moments_final <- moments
   }
 
   # Create SARIMAPMM2 object
   result <- new("SARIMAPMM2",
-                coefficients = as.numeric(b_final),
+                coefficients = coef_est,
                 residuals = as.numeric(residuals_final),
                 m2 = as.numeric(moments_final$m2),
                 m3 = as.numeric(moments_final$m3),
@@ -1743,7 +1774,7 @@ sarima_pmm2 <- function(x,
                 iterations = as.integer(iterations),
                 call = cl,
                 model_type = "sarima",
-                intercept = if (include.mean) as.numeric(x_mean) else 0,
+                intercept = intercept_est,
                 original_series = as.numeric(orig_x),
                 order = list(ar = p, sar = P, ma = q, sma = Q,
                             d = d, D = D, period = s))

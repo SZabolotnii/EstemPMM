@@ -537,18 +537,20 @@ compute_ts_residuals <- function(coefs, model_info) {
 #' @param multiplicative Logical, include multiplicative cross-terms (default FALSE)
 #'
 #' @return Design matrix with lagged values. Columns are:
-#'   - First p columns: non-seasonal lags (y_{t-1}, ..., y_{t-p})
-#'   - Next P columns: seasonal lags (y_{t-s}, ..., y_{t-Ps})
-#'   - If multiplicative=TRUE: additional p*P columns for cross-terms
+#'   - First p columns: non-seasonal lags \eqn{(y_{t-1}, \dots, y_{t-p})}
+#'   - Next P columns: seasonal lags \eqn{(y_{t-s}, \dots, y_{t-Ps})}
+#'   - If multiplicative = TRUE: additional \eqn{p \times P} columns for cross-terms
 #'
 #' @details
-#' For a SAR(P)_s model: y_t = Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+#' For a SAR(P)_s model:
+#' \deqn{y_t = \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} + \epsilon_t.}
 #'
 #' For an additive AR(p)+SAR(P)_s model:
-#'   y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+#' \deqn{y_t = \phi_1 y_{t-1} + \dots + \phi_p y_{t-p} +
+#'             \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} + \epsilon_t.}
 #'
-#' For a multiplicative AR(p)×SAR(P)_s model (multiplicative=TRUE):
-#'   Includes cross-terms like y_{t-1-s}, y_{t-1-2s}, etc.
+#' For a multiplicative AR(p) x SAR(P)_s model (multiplicative = TRUE):
+#'   Includes cross-terms such as \eqn{y_{t-1-s}}, \eqn{y_{t-1-2s}}, etc.
 #'
 #' @export
 #'
@@ -561,7 +563,7 @@ compute_ts_residuals <- function(coefs, model_info) {
 #' # AR(1) + SAR(1)_12 additive model
 #' X <- create_sar_matrix(x, p=1, P=1, s=12)
 #'
-#' # AR(1) × SAR(1)_12 multiplicative model
+#' # AR(1) x SAR(1)_12 multiplicative model
 #' X <- create_sar_matrix(x, p=1, P=1, s=12, multiplicative=TRUE)
 #' }
 create_sar_matrix <- function(x, p = 0, P = 1, s = 12, multiplicative = FALSE) {
@@ -681,17 +683,17 @@ create_sar_matrix <- function(x, p = 0, P = 1, s = 12, multiplicative = FALSE) {
 #' @param s Seasonal period (e.g., 12 for monthly data)
 #'
 #' @return Design matrix with lagged values. Columns are ordered as:
-#'   - First p columns: non-seasonal AR lags (y_{t-1}, ..., y_{t-p})
-#'   - Next P columns: seasonal AR lags (y_{t-s}, ..., y_{t-Ps})
-#'   - Next q columns: non-seasonal MA lags (ε_{t-1}, ..., ε_{t-q})
-#'   - Last Q columns: seasonal MA lags (ε_{t-s}, ..., ε_{t-Qs})
+#'   - First p columns: non-seasonal AR lags \eqn{(y_{t-1}, \dots, y_{t-p})}
+#'   - Next P columns: seasonal AR lags \eqn{(y_{t-s}, \dots, y_{t-Ps})}
+#'   - Next q columns: non-seasonal MA lags \eqn{(\epsilon_{t-1}, \dots, \epsilon_{t-q})}
+#'   - Last Q columns: seasonal MA lags \eqn{(\epsilon_{t-s}, \dots, \epsilon_{t-Qs})}
 #'
 #' @details
-#' For a SARMA(p,q)×(P,Q)_s model:
-#'   y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} +
-#'         Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} +
-#'         θ₁·ε_{t-1} + ... + θ_q·ε_{t-q} +
-#'         Θ₁·ε_{t-s} + ... + Θ_Q·ε_{t-Qs} + ε_t
+#' For a SARMA(p,q) x (P,Q)_s model:
+#' \deqn{y_t = \phi_1 y_{t-1} + \dots + \phi_p y_{t-p} +
+#'             \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} +
+#'             \theta_1 \epsilon_{t-1} + \dots + \theta_q \epsilon_{t-q} +
+#'             \Theta_1 \epsilon_{t-s} + \dots + \Theta_Q \epsilon_{t-Qs} + \epsilon_t.}
 #'
 #' Where:
 #'   - p, P are non-seasonal and seasonal AR orders
@@ -702,12 +704,12 @@ create_sar_matrix <- function(x, p = 0, P = 1, s = 12, multiplicative = FALSE) {
 #'
 #' @examples
 #' \dontrun{
-#' # Simple SARMA(1,0)×(1,0)_12 model (AR+SAR, no MA)
+#' # Simple SARMA(1,0) x (1,0)_12 model (AR+SAR, no MA)
 #' x <- rnorm(120)
 #' residuals <- rnorm(120)
 #' X <- create_sarma_matrix(x, residuals, p=1, P=1, q=0, Q=0, s=12)
 #'
-#' # Full SARMA(1,1)×(1,1)_12 model
+#' # Full SARMA(1,1) x (1,1)_12 model
 #' X <- create_sarma_matrix(x, residuals, p=1, P=1, q=1, Q=1, s=12)
 #' }
 create_sarma_matrix <- function(x, residuals, p = 0, P = 0, q = 0, Q = 0, s = 12) {
