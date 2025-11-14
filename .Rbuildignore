@@ -26,3 +26,15 @@
 ^coverage_report\.html$
 ^coverage_data\.rds$
 ^tests/TESTING_GUIDE\.md$
+^README_uk\.md$
+^MONTE_CARLO_README\.md$
+^dev_load\.R$
+^force_rebuild\.R$
+^monte_carlo_seasonal_comparison\.R$
+^monte_carlo_seasonal_results\.rds$
+^regenerate_docs\.R$
+^run_monte_carlo_example\.R$
+^run_sma_monte_carlo\.R$
+^test_debug_sar\.R$
+^test_sarma_sarima\.R$
+^visualize_monte_carlo_results\.R$

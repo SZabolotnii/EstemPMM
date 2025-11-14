@@ -9,22 +9,22 @@ This class stores the results of fitting a Seasonal Moving Average (SMA)
 model using the Polynomial Maximization Method (PMM2).
 }
 \details{
-The SMA(Q)\emph{s model is:
-y_t = μ + ε_t + Θ₁·ε}{t-s} + Θ₂·ε_{t-2s} + ... + Θ_Q·ε_{t-Qs}
+The SMA(Q)_s model is expressed as
+\deqn{y_t = \mu + \epsilon_t + \Theta_1 \epsilon_{t-s} + \Theta_2 \epsilon_{t-2s} + \dots + \Theta_Q \epsilon_{t-Qs}.}
 
 Where:
 \itemize{
 \item Q is the seasonal MA order
 \item s is the seasonal period
-\item ε_t are innovations
+\item epsilon_t are innovations
 }
 }
 \section{Slots}{
 
 \describe{
-\item{\code{coefficients}}{Estimated seasonal MA coefficients (Θ₁, Θ₂, ..., Θ_Q)}
+\item{\code{coefficients}}{Estimated seasonal MA coefficients (Theta_1, Theta_2, ..., Theta_Q)}
 
-\item{\code{innovations}}{Estimated innovations (residuals ε_t)}
+\item{\code{innovations}}{Estimated innovations (residuals epsilon_t)}
 
 \item{\code{m2}}{Second central moment (variance) of innovations}
 

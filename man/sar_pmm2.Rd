@@ -61,20 +61,21 @@ Fits a Seasonal Autoregressive (SAR) model using the Polynomial Maximization
 Method (PMM2). The model can include both non-seasonal and seasonal AR components.
 }
 \details{
-The SAR model has the form:
-y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + μ + ε_t
+The SAR model has the form
+\deqn{y_t = \phi_1 y_{t-1} + \dots + \phi_p y_{t-p} +
+            \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} + \mu + \epsilon_t.}
 
 Where:
 \itemize{
 \item p is the non-seasonal AR order
 \item P is the seasonal AR order
 \item s is the seasonal period
-\item ε_t are innovations (errors)
+\item epsilon_t are innovations (errors)
 }
 
 The PMM2 method provides more efficient parameter estimates than OLS when
 the innovation distribution is asymmetric (non-Gaussian). The expected
-variance reduction is given by g = 1 - c₃²/(2 + c₄), where c₃ and c₄
+variance reduction is given by g = 1 - c3^2 / (2 + c4), where c3 and c4
 are the skewness and excess kurtosis coefficients.
 }
 \examples{

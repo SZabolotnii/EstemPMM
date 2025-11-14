@@ -217,6 +217,176 @@ setMethod("summary", "TS2fit",
           }
 )
 
+#' Generic summary method for SARMAPMM2 objects
+#'
+#' @param object object of class "SARMAPMM2"
+#' @param ... additional arguments (not used)
+#'
+#' @return Prints summary to console; returns object (invisibly).
+#'
+#' @export
+setMethod("summary", "SARMAPMM2",
+          function(object, ...) {
+            p <- object@order$ar
+            P <- object@order$sar
+            q <- object@order$ma
+            Q <- object@order$sma
+            s <- object@order$period
+
+            cat("PMM2 Seasonal ARMA estimation results\n")
+            cat("Model type: SARMA(", p, ",", q, ")x(", P, ",", Q, ")_", s, "\n", sep = "")
+
+            if(!is.null(object@call)) {
+              cat("Call:\n")
+              print(object@call)
+              cat("\n")
+            }
+
+            cat("Coefficients:\n")
+            coef_idx <- 1
+
+            if (p > 0) {
+              ar_coefs <- object@coefficients[coef_idx:(coef_idx + p - 1)]
+              names(ar_coefs) <- paste0("ar", 1:p)
+              cat("AR: ")
+              print(ar_coefs)
+              coef_idx <- coef_idx + p
+            }
+
+            if (P > 0) {
+              sar_coefs <- object@coefficients[coef_idx:(coef_idx + P - 1)]
+              names(sar_coefs) <- paste0("sar", 1:P)
+              cat("SAR: ")
+              print(sar_coefs)
+              coef_idx <- coef_idx + P
+            }
+
+            if (q > 0) {
+              ma_coefs <- object@coefficients[coef_idx:(coef_idx + q - 1)]
+              names(ma_coefs) <- paste0("ma", 1:q)
+              cat("MA: ")
+              print(ma_coefs)
+              coef_idx <- coef_idx + q
+            }
+
+            if (Q > 0) {
+              sma_coefs <- object@coefficients[coef_idx:(coef_idx + Q - 1)]
+              names(sma_coefs) <- paste0("sma", 1:Q)
+              cat("SMA: ")
+              print(sma_coefs)
+            }
+
+            if (object@intercept != 0) {
+              cat("Intercept: ", object@intercept, "\n")
+            }
+
+            cat("\nCentral moments of residuals:\n")
+            cat("  m2 =", object@m2, "\n")
+            cat("  m3 =", object@m3, "\n")
+            cat("  m4 =", object@m4, "\n\n")
+
+            vf <- pmm2_variance_factor(object@m2, object@m3, object@m4)
+            if(!is.na(vf$g)) {
+              cat("Theoretical characteristics of PMM2 (S = 2):\n")
+              cat("  c3 =", vf$c3, "\n")
+              cat("  c4 =", vf$c4, "\n")
+              cat("  g  =", vf$g, " (expected ratio Var[PMM2]/Var[OLS])\n\n")
+            }
+
+            cat("Algorithm information:\n")
+            cat("  Convergence status:", object@convergence, "\n")
+            cat("  Iterations:", object@iterations, "\n\n")
+
+            invisible(object)
+          }
+)
+
+#' Generic summary method for SARIMAPMM2 objects
+#'
+#' @param object object of class "SARIMAPMM2"
+#' @param ... additional arguments (not used)
+#'
+#' @return Prints summary to console; returns object (invisibly).
+#'
+#' @export
+setMethod("summary", "SARIMAPMM2",
+          function(object, ...) {
+            p <- object@order$ar
+            P <- object@order$sar
+            q <- object@order$ma
+            Q <- object@order$sma
+            d <- object@order$d
+            D <- object@order$D
+            s <- object@order$period
+
+            cat("PMM2 Seasonal ARIMA estimation results\n")
+            cat("Model type: SARIMA(", p, ",", d, ",", q, ")x(", P, ",", D, ",", Q, ")_", s, "\n", sep = "")
+
+            if(!is.null(object@call)) {
+              cat("Call:\n")
+              print(object@call)
+              cat("\n")
+            }
+
+            cat("Coefficients:\n")
+            coef_idx <- 1
+
+            if (p > 0) {
+              ar_coefs <- object@coefficients[coef_idx:(coef_idx + p - 1)]
+              names(ar_coefs) <- paste0("ar", 1:p)
+              cat("AR: ")
+              print(ar_coefs)
+              coef_idx <- coef_idx + p
+            }
+
+            if (P > 0) {
+              sar_coefs <- object@coefficients[coef_idx:(coef_idx + P - 1)]
+              names(sar_coefs) <- paste0("sar", 1:P)
+              cat("SAR: ")
+              print(sar_coefs)
+              coef_idx <- coef_idx + P
+            }
+
+            if (q > 0) {
+              ma_coefs <- object@coefficients[coef_idx:(coef_idx + q - 1)]
+              names(ma_coefs) <- paste0("ma", 1:q)
+              cat("MA: ")
+              print(ma_coefs)
+              coef_idx <- coef_idx + q
+            }
+
+            if (Q > 0) {
+              sma_coefs <- object@coefficients[coef_idx:(coef_idx + Q - 1)]
+              names(sma_coefs) <- paste0("sma", 1:Q)
+              cat("SMA: ")
+              print(sma_coefs)
+            }
+
+            if (object@intercept != 0) {
+              cat("Intercept: ", object@intercept, "\n")
+            }
+
+            cat("\nCentral moments of residuals:\n")
+            cat("  m2 =", object@m2, "\n")
+            cat("  m3 =", object@m3, "\n")
+            cat("  m4 =", object@m4, "\n\n")
+
+            vf <- pmm2_variance_factor(object@m2, object@m3, object@m4)
+            if(!is.na(vf$g)) {
+              cat("Theoretical characteristics of PMM2 (S = 2):\n")
+              cat("  c3 =", vf$c3, "\n")
+              cat("  c4 =", vf$c4, "\n")
+              cat("  g  =", vf$g, " (expected ratio Var[PMM2]/Var[OLS])\n\n")
+            }
+
+            cat("Algorithm information:\n")
+            cat("  Convergence status:", object@convergence, "\n")
+            cat("  Iterations:", object@iterations, "\n\n")
+
+            invisible(object)
+          }
+)
+
 
 #' S4 class for Seasonal AR model results with PMM2
 #'
@@ -243,8 +413,9 @@ setMethod("summary", "TS2fit",
 #'   }
 #'
 #' @details
-#' The SARPMM2 class represents fitted SAR models of the form:
-#'   y_t = φ₁·y_{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+#' The SARPMM2 class represents fitted SAR models of the form
+#' \deqn{y_t = \phi_1 y_{t-1} + \dots + \phi_p y_{t-p} +
+#'             \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} + \epsilon_t.}
 #'
 #' Where:
 #'   - p is the non-seasonal AR order
@@ -276,8 +447,8 @@ setClass("SARPMM2",
 #' This class stores the results of fitting a Seasonal Moving Average (SMA)
 #' model using the Polynomial Maximization Method (PMM2).
 #'
-#' @slot coefficients Estimated seasonal MA coefficients (Θ₁, Θ₂, ..., Θ_Q)
-#' @slot innovations Estimated innovations (residuals ε_t)
+#' @slot coefficients Estimated seasonal MA coefficients (Theta_1, Theta_2, ..., Theta_Q)
+#' @slot innovations Estimated innovations (residuals epsilon_t)
 #' @slot m2 Second central moment (variance) of innovations
 #' @slot m3 Third central moment (skewness indicator) of innovations
 #' @slot m4 Fourth central moment (kurtosis indicator) of innovations
@@ -290,13 +461,13 @@ setClass("SARPMM2",
 #' @slot order List with Q (seasonal MA order) and s (seasonal period)
 #'
 #' @details
-#' The SMA(Q)_s model is:
-#'   y_t = μ + ε_t + Θ₁·ε_{t-s} + Θ₂·ε_{t-2s} + ... + Θ_Q·ε_{t-Qs}
+#' The SMA(Q)_s model is expressed as
+#' \deqn{y_t = \mu + \epsilon_t + \Theta_1 \epsilon_{t-s} + \Theta_2 \epsilon_{t-2s} + \dots + \Theta_Q \epsilon_{t-Qs}.}
 #'
 #' Where:
 #'   - Q is the seasonal MA order
 #'   - s is the seasonal period
-#'   - ε_t are innovations
+#'   - epsilon_t are innovations
 #'
 #' @seealso \code{\link{sma_pmm2}} for fitting SMA models
 #'
@@ -305,6 +476,115 @@ setClass("SMAPMM2",
          slots = c(
            coefficients = "numeric",
            innovations = "numeric",
+           m2 = "numeric",
+           m3 = "numeric",
+           m4 = "numeric",
+           convergence = "logical",
+           iterations = "numeric",
+           call = "call",
+           model_type = "character",
+           intercept = "numeric",
+           original_series = "numeric",
+           order = "list"
+         ),
+         contains = "TS2fit")
+
+#' S4 class for Seasonal ARMA model results with PMM2
+#'
+#' This class stores the results of fitting a Seasonal Autoregressive Moving Average
+#' (SARMA) model using the PMM2 method. It combines both seasonal AR and seasonal MA
+#' components.
+#'
+#' @slot coefficients Numeric vector of estimated parameters (SAR and SMA coefficients)
+#' @slot residuals Numeric vector of residuals/innovations
+#' @slot m2 Second central moment of residuals
+#' @slot m3 Third central moment of residuals
+#' @slot m4 Fourth central moment of residuals
+#' @slot convergence Logical, whether PMM2 algorithm converged
+#' @slot iterations Integer, number of iterations performed
+#' @slot call Original function call
+#' @slot model_type Character, model type identifier ("sarma")
+#' @slot intercept Numeric, intercept/mean term
+#' @slot original_series Numeric vector, original time series data
+#' @slot order List with model specification: list(ar, sar, ma, sma, period)
+#'   \itemize{
+#'     \item ar: Non-seasonal AR order (p)
+#'     \item sar: Seasonal AR order (P)
+#'     \item ma: Non-seasonal MA order (q)
+#'     \item sma: Seasonal MA order (Q)
+#'     \item period: Seasonal period (s)
+#'   }
+#'
+#' @details
+#' The SARMAPMM2 class represents fitted SARMA models combining:
+#' \itemize{
+#'   \item AR(p): \eqn{\phi_1 y_{t-1} + \dots + \phi_p y_{t-p}}
+#'   \item Seasonal AR component: \eqn{\Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps}}
+#'   \item MA(q): \eqn{\theta_1 \epsilon_{t-1} + \dots + \theta_q \epsilon_{t-q}}
+#'   \item Seasonal MA component: \eqn{\Theta_1 \epsilon_{t-s} + \dots + \Theta_Q \epsilon_{t-Qs}}
+#' }
+#'
+#' @seealso \code{\link{sarma_pmm2}} for fitting SARMA models
+#'
+#' @exportClass SARMAPMM2
+setClass("SARMAPMM2",
+         slots = c(
+           coefficients = "numeric",
+           residuals = "numeric",
+           m2 = "numeric",
+           m3 = "numeric",
+           m4 = "numeric",
+           convergence = "logical",
+           iterations = "numeric",
+           call = "call",
+           model_type = "character",
+           intercept = "numeric",
+           original_series = "numeric",
+           order = "list"
+         ),
+         contains = "TS2fit")
+
+#' S4 class for Seasonal ARIMA model results with PMM2
+#'
+#' This class stores the results of fitting a Seasonal Autoregressive Integrated
+#' Moving Average (SARIMA) model using the PMM2 method. It extends SARMA with
+#' differencing operators.
+#'
+#' @slot coefficients Numeric vector of estimated parameters
+#' @slot residuals Numeric vector of residuals/innovations
+#' @slot m2 Second central moment of residuals
+#' @slot m3 Third central moment of residuals
+#' @slot m4 Fourth central moment of residuals
+#' @slot convergence Logical, whether PMM2 algorithm converged
+#' @slot iterations Integer, number of iterations performed
+#' @slot call Original function call
+#' @slot model_type Character, model type identifier ("sarima")
+#' @slot intercept Numeric, intercept/mean term
+#' @slot original_series Numeric vector, original time series data
+#' @slot order List with model specification: list(ar, sar, ma, sma, d, D, period)
+#'   \itemize{
+#'     \item ar: Non-seasonal AR order (p)
+#'     \item sar: Seasonal AR order (P)
+#'     \item ma: Non-seasonal MA order (q)
+#'     \item sma: Seasonal MA order (Q)
+#'     \item d: Non-seasonal differencing order
+#'     \item D: Seasonal differencing order
+#'     \item period: Seasonal period (s)
+#'   }
+#'
+#' @details
+#' The SARIMAPMM2 class represents fitted SARIMA(p,d,q) x (P,D,Q)_s models:
+#' \deqn{(1 - \phi_1 B - \dots - \phi_p B^p)(1 - \Phi_1 B^s - \dots - \Phi_P B^{Ps})(1 - B)^d (1 - B^s)^D y_t = (1 + \theta_1 B + \dots + \theta_q B^q)(1 + \Theta_1 B^s + \dots + \Theta_Q B^{Qs}) \epsilon_t.}
+#'
+#' Where B is the backshift operator.
+#'
+#' @seealso \code{\link{sarima_pmm2}} for fitting SARIMA models
+#'
+#' @exportClass SARIMAPMM2
+setClass("SARIMAPMM2",
+         slots = c(
+           coefficients = "numeric",
+           residuals = "numeric",
            m2 = "numeric",
            m3 = "numeric",
            m4 = "numeric",
