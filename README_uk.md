@@ -35,6 +35,10 @@ g = 1 - c3^2 / (2 + c4)
 ## Встановлення
 
 ```r
+# Стабільна версія на CRAN
+install.packages("EstemPMM")
+
+# Або останній девелоперський знімок з GitHub
 devtools::install_github("SZabolotnii/EstemPMM")
 ```
 
@@ -222,6 +226,40 @@ ts_inf <- ts_pmm2_inference(fit_ar, R = 300)
 - `tests/testthat/` - 36 модульних тестів
 - `test_results/` - звіти валідації методом Монте-Карло
 - `demo/` - 8 демонстраційних скриптів
+
+## Документація та віньєтки
+
+| Віньєтка | Опис |
+| --- | --- |
+| `vignette(\"pmm2-introduction\")` | базові регресійні кейси з PMM2 |
+| `vignette(\"pmm2-time-series\")` | AR/MA/ARMA/ARIMA + сезонні SAR/SMA/SARMA приклади |
+| `vignette(\"bootstrap-inference\")` | бутстреп-інференція для асиметричних похибок |
+
+Перегенерувати документацію на чистому середовищі:
+
+```r
+devtools::document()
+devtools::build_vignettes()
+```
+
+## Відтворення Монте-Карло експериментів
+
+- **Базовий SMA-бенчмарк (n = 120, γ-інновації):** `Rscript run_sma_monte_carlo.R`.  
+  Результати збережено у `test_results/SMA_Monte_Carlo_Report_20251113_500reps.md` (≈34% зменшення дисперсії).
+- **Розширене сезонне порівняння (SAR/SMA/SARMA/SARIMA, n = 100/200/500):** `Rscript monte_carlo_seasonal_comparison.R`.  
+  Підсумки фіксуються у `test_results/SAR_MONTE_CARLO_REPORT_2025-11-14.md` та файлі `monte_carlo_seasonal_results.rds` (тривалість ≈8 хв на Apple Silicon).
+
+## Перевірки перед публікацією на CRAN
+
+```r
+devtools::check()
+devtools::document()
+devtools::build_vignettes()
+system(\"R CMD build .\")
+system(\"R CMD check --as-cran EstemPMM_0.1.3.tar.gz\")
+```
+
+GitHub Actions (workflow `R-CMD-check.yaml`) автоматично запускає ті ж перевірки на Ubuntu, macOS та Windows для кожного пуша в `main` або `claude/*`.
 
 ## Застосування
 

@@ -20,9 +20,9 @@ create_sar_matrix(x, p = 0, P = 1, s = 12, multiplicative = FALSE)
 \value{
 Design matrix with lagged values. Columns are:
 \itemize{
-\item First p columns: non-seasonal lags (y_{t-1}, ..., y_{t-p})
-\item Next P columns: seasonal lags (y_{t-s}, ..., y_{t-Ps})
-\item If multiplicative=TRUE: additional p*P columns for cross-terms
+\item First p columns: non-seasonal lags \eqn{(y_{t-1}, \dots, y_{t-p})}
+\item Next P columns: seasonal lags \eqn{(y_{t-s}, \dots, y_{t-Ps})}
+\item If multiplicative = TRUE: additional \eqn{p \times P} columns for cross-terms
 }
 }
 \description{
@@ -30,13 +30,15 @@ Constructs a design matrix for Seasonal Autoregressive (SAR) models,
 optionally including non-seasonal AR lags and multiplicative cross-terms.
 }
 \details{
-For a SAR(P)\emph{s model: y_t = Φ₁·y}{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+For a SAR(P)_s model:
+\deqn{y_t = \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} + \epsilon_t.}
 
-For an additive AR(p)+SAR(P)\emph{s model:
-y_t = φ₁·y}{t-1} + ... + φ_p·y_{t-p} + Φ₁·y_{t-s} + ... + Φ_P·y_{t-Ps} + ε_t
+For an additive AR(p)+SAR(P)_s model:
+\deqn{y_t = \phi_1 y_{t-1} + \dots + \phi_p y_{t-p} +
+            \Phi_1 y_{t-s} + \dots + \Phi_P y_{t-Ps} + \epsilon_t.}
 
-For a multiplicative AR(p)×SAR(P)\emph{s model (multiplicative=TRUE):
-Includes cross-terms like y}{t-1-s}, y_{t-1-2s}, etc.
+For a multiplicative AR(p) x SAR(P)_s model (multiplicative = TRUE):
+Includes cross-terms such as \eqn{y_{t-1-s}}, \eqn{y_{t-1-2s}}, etc.
 }
 \examples{
 \dontrun{
@@ -47,7 +49,7 @@ X <- create_sar_matrix(x, p=0, P=1, s=12)
 # AR(1) + SAR(1)_12 additive model
 X <- create_sar_matrix(x, p=1, P=1, s=12)
 
-# AR(1) × SAR(1)_12 multiplicative model
+# AR(1) x SAR(1)_12 multiplicative model
 X <- create_sar_matrix(x, p=1, P=1, s=12, multiplicative=TRUE)
 }
 }

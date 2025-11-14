@@ -637,7 +637,7 @@ setMethod("summary", "SARPMM2",
 
             if (g < 1 && g > 0) {
               reduction_pct <- (1 - g) * 100
-              cat(sprintf("\n  => Expected %.1f%% variance reduction vs OLS ✓\n",
+              cat(sprintf("\n  => Expected %.1f%% variance reduction vs OLS [OK]\n",
                           reduction_pct))
             } else if (g >= 1) {
               cat("\n  => No expected variance reduction (symmetric distribution)\n")
@@ -742,7 +742,7 @@ setMethod("summary", "SMAPMM2",
 
             if (g < 1 && g > 0) {
               reduction_pct <- (1 - g) * 100
-              cat(sprintf("\n  => Expected %.1f%% variance reduction vs CSS/ML ✓\n",
+              cat(sprintf("\n  => Expected %.1f%% variance reduction vs CSS/ML [OK]\n",
                           reduction_pct))
             } else if (g >= 1) {
               cat("\n  => No expected variance reduction (symmetric distribution)\n")
