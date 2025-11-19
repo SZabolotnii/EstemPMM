@@ -14,6 +14,7 @@ sarima_pmm2(
   tol = 1e-06,
   regularize = TRUE,
   reg_lambda = 1e-08,
+  ma_method = c("mle", "pmm2"),
   verbose = FALSE
 )
 }
@@ -46,6 +47,8 @@ sarima_pmm2(
 \item{regularize}{Logical, use regularization for numerical stability (default TRUE)}
 
 \item{reg_lambda}{Regularization parameter (default 1e-8)}
+
+\item{ma_method}{Method for MA/SMA estimation: "mle" (default) or "pmm2"}
 
 \item{verbose}{Logical, print progress information (default FALSE)}
 }
