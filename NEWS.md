@@ -8,9 +8,11 @@
   - New `ma_method` argument in `sarima_pmm2()` with options `"mle"` (default) and `"pmm2"`
   - `estpmm_style_ma()` - PMM2 estimator for pure MA(q) models using CSS residuals as fixed regressors
   - `estpmm_style_sma()` - PMM2 estimator for pure SMA(Q) models
+  - **`estpmm_style_ma_sma()` - PMM2 estimator for mixed MA+SMA models** ⭐ NEW
+  - Full support for MA(q)+SMA(Q) combinations in `sarima_pmm2()` with `ma_method="pmm2"`
   - Expected 20-45% MSE reduction for MA/SMA parameters under asymmetric innovation distributions
-  - Implemented in new `R/pmm2_ma_estimator.R` module with complete helper functions
-  - Comprehensive unit tests in `tests/testthat/test-ma-pmm2.R`
+  - Implemented in `R/pmm2_ma_estimator.R` module with complete helper functions
+  - Comprehensive unit tests (35 total) in `tests/testthat/test-ma-pmm2.R`
   - Addresses limitations identified in Monte Carlo simulations for MA parameter estimation
   - Full backward compatibility - default behavior unchanged
 

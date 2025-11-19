@@ -99,6 +99,94 @@ sma_build_design <- function(intercept, residuals, x, Q, s) {
 }
 
 
+#' Compute combined MA+SMA innovations (forward recursion)
+#'
+#' @param x Time series (centered)
+#' @param theta_ma MA coefficients (length q)
+#' @param theta_sma SMA coefficients (length Q)
+#' @param q MA order
+#' @param Q SMA order
+#' @param s Seasonal period
+#' @return Vector of innovations
+#' @keywords internal
+ma_sma_compute_innovations <- function(x, theta_ma, theta_sma, q, Q, s) {
+    n <- length(x)
+    innovations <- numeric(n)
+
+    # History buffers
+    ma_history <- if (q > 0) rep(0, q) else NULL
+
+    for (t in seq_len(n)) {
+        # Regular MA component
+        ma_component <- if (q > 0) sum(theta_ma * ma_history) else 0
+
+        # Seasonal MA component
+        sma_component <- 0
+        if (Q > 0) {
+            for (J in 1:Q) {
+                lag <- J * s
+                if (t - lag >= 1) {
+                    sma_component <- sma_component + theta_sma[J] * innovations[t - lag]
+                }
+            }
+        }
+
+        # Total innovation
+        innovations[t] <- x[t] - ma_component - sma_component
+
+        # Update MA history
+        if (q > 0) {
+            ma_history <- c(innovations[t], ma_history)[seq_len(q)]
+        }
+    }
+
+    innovations
+}
+
+
+#' Build design matrix for combined MA+SMA model
+#'
+#' @param intercept Intercept (mean)
+#' @param residuals Initial residuals from CSS
+#' @param x Time series
+#' @param q MA order
+#' @param Q SMA order
+#' @param s Seasonal period
+#' @return List with X (design matrix) and y (response)
+#' @keywords internal
+ma_sma_build_design <- function(intercept, residuals, x, q, Q, s) {
+    # Maximum lag determines where we start
+    max_ma_lag <- q
+    max_sma_lag <- Q * s
+    max_lag <- max(max_ma_lag, max_sma_lag)
+
+    idx <- seq.int(max_lag + 1L, length(x))
+
+    # Design matrix: [intercept, ma_1, ..., ma_q, sma_1, ..., sma_Q]
+    ncol_total <- 1 + q + Q
+    X <- matrix(1, nrow = length(idx), ncol = ncol_total)
+
+    # Add regular MA lags
+    if (q > 0) {
+        for (j in seq_len(q)) {
+            X[, j + 1L] <- residuals[idx - j]
+        }
+    }
+
+    # Add seasonal MA lags
+    if (Q > 0) {
+        for (J in seq_len(Q)) {
+            lag_seasonal <- J * s
+            X[, q + J + 1L] <- residuals[idx - lag_seasonal]
+        }
+    }
+
+    y <- x[idx] - intercept
+
+    list(X = X, y = y)
+}
+
+
 #' PMM2 solver (EstemPMM formula)
 #'
 #' @param b_init Initial coefficients vector (intercept and MA coefficients)
@@ -361,6 +449,128 @@ estpmm_style_sma <- function(x,
         convergence = pmm2_result$convergence,
         iterations = pmm2_result$iterations,
         css_estimates = Theta_init,
+        method = "EstemPMM-style PMM2"
+    )
+}
+
+
+#' EstemPMM-style PMM2 estimator for combined MA+SMA models
+#'
+#' @param x Time series
+#' @param q MA order
+#' @param Q SMA order
+#' @param s Seasonal period
+#' @param include.mean Include intercept
+#' @param max_iter Maximum PMM2 iterations
+#' @param verbose Print diagnostics
+#'
+#' @return List with ma_coef, sma_coef, mean, innovations, convergence, method
+#' @keywords internal
+estpmm_style_ma_sma <- function(x,
+                                q = 1,
+                                Q = 1,
+                                s = 12,
+                                include.mean = TRUE,
+                                max_iter = 50,
+                                verbose = FALSE) {
+    n <- length(x)
+
+    # Validate inputs
+    if (q < 1) stop("q must be at least 1")
+    if (Q < 1) stop("Q must be at least 1")
+    if (s < 2) stop("Seasonal period must be at least 2")
+
+    # STEP 1: CSS fit for initial estimates
+    css_fit <- tryCatch(
+        {
+            stats::arima(x,
+                order = c(0, 0, q),
+                seasonal = list(order = c(0, 0, Q), period = s),
+                method = "CSS",
+                include.mean = include.mean
+            )
+        },
+        error = function(e) {
+            stats::arima(x,
+                order = c(0, 0, q),
+                seasonal = list(order = c(0, 0, Q), period = s),
+                method = "CSS-ML",
+                include.mean = include.mean
+            )
+        }
+    )
+
+    # Extract initial parameters
+    coefs_css <- coef(css_fit)
+
+    # Extract MA coefficients
+    theta_ma_init <- numeric(q)
+    for (j in 1:q) {
+        coef_name <- paste0("ma", j)
+        if (coef_name %in% names(coefs_css)) {
+            theta_ma_init[j] <- coefs_css[coef_name]
+        }
+    }
+
+    # Extract SMA coefficients
+    theta_sma_init <- numeric(Q)
+    for (J in 1:Q) {
+        coef_name <- paste0("sma", J)
+        if (coef_name %in% names(coefs_css)) {
+            theta_sma_init[J] <- coefs_css[coef_name]
+        }
+    }
+
+    intercept_init <- if (include.mean && "intercept" %in% names(coefs_css)) {
+        coefs_css["intercept"]
+    } else {
+        0
+    }
+
+    # Compute residuals from CSS
+    residuals_css <- as.numeric(residuals(css_fit))
+
+    # STEP 2: Build design matrix from FIXED residuals
+    design <- ma_sma_build_design(intercept_init, residuals_css, x, q, Q, s)
+    X <- design$X
+    y <- design$y
+
+    # STEP 3: Compute moments from CSS residuals
+    max_lag <- max(q, Q * s)
+    eff_residuals <- residuals_css[(max_lag + 1):n]
+
+    m2 <- mean(eff_residuals^2)
+    m3 <- mean(eff_residuals^3)
+    m4 <- mean(eff_residuals^4)
+
+    # STEP 4: PMM2 optimization
+    # Combined parameter vector: [intercept, ma_1, ..., ma_q, sma_1, ..., sma_Q]
+    b_init <- c(intercept_init, theta_ma_init, theta_sma_init)
+
+    pmm2_result <- ma_solve_pmm2(b_init, X, y, m2, m3, m4,
+        max_iter = max_iter,
+        tol = 1e-6,
+        verbose = verbose
+    )
+
+    # Extract final parameters
+    all_coefs <- pmm2_result$coefficients
+    theta_ma_final <- if (q > 0) all_coefs[1:q] else numeric(0)
+    theta_sma_final <- if (Q > 0) all_coefs[(q + 1):(q + Q)] else numeric(0)
+    intercept_final <- pmm2_result$intercept
+
+    # STEP 5: Compute final innovations
+    x_centered <- as.numeric(x) - intercept_final
+    innovations <- ma_sma_compute_innovations(x_centered, theta_ma_final, theta_sma_final, q, Q, s)
+
+    list(
+        ma_coef = theta_ma_final,
+        sma_coef = theta_sma_final,
+        mean = intercept_final,
+        innovations = innovations,
+        convergence = pmm2_result$convergence,
+        iterations = pmm2_result$iterations,
+        css_estimates = list(ma = theta_ma_init, sma = theta_sma_init),
         method = "EstemPMM-style PMM2"
     )
 }
