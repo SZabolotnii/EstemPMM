@@ -50,7 +50,14 @@ sarima_pmm2(
 \item{verbose}{Logical, print progress information (default FALSE)}
 }
 \value{
-S4 object of class SARIMAPMM2 containing fitted model results
+S4 object of class SARIMAPMM2 containing:
+\itemize{
+\item coefficients: Estimated parameters
+\item residuals: Model residuals/innovations (padded with zeros to match original length)
+\item m2, m3, m4: Central moments of residuals
+\item convergence: Convergence status
+\item iterations: Number of iterations performed
+}
 }
 \description{
 Fits a Seasonal Autoregressive Integrated Moving Average (SARIMA) model
@@ -73,12 +80,16 @@ Where B is the backshift operator. The model combines:
 # Generate synthetic data
 set.seed(123)
 n <- 200
-y <- arima.sim(n = n, list(order = c(1, 1, 1),
-                            seasonal = list(order = c(1, 1, 1), period = 12)))
+y <- arima.sim(n = n, list(
+  order = c(1, 1, 1),
+  seasonal = list(order = c(1, 1, 1), period = 12)
+))
 
 # Fit SARIMA(1,1,1) x (1,1,1)_12 model
-fit <- sarima_pmm2(y, order = c(1, 1, 1, 1),
-                   seasonal = list(order = c(1, 1), period = 12))
+fit <- sarima_pmm2(y,
+  order = c(1, 1, 1, 1),
+  seasonal = list(order = c(1, 1), period = 12)
+)
 summary(fit)
 }
 

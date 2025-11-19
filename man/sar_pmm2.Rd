@@ -50,7 +50,7 @@ where s is the seasonal period (e.g., 12 for monthly data with annual seasonalit
 S4 object of class SARPMM2 containing:
 \itemize{
 \item coefficients: Estimated AR and SAR parameters
-\item residuals: Model residuals/innovations
+\item residuals: Model residuals/innovations (padded with zeros to match original length)
 \item m2, m3, m4: Central moments of residuals
 \item convergence: Convergence status
 \item iterations: Number of iterations performed

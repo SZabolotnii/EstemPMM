@@ -88,7 +88,7 @@ theta <- 0.6
 innov <- rgamma(n, shape = 2, scale = 1) - 2
 y <- numeric(n)
 for (t in 1:n) {
-  ma_term <- if (t > s) theta * innov[t-s] else 0
+  ma_term <- if (t > s) theta * innov[t - s] else 0
   y[t] <- innov[t] + ma_term
 }
 

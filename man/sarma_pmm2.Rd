@@ -49,7 +49,7 @@ where s is the seasonal period (e.g., 12 for monthly data)}
 S4 object of class SARMAPMM2 containing:
 \itemize{
 \item coefficients: Estimated parameters
-\item residuals: Model residuals/innovations
+\item residuals: Model residuals/innovations (padded with zeros to match original length)
 \item m2, m3, m4: Central moments of residuals
 \item convergence: Convergence status
 \item iterations: Number of iterations performed
@@ -77,8 +77,10 @@ the innovation distribution is asymmetric (non-Gaussian).
 # Generate synthetic seasonal data with SARMA structure
 set.seed(123)
 n <- 200
-y <- arima.sim(n = n, list(ar = 0.5, ma = 0.3,
-                            seasonal = list(sar = 0.6, sma = 0.4, period = 12)))
+y <- arima.sim(n = n, list(
+  ar = 0.5, ma = 0.3,
+  seasonal = list(sar = 0.6, sma = 0.4, period = 12)
+))
 
 # Fit SARMA(1,1,1,1)_12 model with PMM2
 fit <- sarma_pmm2(y, order = c(1, 1, 1, 1), season = list(period = 12))

@@ -31,16 +31,15 @@
 #' @export
 ts_pmm2 <- function(x, order,
                     model_type = c("ar", "ma", "arma", "arima"),
-                    method      = "pmm2",
-                    max_iter    = 50,
-                    tol         = 1e-6,
-                    include.mean= TRUE,
-                    initial     = NULL,
-                    na.action   = na.fail,
-                    regularize  = TRUE,
-                    reg_lambda  = 1e-8,
-                    verbose     = FALSE) {
-
+                    method = "pmm2",
+                    max_iter = 50,
+                    tol = 1e-6,
+                    include.mean = TRUE,
+                    initial = NULL,
+                    na.action = na.fail,
+                    regularize = TRUE,
+                    reg_lambda = 1e-8,
+                    verbose = FALSE) {
   model_type <- match.arg(model_type)
   cl <- match.call()
 
@@ -58,38 +57,41 @@ ts_pmm2 <- function(x, order,
     if (method == "css") {
       moments <- compute_moments(css_fit$residuals)
       return(new("MAPMM2",
-                 coefficients    = as.numeric(css_fit$coefficients),
-                 residuals       = as.numeric(css_fit$residuals),
-                 m2              = as.numeric(moments$m2),
-                 m3              = as.numeric(moments$m3),
-                 m4              = as.numeric(moments$m4),
-                 convergence     = css_fit$convergence,
-                 iterations      = as.numeric(css_fit$iterations),
-                 call            = cl,
-                 model_type      = "ma",
-                 intercept       = if (include.mean) as.numeric(css_fit$intercept) else 0,
-                 original_series = as.numeric(model_params$original_x),
-                 order           = list(ar = 0L, ma = q, d = 0L)))
+        coefficients    = as.numeric(css_fit$coefficients),
+        residuals       = as.numeric(css_fit$residuals),
+        m2              = as.numeric(moments$m2),
+        m3              = as.numeric(moments$m3),
+        m4              = as.numeric(moments$m4),
+        convergence     = css_fit$convergence,
+        iterations      = as.numeric(css_fit$iterations),
+        call            = cl,
+        model_type      = "ma",
+        intercept       = if (include.mean) as.numeric(css_fit$intercept) else 0,
+        original_series = as.numeric(model_params$original_x),
+        order           = list(ar = 0L, ma = q, d = 0L)
+      ))
     }
 
     pmm2_fit <- ma_pmm2_fit(model_params$original_x, q, css_fit,
-                             max_iter = max_iter, tol = tol,
-                             verbose = verbose)
+      max_iter = max_iter, tol = tol,
+      verbose = verbose
+    )
     moments <- compute_moments(pmm2_fit$innovations)
 
     return(new("MAPMM2",
-               coefficients    = as.numeric(pmm2_fit$coefficients),
-               residuals       = as.numeric(pmm2_fit$innovations),
-               m2              = as.numeric(moments$m2),
-               m3              = as.numeric(moments$m3),
-               m4              = as.numeric(moments$m4),
-               convergence     = pmm2_fit$convergence,
-               iterations      = as.numeric(pmm2_fit$iterations),
-               call            = cl,
-               model_type      = "ma",
-               intercept       = if (include.mean) as.numeric(pmm2_fit$intercept) else 0,
-               original_series = as.numeric(model_params$original_x),
-               order           = list(ar = 0L, ma = q, d = 0L)))
+      coefficients    = as.numeric(pmm2_fit$coefficients),
+      residuals       = as.numeric(pmm2_fit$innovations),
+      m2              = as.numeric(moments$m2),
+      m3              = as.numeric(moments$m3),
+      m4              = as.numeric(moments$m4),
+      convergence     = pmm2_fit$convergence,
+      iterations      = as.numeric(pmm2_fit$iterations),
+      call            = cl,
+      model_type      = "ma",
+      intercept       = if (include.mean) as.numeric(pmm2_fit$intercept) else 0,
+      original_series = as.numeric(model_params$original_x),
+      order           = list(ar = 0L, ma = q, d = 0L)
+    ))
   }
 
   if (model_params$model_type == "arima") {
@@ -99,9 +101,10 @@ ts_pmm2 <- function(x, order,
 
     css_fit <- tryCatch(
       stats::arima(model_params$original_x,
-                   order = c(p, d, q),
-                   method = "CSS-ML",
-                   include.mean = include.mean),
+        order = c(p, d, q),
+        method = "CSS-ML",
+        include.mean = include.mean
+      ),
       error = function(e) NULL
     )
 
@@ -115,8 +118,10 @@ ts_pmm2 <- function(x, order,
 
     intercept_css <- 0
     if (include.mean && d == 0) {
-      intercept_name <- setdiff(coef_names,
-                                c(paste0("ar", seq_len(p)), paste0("ma", seq_len(q))))
+      intercept_name <- setdiff(
+        coef_names,
+        c(paste0("ar", seq_len(p)), paste0("ma", seq_len(q)))
+      )
       if (length(intercept_name) > 0) {
         intercept_css <- as.numeric(css_fit$coef[intercept_name[1]])
       }
@@ -125,8 +130,11 @@ ts_pmm2 <- function(x, order,
     residuals_css <- as.numeric(css_fit$residuals)
     residuals_css[is.na(residuals_css)] <- 0
 
-    x_diff <- if (d > 0) diff(model_params$original_x, differences = d)
-              else model_params$original_x
+    x_diff <- if (d > 0) {
+      diff(model_params$original_x, differences = d)
+    } else {
+      model_params$original_x
+    }
     res_diff <- tail(residuals_css, length(x_diff))
 
     include_intercept_diff <- include.mean && d == 0
@@ -135,24 +143,26 @@ ts_pmm2 <- function(x, order,
       res_clean <- res_diff[is.finite(res_diff)]
       moments <- compute_moments(res_clean)
       return(new("ARIMAPMM2",
-                 coefficients    = as.numeric(c(ar_css, ma_css)),
-                 residuals       = as.numeric(residuals_css),
-                 m2              = as.numeric(moments$m2),
-                 m3              = as.numeric(moments$m3),
-                 m4              = as.numeric(moments$m4),
-                 convergence     = TRUE,
-                 iterations      = 1L,
-                 call            = cl,
-                 model_type      = "arima",
-                 intercept       = if (include_intercept_diff) intercept_css else 0,
-                 original_series = as.numeric(model_params$original_x),
-                 order           = list(ar = p, ma = q, d = d)))
+        coefficients    = as.numeric(c(ar_css, ma_css)),
+        residuals       = as.numeric(residuals_css),
+        m2              = as.numeric(moments$m2),
+        m3              = as.numeric(moments$m3),
+        m4              = as.numeric(moments$m4),
+        convergence     = TRUE,
+        iterations      = 1L,
+        call            = cl,
+        model_type      = "arima",
+        intercept       = if (include_intercept_diff) intercept_css else 0,
+        original_series = as.numeric(model_params$original_x),
+        order           = list(ar = p, ma = q, d = d)
+      ))
     }
 
     design <- arma_build_design(x_diff, res_diff,
-                                 p = p, q = q,
-                                 intercept = intercept_css,
-                                 include_intercept = include_intercept_diff)
+      p = p, q = q,
+      intercept = intercept_css,
+      include_intercept = include_intercept_diff
+    )
 
     moments <- compute_moments(res_diff[is.finite(res_diff)])
     b_init <- c(if (include_intercept_diff) 0 else NULL, ar_css, ma_css)
@@ -203,30 +213,31 @@ ts_pmm2 <- function(x, order,
     moments_final <- compute_moments(res_clean)
 
     return(new("ARIMAPMM2",
-               coefficients    = as.numeric(final_coef),
-               residuals       = as.numeric(final_res),
-               m2              = as.numeric(moments_final$m2),
-               m3              = as.numeric(moments_final$m3),
-               m4              = as.numeric(moments_final$m4),
-               convergence     = algo_res$convergence,
-               iterations      = as.numeric(algo_res$iterations),
-               call            = cl,
-               model_type      = "arima",
-               intercept       = if (include_intercept_diff) as.numeric(intercept_hat) else 0,
-               original_series = as.numeric(model_params$original_x),
-               order           = list(ar = p, ma = q, d = d)))
+      coefficients    = as.numeric(final_coef),
+      residuals       = as.numeric(final_res),
+      m2              = as.numeric(moments_final$m2),
+      m3              = as.numeric(moments_final$m3),
+      m4              = as.numeric(moments_final$m4),
+      convergence     = algo_res$convergence,
+      iterations      = as.numeric(algo_res$iterations),
+      call            = cl,
+      model_type      = "arima",
+      intercept       = if (include_intercept_diff) as.numeric(intercept_hat) else 0,
+      original_series = as.numeric(model_params$original_x),
+      order           = list(ar = p, ma = q, d = d)
+    ))
   }
 
   # 2) Obtain initial estimates
   init <- get_initial_estimates(model_params, initial, method, verbose)
-  b_init      <- init$b_init
-  x_mean      <- init$x_mean
+  b_init <- init$b_init
+  x_mean <- init$x_mean
   innovations <- init$innovations
-  x_centered  <- init$x_centered
-  orig_x      <- init$orig_x
-  m2          <- init$m2
-  m3          <- init$m3
-  m4          <- init$m4
+  x_centered <- init$x_centered
+  orig_x <- init$orig_x
+  m2 <- init$m2
+  m3 <- init$m3
+  m4 <- init$m4
 
   # 3) Create design matrix
   dm <- create_ts_design_matrix(
@@ -296,25 +307,28 @@ ts_pmm2 <- function(x, order,
   } else if (model_type == "arima") {
     result_class <- "ARIMAPMM2"
   } else {
-    result_class <- "TS2fit"  # Base class by default
+    result_class <- "TS2fit" # Base class by default
   }
 
   # Create and return the object of the appropriate class
   new(result_class,
-      coefficients    = as.numeric(final_coef),
-      residuals       = as.numeric(final_res),
-      m2              = as.numeric(m2),
-      m3              = as.numeric(m3),
-      m4              = as.numeric(m4),
-      convergence     = converged,
-      iterations      = as.numeric(iterations),
-      call            = cl,
-      model_type      = model_type,
-      intercept       = as.numeric(x_mean),
-      original_series = as.numeric(orig_x),
-      order           = list(ar = model_params$ar_order,
-                             ma = model_params$ma_order,
-                             d = model_params$d))
+    coefficients = as.numeric(final_coef),
+    residuals = as.numeric(final_res),
+    m2 = as.numeric(m2),
+    m3 = as.numeric(m3),
+    m4 = as.numeric(m4),
+    convergence = converged,
+    iterations = as.numeric(iterations),
+    call = cl,
+    model_type = model_type,
+    intercept = as.numeric(x_mean),
+    original_series = as.numeric(orig_x),
+    order = list(
+      ar = model_params$ar_order,
+      ma = model_params$ma_order,
+      d = model_params$d
+    )
+  )
 }
 
 #' Fit an AR model using PMM2 (wrapper)
@@ -327,11 +341,13 @@ ts_pmm2 <- function(x, order,
 ar_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
                     include.mean = TRUE, initial = NULL, na.action = na.fail,
                     regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
-  ts_pmm2(x, order = order, model_type = "ar", method = method,
-          max_iter = max_iter, tol = tol,
-          include.mean = include.mean, initial = initial,
-          na.action = na.action, regularize = regularize,
-          reg_lambda = reg_lambda, verbose = verbose)
+  ts_pmm2(x,
+    order = order, model_type = "ar", method = method,
+    max_iter = max_iter, tol = tol,
+    include.mean = include.mean, initial = initial,
+    na.action = na.action, regularize = regularize,
+    reg_lambda = reg_lambda, verbose = verbose
+  )
 }
 
 #' Fit an MA model using PMM2 (wrapper)
@@ -344,11 +360,13 @@ ar_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
 ma_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
                     include.mean = TRUE, initial = NULL, na.action = na.fail,
                     regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
-  ts_pmm2(x, order = order, model_type = "ma", method = method,
-          max_iter = max_iter, tol = tol,
-          include.mean = include.mean, initial = initial,
-          na.action = na.action, regularize = regularize,
-          reg_lambda = reg_lambda, verbose = verbose)
+  ts_pmm2(x,
+    order = order, model_type = "ma", method = method,
+    max_iter = max_iter, tol = tol,
+    include.mean = include.mean, initial = initial,
+    na.action = na.action, regularize = regularize,
+    reg_lambda = reg_lambda, verbose = verbose
+  )
 }
 
 #' Fit an ARMA model using PMM2 (wrapper)
@@ -361,11 +379,13 @@ ma_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
 arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2", max_iter = 50, tol = 1e-6,
                       include.mean = TRUE, initial = NULL, na.action = na.fail,
                       regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
-  ts_pmm2(x, order = order, model_type = "arma", method = method,
-          max_iter = max_iter, tol = tol,
-          include.mean = include.mean, initial = initial,
-          na.action = na.action, regularize = regularize,
-          reg_lambda = reg_lambda, verbose = verbose)
+  ts_pmm2(x,
+    order = order, model_type = "arma", method = method,
+    max_iter = max_iter, tol = tol,
+    include.mean = include.mean, initial = initial,
+    na.action = na.action, regularize = regularize,
+    reg_lambda = reg_lambda, verbose = verbose
+  )
 }
 
 #' Fit an ARIMA model using PMM2 (wrapper)
@@ -378,11 +398,13 @@ arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2", max_iter = 50, tol = 
 arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2", max_iter = 50, tol = 1e-6,
                        include.mean = TRUE, initial = NULL, na.action = na.fail,
                        regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
-  ts_pmm2(x, order = order, model_type = "arima", method = method,
-          max_iter = max_iter, tol = tol,
-          include.mean = include.mean, initial = initial,
-          na.action = na.action, regularize = regularize,
-          reg_lambda = reg_lambda, verbose = verbose)
+  ts_pmm2(x,
+    order = order, model_type = "arima", method = method,
+    max_iter = max_iter, tol = tol,
+    include.mean = include.mean, initial = initial,
+    na.action = na.action, regularize = regularize,
+    reg_lambda = reg_lambda, verbose = verbose
+  )
 }
 
 #' Fit a Seasonal MA model using PMM2
@@ -442,7 +464,7 @@ arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2", max_iter = 50, to
 #' innov <- rgamma(n, shape = 2, scale = 1) - 2
 #' y <- numeric(n)
 #' for (t in 1:n) {
-#'   ma_term <- if (t > s) theta * innov[t-s] else 0
+#'   ma_term <- if (t > s) theta * innov[t - s] else 0
 #'   y[t] <- innov[t] + ma_term
 #' }
 #'
@@ -468,7 +490,6 @@ sma_pmm2 <- function(x,
                      regularize = TRUE,
                      reg_lambda = 1e-8,
                      verbose = FALSE) {
-
   # Validate inputs
   if (!is.numeric(x)) {
     stop("x must be a numeric vector")
@@ -496,8 +517,10 @@ sma_pmm2 <- function(x,
   # Check data sufficiency
   min_obs <- Q * s + 10
   if (length(x) < min_obs) {
-    warning(sprintf("Very small sample size. Need at least %d observations, have %d",
-                    min_obs, length(x)))
+    warning(sprintf(
+      "Very small sample size. Need at least %d observations, have %d",
+      min_obs, length(x)
+    ))
   }
 
   if (verbose) {
@@ -523,15 +546,15 @@ sma_pmm2 <- function(x,
     if (verbose) cat("\nApplying PMM2 refinement...\n")
 
     pmm2_fit <- sma_pmm2_fit(x, Q, s, css_fit,
-                             max_iter = max_iter,
-                             tol = tol,
-                             verbose = verbose)
+      max_iter = max_iter,
+      tol = tol,
+      verbose = verbose
+    )
 
     final_coef <- pmm2_fit$coefficients
     final_innovations <- pmm2_fit$innovations
     converged <- pmm2_fit$convergence
     iterations <- pmm2_fit$iterations
-
   } else {
     # Return CSS estimates
     final_coef <- css_fit$coefficients
@@ -552,18 +575,19 @@ sma_pmm2 <- function(x,
 
   # Create SMAPMM2 object
   result <- new("SMAPMM2",
-                coefficients = as.numeric(final_coef),
-                innovations = as.numeric(final_innovations),
-                m2 = as.numeric(final_moments$m2),
-                m3 = as.numeric(final_moments$m3),
-                m4 = as.numeric(final_moments$m4),
-                convergence = converged,
-                iterations = as.integer(iterations),
-                call = cl,
-                model_type = "sma",
-                intercept = as.numeric(x_mean),
-                original_series = as.numeric(orig_x),
-                order = list(Q = Q, s = s))
+    coefficients = as.numeric(final_coef),
+    innovations = as.numeric(final_innovations),
+    m2 = as.numeric(final_moments$m2),
+    m3 = as.numeric(final_moments$m3),
+    m4 = as.numeric(final_moments$m4),
+    convergence = converged,
+    iterations = as.integer(iterations),
+    call = cl,
+    model_type = "sma",
+    intercept = as.numeric(x_mean),
+    original_series = as.numeric(orig_x),
+    order = list(Q = Q, s = s)
+  )
 
   return(result)
 }
@@ -572,8 +596,10 @@ sma_pmm2 <- function(x,
 
 ma_css_fit <- function(x, q, include_mean = TRUE, verbose = FALSE) {
   fit <- tryCatch(
-    stats::arima(x, order = c(0, 0, q), method = "CSS-ML",
-                 include.mean = include_mean),
+    stats::arima(x,
+      order = c(0, 0, q), method = "CSS-ML",
+      include.mean = include_mean
+    ),
     error = function(e) NULL
   )
 
@@ -633,9 +659,10 @@ ma_pmm2_fit <- function(x, q, css_fit, max_iter = 50, tol = 1e-6, verbose = FALS
 
   b_init <- c(0, css_fit$coefficients)
   solve_res <- ma_solve_pmm2(b_init, design$X, design$y,
-                             moments$m2, moments$m3, moments$m4,
-                             max_iter = max_iter, tol = tol,
-                             verbose = verbose)
+    moments$m2, moments$m3, moments$m4,
+    max_iter = max_iter, tol = tol,
+    verbose = verbose
+  )
 
   theta <- solve_res$coefficients
   innovations <- ma_compute_innovations(x - css_fit$intercept, theta, q)
@@ -723,7 +750,7 @@ sma_build_design <- function(intercept, residuals, x, Q, s) {
 
   # Add seasonal MA lags: epsilon_{t-s}, epsilon_{t-2s}, ..., epsilon_{t-Qs}
   for (j in seq_len(Q)) {
-    lag_seasonal <- j * s  # KEY DIFFERENCE from MA: j*s instead of j
+    lag_seasonal <- j * s # KEY DIFFERENCE from MA: j*s instead of j
     X[, j + 1L] <- residuals[idx - lag_seasonal]
   }
 
@@ -785,9 +812,10 @@ sma_pmm2_fit <- function(x, Q, s, css_fit, max_iter = 50, tol = 1e-6, verbose = 
 
   # Solve PMM2 (reuse existing MA solver!)
   solve_res <- ma_solve_pmm2(b_init, design$X, design$y,
-                             moments$m2, moments$m3, moments$m4,
-                             max_iter = max_iter, tol = tol,
-                             verbose = verbose)
+    moments$m2, moments$m3, moments$m4,
+    max_iter = max_iter, tol = tol,
+    verbose = verbose
+  )
 
   theta <- solve_res$coefficients
 
@@ -816,10 +844,11 @@ sma_pmm2_fit <- function(x, Q, s, css_fit, max_iter = 50, tol = 1e-6, verbose = 
 sma_css_fit <- function(x, Q, s, include_mean = TRUE, verbose = FALSE) {
   fit <- tryCatch(
     stats::arima(x,
-                 order = c(0, 0, 0),
-                 seasonal = list(order = c(0, 0, Q), period = s),
-                 method = "CSS-ML",
-                 include.mean = include_mean),
+      order = c(0, 0, 0),
+      seasonal = list(order = c(0, 0, Q), period = s),
+      method = "CSS-ML",
+      include.mean = include_mean
+    ),
     error = function(e) NULL
   )
 
@@ -928,7 +957,7 @@ arma_build_design <- function(x, residuals, p, q, intercept = 0, include_interce
 #' @return S4 object of class SARPMM2 containing:
 #'   \itemize{
 #'     \item coefficients: Estimated AR and SAR parameters
-#'     \item residuals: Model residuals/innovations
+#'     \item residuals: Model residuals/innovations (padded with zeros to match original length)
 #'     \item m2, m3, m4: Central moments of residuals
 #'     \item convergence: Convergence status
 #'     \item iterations: Number of iterations performed
@@ -981,7 +1010,6 @@ sar_pmm2 <- function(x,
                      regularize = TRUE,
                      reg_lambda = 1e-8,
                      verbose = FALSE) {
-
   # Store original call
   cl <- match.call()
 
@@ -995,8 +1023,8 @@ sar_pmm2 <- function(x,
   if (length(order) != 2) {
     stop("'order' must be a vector of length 2: c(p, P)")
   }
-  p <- as.integer(order[1])  # Non-seasonal AR order
-  P <- as.integer(order[2])  # Seasonal AR order
+  p <- as.integer(order[1]) # Non-seasonal AR order
+  P <- as.integer(order[2]) # Seasonal AR order
 
   if (p < 0 || P < 0) {
     stop("AR orders must be non-negative")
@@ -1048,8 +1076,10 @@ sar_pmm2 <- function(x,
 
   # Check for sufficient data
   if (nrow(X) < ncol(X) + 5) {
-    warning("Very small sample size relative to number of parameters. ",
-            "Need at least ", ncol(X) + 5, " observations after lags, have ", nrow(X))
+    warning(
+      "Very small sample size relative to number of parameters. ",
+      "Need at least ", ncol(X) + 5, " observations after lags, have ", nrow(X)
+    )
   }
 
   # Step 1: Initial estimation (OLS/CSS)
@@ -1105,13 +1135,13 @@ sar_pmm2 <- function(x,
       verbose = verbose
     )
 
-    b_final <- pmm2_result$b  # Already converted to numeric by pmm2_algorithm
+    b_final <- pmm2_result$b # Already converted to numeric by pmm2_algorithm
     converged <- pmm2_result$convergence
     iterations <- pmm2_result$iterations
 
     # Compute final residuals
     residuals_final <- as.numeric(y - X %*% b_final)
-    
+
     # Pad residuals to match original length
     if (length(residuals_final) < length(orig_x)) {
       residuals_final <- c(rep(0, length(orig_x) - length(residuals_final)), residuals_final)
@@ -1124,10 +1154,9 @@ sar_pmm2 <- function(x,
       cat("\nFinal coefficients:\n")
       print(b_final)
     }
-
   } else {
     # Return initial estimates for OLS/CSS methods
-    b_final <- b_init  # Already numeric from line 712
+    b_final <- b_init # Already numeric from line 712
     residuals_final <- residuals_init
     moments_final <- moments
     converged <- TRUE
@@ -1144,18 +1173,19 @@ sar_pmm2 <- function(x,
 
   # Create SARPMM2 object
   result <- new("SARPMM2",
-                coefficients = coef_est,
-                residuals = as.numeric(residuals_final),
-                m2 = as.numeric(moments_final$m2),
-                m3 = as.numeric(moments_final$m3),
-                m4 = as.numeric(moments_final$m4),
-                convergence = converged,
-                iterations = as.integer(iterations),
-                call = cl,
-                model_type = "sar",
-                intercept = intercept_est,
-                original_series = as.numeric(orig_x),
-                order = list(ar = p, sar = P, period = s))
+    coefficients = coef_est,
+    residuals = as.numeric(residuals_final),
+    m2 = as.numeric(moments_final$m2),
+    m3 = as.numeric(moments_final$m3),
+    m4 = as.numeric(moments_final$m4),
+    convergence = converged,
+    iterations = as.integer(iterations),
+    call = cl,
+    model_type = "sar",
+    intercept = intercept_est,
+    original_series = as.numeric(orig_x),
+    order = list(ar = p, sar = P, period = s)
+  )
 
   return(result)
 }
@@ -1187,7 +1217,7 @@ sar_pmm2 <- function(x,
 #' @return S4 object of class SARMAPMM2 containing:
 #'   \itemize{
 #'     \item coefficients: Estimated parameters
-#'     \item residuals: Model residuals/innovations
+#'     \item residuals: Model residuals/innovations (padded with zeros to match original length)
 #'     \item m2, m3, m4: Central moments of residuals
 #'     \item convergence: Convergence status
 #'     \item iterations: Number of iterations performed
@@ -1208,8 +1238,10 @@ sar_pmm2 <- function(x,
 #' # Generate synthetic seasonal data with SARMA structure
 #' set.seed(123)
 #' n <- 200
-#' y <- arima.sim(n = n, list(ar = 0.5, ma = 0.3,
-#'                             seasonal = list(sar = 0.6, sma = 0.4, period = 12)))
+#' y <- arima.sim(n = n, list(
+#'   ar = 0.5, ma = 0.3,
+#'   seasonal = list(sar = 0.6, sma = 0.4, period = 12)
+#' ))
 #'
 #' # Fit SARMA(1,1,1,1)_12 model with PMM2
 #' fit <- sarma_pmm2(y, order = c(1, 1, 1, 1), season = list(period = 12))
@@ -1232,7 +1264,6 @@ sarma_pmm2 <- function(x,
                        regularize = TRUE,
                        reg_lambda = 1e-8,
                        verbose = FALSE) {
-
   # Store original call
   cl <- match.call()
 
@@ -1246,10 +1277,10 @@ sarma_pmm2 <- function(x,
   if (length(order) != 4) {
     stop("'order' must be a vector of length 4: c(p, P, q, Q)")
   }
-  p <- as.integer(order[1])  # Non-seasonal AR order
-  P <- as.integer(order[2])  # Seasonal AR order
-  q <- as.integer(order[3])  # Non-seasonal MA order
-  Q <- as.integer(order[4])  # Seasonal MA order
+  p <- as.integer(order[1]) # Non-seasonal AR order
+  P <- as.integer(order[2]) # Seasonal AR order
+  q <- as.integer(order[3]) # Non-seasonal MA order
+  Q <- as.integer(order[4]) # Seasonal MA order
 
   if (p < 0 || P < 0 || q < 0 || Q < 0) {
     stop("All orders must be non-negative")
@@ -1279,10 +1310,11 @@ sarma_pmm2 <- function(x,
   # Step 1: Get initial estimates using stats::arima
   arima_fit <- tryCatch(
     stats::arima(x,
-                 order = c(p, 0, q),
-                 seasonal = list(order = c(P, 0, Q), period = s),
-                 method = "CSS-ML",
-                 include.mean = include.mean),
+      order = c(p, 0, q),
+      seasonal = list(order = c(P, 0, Q), period = s),
+      method = "CSS-ML",
+      include.mean = include.mean
+    ),
     error = function(e) {
       if (verbose) cat("Warning: Initial ARIMA fit failed:", e$message, "\n")
       NULL
@@ -1345,7 +1377,8 @@ sarma_pmm2 <- function(x,
   if (method == "pmm2") {
     # Step 2: Build design matrix for PMM2
     X_base <- create_sarma_matrix(x_work, residuals_init,
-                                  p = p, P = P, q = q, Q = Q, s = s)
+      p = p, P = P, q = q, Q = Q, s = s
+    )
 
     if (include.mean) {
       X <- cbind(`(Intercept)` = rep(1, nrow(X_base)), X_base)
@@ -1429,10 +1462,11 @@ sarma_pmm2 <- function(x,
 
     final_fit <- tryCatch(
       stats::arima(x,
-                   order = c(p, 0, q),
-                   seasonal = list(order = c(P, 0, Q), period = s),
-                   fixed = final_coef_values,
-                   include.mean = FALSE),  # Mean already included in fixed
+        order = c(p, 0, q),
+        seasonal = list(order = c(P, 0, Q), period = s),
+        fixed = final_coef_values,
+        include.mean = FALSE
+      ), # Mean already included in fixed
       error = function(e) {
         if (verbose) cat("Warning: Final fit failed, using PMM2 residuals\n")
         list(residuals = pmm2_result$residuals)
@@ -1459,18 +1493,19 @@ sarma_pmm2 <- function(x,
 
   # Create SARMAPMM2 object
   result <- new("SARMAPMM2",
-                coefficients = coef_est,
-                residuals = as.numeric(residuals_final),
-                m2 = as.numeric(moments_final$m2),
-                m3 = as.numeric(moments_final$m3),
-                m4 = as.numeric(moments_final$m4),
-                convergence = converged,
-                iterations = as.integer(iterations),
-                call = cl,
-                model_type = "sarma",
-                intercept = intercept_est,
-                original_series = as.numeric(orig_x),
-                order = list(ar = p, sar = P, ma = q, sma = Q, period = s))
+    coefficients = coef_est,
+    residuals = as.numeric(residuals_final),
+    m2 = as.numeric(moments_final$m2),
+    m3 = as.numeric(moments_final$m3),
+    m4 = as.numeric(moments_final$m4),
+    convergence = converged,
+    iterations = as.integer(iterations),
+    call = cl,
+    model_type = "sarma",
+    intercept = intercept_est,
+    original_series = as.numeric(orig_x),
+    order = list(ar = p, sar = P, ma = q, sma = Q, period = s)
+  )
 
   return(result)
 }
@@ -1502,7 +1537,14 @@ sarma_pmm2 <- function(x,
 #' @param reg_lambda Regularization parameter (default 1e-8)
 #' @param verbose Logical, print progress information (default FALSE)
 #'
-#' @return S4 object of class SARIMAPMM2 containing fitted model results
+#' @return S4 object of class SARIMAPMM2 containing:
+#'   \itemize{
+#'     \item coefficients: Estimated parameters
+#'     \item residuals: Model residuals/innovations (padded with zeros to match original length)
+#'     \item m2, m3, m4: Central moments of residuals
+#'     \item convergence: Convergence status
+#'     \item iterations: Number of iterations performed
+#'   }
 #'
 #' @details
 #' The SARIMA(p,d,q) x (P,D,Q)_s model satisfies
@@ -1519,12 +1561,16 @@ sarma_pmm2 <- function(x,
 #' # Generate synthetic data
 #' set.seed(123)
 #' n <- 200
-#' y <- arima.sim(n = n, list(order = c(1, 1, 1),
-#'                             seasonal = list(order = c(1, 1, 1), period = 12)))
+#' y <- arima.sim(n = n, list(
+#'   order = c(1, 1, 1),
+#'   seasonal = list(order = c(1, 1, 1), period = 12)
+#' ))
 #'
 #' # Fit SARIMA(1,1,1) x (1,1,1)_12 model
-#' fit <- sarima_pmm2(y, order = c(1, 1, 1, 1),
-#'                    seasonal = list(order = c(1, 1), period = 12))
+#' fit <- sarima_pmm2(y,
+#'   order = c(1, 1, 1, 1),
+#'   seasonal = list(order = c(1, 1), period = 12)
+#' )
 #' summary(fit)
 #' }
 #'
@@ -1541,7 +1587,6 @@ sarima_pmm2 <- function(x,
                         regularize = TRUE,
                         reg_lambda = 1e-8,
                         verbose = FALSE) {
-
   # Store original call
   cl <- match.call()
 
@@ -1555,10 +1600,10 @@ sarima_pmm2 <- function(x,
   if (length(order) != 4) {
     stop("'order' must be a vector of length 4: c(p, P, q, Q)")
   }
-  p <- as.integer(order[1])  # Non-seasonal AR order
-  P <- as.integer(order[2])  # Seasonal AR order
-  q <- as.integer(order[3])  # Non-seasonal MA order
-  Q <- as.integer(order[4])  # Seasonal MA order
+  p <- as.integer(order[1]) # Non-seasonal AR order
+  P <- as.integer(order[2]) # Seasonal AR order
+  q <- as.integer(order[3]) # Non-seasonal MA order
+  Q <- as.integer(order[4]) # Seasonal MA order
 
   # Parse seasonal specification
   if (!is.list(seasonal) || is.null(seasonal$order) || is.null(seasonal$period)) {
@@ -1568,9 +1613,9 @@ sarima_pmm2 <- function(x,
     stop("'seasonal$order' must be a vector of length 2: c(d, D)")
   }
 
-  d <- as.integer(seasonal$order[1])  # Non-seasonal differencing
-  D <- as.integer(seasonal$order[2])  # Seasonal differencing
-  s <- as.integer(seasonal$period)    # Seasonal period
+  d <- as.integer(seasonal$order[1]) # Non-seasonal differencing
+  D <- as.integer(seasonal$order[2]) # Seasonal differencing
+  s <- as.integer(seasonal$period) # Seasonal period
 
   if (p < 0 || P < 0 || q < 0 || Q < 0 || d < 0 || D < 0) {
     stop("All orders must be non-negative")
@@ -1596,10 +1641,11 @@ sarima_pmm2 <- function(x,
   # Step 1: Get initial estimates using stats::arima
   arima_fit <- tryCatch(
     stats::arima(x,
-                 order = c(p, d, q),
-                 seasonal = list(order = c(P, D, Q), period = s),
-                 method = "CSS-ML",
-                 include.mean = include.mean),
+      order = c(p, d, q),
+      seasonal = list(order = c(P, D, Q), period = s),
+      method = "CSS-ML",
+      include.mean = include.mean
+    ),
     error = function(e) {
       if (verbose) cat("Warning: Initial ARIMA fit failed:", e$message, "\n")
       NULL
@@ -1675,7 +1721,8 @@ sarima_pmm2 <- function(x,
 
     # Step 2: Build design matrix for PMM2
     X_base <- create_sarma_matrix(x_diff, residuals_diff,
-                                  p = p, P = P, q = q, Q = Q, s = s)
+      p = p, P = P, q = q, Q = Q, s = s
+    )
     if (include.mean) {
       X <- cbind(`(Intercept)` = rep(1, nrow(X_base)), X_base)
     } else {
@@ -1745,14 +1792,17 @@ sarima_pmm2 <- function(x,
 
     final_fit <- tryCatch(
       stats::arima(x,
-                   order = c(p, d, q),
-                   seasonal = list(order = c(P, D, Q), period = s),
-                   fixed = final_coef_values,
-                   include.mean = FALSE),
+        order = c(p, d, q),
+        seasonal = list(order = c(P, D, Q), period = s),
+        fixed = final_coef_values,
+        include.mean = FALSE
+      ),
       error = function(e) {
         if (verbose) cat("Warning: Final fit failed\n")
-        list(residuals = c(rep(0, length(x) - length(pmm2_result$residuals)),
-                          pmm2_result$residuals))
+        list(residuals = c(
+          rep(0, length(x) - length(pmm2_result$residuals)),
+          pmm2_result$residuals
+        ))
       }
     )
 
@@ -1770,19 +1820,22 @@ sarima_pmm2 <- function(x,
 
   # Create SARIMAPMM2 object
   result <- new("SARIMAPMM2",
-                coefficients = coef_est,
-                residuals = as.numeric(residuals_final),
-                m2 = as.numeric(moments_final$m2),
-                m3 = as.numeric(moments_final$m3),
-                m4 = as.numeric(moments_final$m4),
-                convergence = converged,
-                iterations = as.integer(iterations),
-                call = cl,
-                model_type = "sarima",
-                intercept = intercept_est,
-                original_series = as.numeric(orig_x),
-                order = list(ar = p, sar = P, ma = q, sma = Q,
-                            d = d, D = D, period = s))
+    coefficients = coef_est,
+    residuals = as.numeric(residuals_final),
+    m2 = as.numeric(moments_final$m2),
+    m3 = as.numeric(moments_final$m3),
+    m4 = as.numeric(moments_final$m4),
+    convergence = converged,
+    iterations = as.integer(iterations),
+    call = cl,
+    model_type = "sarima",
+    intercept = intercept_est,
+    original_series = as.numeric(orig_x),
+    order = list(
+      ar = p, sar = P, ma = q, sma = Q,
+      d = d, D = D, period = s
+    )
+  )
 
   return(result)
 }
