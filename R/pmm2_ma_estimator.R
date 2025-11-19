@@ -101,7 +101,7 @@ sma_build_design <- function(intercept, residuals, x, Q, s) {
 
 #' PMM2 solver (EstemPMM formula)
 #'
-#' @param b_init Initial coefficients [intercept, theta1, ..., thetaq]
+#' @param b_init Initial coefficients vector (intercept and MA coefficients)
 #' @param X Design matrix
 #' @param Y Response vector
 #' @param m2 Second central moment

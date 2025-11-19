@@ -17,7 +17,7 @@ ma_solve_pmm2(
 )
 }
 \arguments{
-\item{b_init}{Initial coefficients \link{intercept, theta1, ..., thetaq}}
+\item{b_init}{Initial coefficients vector (intercept and MA coefficients)}
 
 \item{X}{Design matrix}
 

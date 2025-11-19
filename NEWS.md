@@ -1,5 +1,25 @@
 # EstemPMM News
 
+## Version 0.1.4 (Development)
+
+### New Features
+
+- **EstemPMM-style PMM2 Estimator for MA/SMA Models** - Advanced parameter estimation for moving average components
+  - New `ma_method` argument in `sarima_pmm2()` with options `"mle"` (default) and `"pmm2"`
+  - `estpmm_style_ma()` - PMM2 estimator for pure MA(q) models using CSS residuals as fixed regressors
+  - `estpmm_style_sma()` - PMM2 estimator for pure SMA(Q) models
+  - Expected 20-45% MSE reduction for MA/SMA parameters under asymmetric innovation distributions
+  - Implemented in new `R/pmm2_ma_estimator.R` module with complete helper functions
+  - Comprehensive unit tests in `tests/testthat/test-ma-pmm2.R`
+  - Addresses limitations identified in Monte Carlo simulations for MA parameter estimation
+  - Full backward compatibility - default behavior unchanged
+
+### Bug Fixes
+
+- **Fixed Function Name Conflicts** - Removed obsolete versions of `ma_solve_pmm2`, `ma_compute_innovations`, `sma_compute_innovations`, and `sma_build_design` from `pmm2_ts_main.R` that were overwriting new implementations in `pmm2_ma_estimator.R`
+- **Fixed Seasonal Period Validation** - `sarima_pmm2()` now correctly allows `s=1` when no seasonal components (P=0, D=0, Q=0) are specified
+- **Corrected ts Object Handling** - MA/SMA estimators now properly convert `ts` objects to numeric vectors before arithmetic operations
+
 ## Version 0.1.3 (2025-11-13)
 
 ### Documentation
@@ -8,6 +28,7 @@
 - Added Part 8 to `vignettes/pmm2_time_series.Rmd`, walking through `sar_pmm2()`/`sma_pmm2()` usage, convergence tips, and practical guidance for seasonal datasets.
 - Captured the seasonal-model release summary directly in `NEWS.md`, keeping the changelog aligned with the refreshed documentation.
 - Added CRAN-facing housekeeping: refreshed `cran-comments.md`, `CRAN_CHECK_INSTRUCTIONS.md`, and `CRAN_SUBMISSION_CHECKLIST.md`, plus README sections on rebuilding docs, reproducing Monte Carlo studies, and running `R CMD check --as-cran`.
+
 
 ## Version 0.1.2 (2025-11-13)
 
