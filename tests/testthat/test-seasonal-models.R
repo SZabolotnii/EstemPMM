@@ -47,12 +47,8 @@ test_that("sar_pmm2 handles multiplicative SAR models", {
   x <- numeric(n)
   innovations <- rnorm(n, sd = 1)
 
-  for (t in 13:n) {
-    if (t > 1) {
-      x[t] <- phi * x[t - 1] + phi_s * x[t - 12] - phi * phi_s * x[t - 13] + innovations[t]
-    } else {
-      x[t] <- innovations[t]
-    }
+  for (t in 14:n) {
+    x[t] <- phi * x[t - 1] + phi_s * x[t - 12] - phi * phi_s * x[t - 13] + innovations[t]
   }
 
   # Fit multiplicative SAR(1,1)_12
@@ -60,7 +56,7 @@ test_that("sar_pmm2 handles multiplicative SAR models", {
                   multiplicative = TRUE)
 
   expect_s4_class(fit, "SARPMM2")
-  expect_equal(length(fit@coefficients), 2)  # AR(1) + SAR(1)
+  expect_equal(length(fit@coefficients), 3)  # AR(1) + SAR(1) + Interaction
 })
 
 test_that("sar_pmm2 coefficients are bounded", {
@@ -348,8 +344,8 @@ test_that("summary method works for SARPMM2", {
   x <- rnorm(n)
   fit <- sar_pmm2(x, order = c(0, 1), season = list(period = 12))
 
-  # Summary should not throw error
-  expect_silent(summary(fit))
+  # Summary should produce output
+  expect_output(summary(fit))
 })
 
 test_that("summary method works for SMAPMM2", {
@@ -357,7 +353,7 @@ test_that("summary method works for SMAPMM2", {
   x <- rnorm(n)
   fit <- sma_pmm2(x, order = 1, season = list(period = 12))
 
-  expect_silent(summary(fit))
+  expect_output(summary(fit))
 })
 
 test_that("summary method works for SARMAPMM2", {
@@ -365,7 +361,7 @@ test_that("summary method works for SARMAPMM2", {
   x <- rnorm(n)
   fit <- sarma_pmm2(x, order = c(0, 1, 0, 1), season = list(period = 12))
 
-  expect_silent(summary(fit))
+  expect_output(summary(fit))
 })
 
 test_that("summary method works for SARIMAPMM2", {
@@ -374,7 +370,7 @@ test_that("summary method works for SARIMAPMM2", {
   fit <- sarima_pmm2(x, order = c(0, 1, 0, 1),
                      seasonal = list(order = c(0, 1), period = 12))
 
-  expect_silent(summary(fit))
+  expect_output(summary(fit))
 })
 
 # =============================================================================

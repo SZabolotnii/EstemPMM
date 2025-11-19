@@ -12,7 +12,7 @@ if (!requireNamespace("covr", quietly = TRUE)) {
 library(covr)
 
 # Set working directory to package root
-setwd(dirname(sys.frame(1)$ofile))
+# setwd(dirname(sys.frame(1)$ofile))
 
 cat("========================================\n")
 cat("EstemPMM Package Coverage Analysis\n")

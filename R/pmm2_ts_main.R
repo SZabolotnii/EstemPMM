@@ -1111,6 +1111,11 @@ sar_pmm2 <- function(x,
 
     # Compute final residuals
     residuals_final <- as.numeric(y - X %*% b_final)
+    
+    # Pad residuals to match original length
+    if (length(residuals_final) < length(orig_x)) {
+      residuals_final <- c(rep(0, length(orig_x) - length(residuals_final)), residuals_final)
+    }
     moments_final <- compute_moments(residuals_final)
 
     if (verbose) {
@@ -1436,7 +1441,7 @@ sarma_pmm2 <- function(x,
 
     residuals_final <- as.numeric(final_fit$residuals)
     if (length(residuals_final) < length(x)) {
-      residuals_final <- c(rep(NA, length(x) - length(residuals_final)), residuals_final)
+      residuals_final <- c(rep(0, length(x) - length(residuals_final)), residuals_final)
     }
 
     moments_final <- compute_moments(residuals_final[!is.na(residuals_final)])
@@ -1746,7 +1751,7 @@ sarima_pmm2 <- function(x,
                    include.mean = FALSE),
       error = function(e) {
         if (verbose) cat("Warning: Final fit failed\n")
-        list(residuals = c(rep(NA, length(x) - length(pmm2_result$residuals)),
+        list(residuals = c(rep(0, length(x) - length(pmm2_result$residuals)),
                           pmm2_result$residuals))
       }
     )
