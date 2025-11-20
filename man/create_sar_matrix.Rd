@@ -44,12 +44,12 @@ Includes cross-terms such as \eqn{y_{t-1-s}}, \eqn{y_{t-1-2s}}, etc.
 \dontrun{
 # Simple SAR(1)_12 model
 x <- rnorm(120)
-X <- create_sar_matrix(x, p=0, P=1, s=12)
+X <- create_sar_matrix(x, p = 0, P = 1, s = 12)
 
 # AR(1) + SAR(1)_12 additive model
-X <- create_sar_matrix(x, p=1, P=1, s=12)
+X <- create_sar_matrix(x, p = 1, P = 1, s = 12)
 
 # AR(1) x SAR(1)_12 multiplicative model
-X <- create_sar_matrix(x, p=1, P=1, s=12, multiplicative=TRUE)
+X <- create_sar_matrix(x, p = 1, P = 1, s = 12, multiplicative = TRUE)
 }
 }

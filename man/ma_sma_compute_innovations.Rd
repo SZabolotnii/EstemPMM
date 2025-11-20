@@ -4,7 +4,15 @@
 \alias{ma_sma_compute_innovations}
 \title{Compute combined MA+SMA innovations (forward recursion)}
 \usage{
-ma_sma_compute_innovations(x, theta_ma, theta_sma, q, Q, s)
+ma_sma_compute_innovations(
+  x,
+  theta_ma,
+  theta_sma,
+  q,
+  Q,
+  s,
+  multiplicative = TRUE
+)
 }
 \arguments{
 \item{x}{Time series (centered)}
@@ -18,6 +26,8 @@ ma_sma_compute_innovations(x, theta_ma, theta_sma, q, Q, s)
 \item{Q}{SMA order}
 
 \item{s}{Seasonal period}
+
+\item{multiplicative}{Logical, if TRUE use multiplicative SARIMA model}
 }
 \value{
 Vector of innovations

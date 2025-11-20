@@ -11,7 +11,8 @@ estpmm_style_ma_sma(
   s = 12,
   include.mean = TRUE,
   max_iter = 50,
-  verbose = FALSE
+  verbose = FALSE,
+  multiplicative = TRUE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ estpmm_style_ma_sma(
 \item{max_iter}{Maximum PMM2 iterations}
 
 \item{verbose}{Print diagnostics}
+
+\item{multiplicative}{Logical, if TRUE use multiplicative SARIMA model}
 }
 \value{
 List with ma_coef, sma_coef, mean, innovations, convergence, method

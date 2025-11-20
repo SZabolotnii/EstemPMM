@@ -4,7 +4,16 @@
 \alias{create_sarma_matrix}
 \title{Create design matrix for seasonal ARMA model}
 \usage{
-create_sarma_matrix(x, residuals, p = 0, P = 0, q = 0, Q = 0, s = 12)
+create_sarma_matrix(
+  x,
+  residuals,
+  p = 0,
+  P = 0,
+  q = 0,
+  Q = 0,
+  s = 12,
+  multiplicative = FALSE
+)
 }
 \arguments{
 \item{x}{Numeric vector (centered time series)}
@@ -20,6 +29,8 @@ create_sarma_matrix(x, residuals, p = 0, P = 0, q = 0, Q = 0, s = 12)
 \item{Q}{Seasonal MA order (default 0)}
 
 \item{s}{Seasonal period (e.g., 12 for monthly data)}
+
+\item{multiplicative}{Logical, include multiplicative cross-terms (default FALSE)}
 }
 \value{
 Design matrix with lagged values. Columns are ordered as:
@@ -27,7 +38,8 @@ Design matrix with lagged values. Columns are ordered as:
 \item First p columns: non-seasonal AR lags \eqn{(y_{t-1}, \dots, y_{t-p})}
 \item Next P columns: seasonal AR lags \eqn{(y_{t-s}, \dots, y_{t-Ps})}
 \item Next q columns: non-seasonal MA lags \eqn{(\epsilon_{t-1}, \dots, \epsilon_{t-q})}
-\item Last Q columns: seasonal MA lags \eqn{(\epsilon_{t-s}, \dots, \epsilon_{t-Qs})}
+\item Next Q columns: seasonal MA lags \eqn{(\epsilon_{t-s}, \dots, \epsilon_{t-Qs})}
+\item If multiplicative=TRUE: AR cross-terms then MA cross-terms
 }
 }
 \description{
@@ -53,9 +65,9 @@ Where:
 # Simple SARMA(1,0) x (1,0)_12 model (AR+SAR, no MA)
 x <- rnorm(120)
 residuals <- rnorm(120)
-X <- create_sarma_matrix(x, residuals, p=1, P=1, q=0, Q=0, s=12)
+X <- create_sarma_matrix(x, residuals, p = 1, P = 1, q = 0, Q = 0, s = 12)
 
 # Full SARMA(1,1) x (1,1)_12 model
-X <- create_sarma_matrix(x, residuals, p=1, P=1, q=1, Q=1, s=12)
+X <- create_sarma_matrix(x, residuals, p = 1, P = 1, q = 1, Q = 1, s = 12)
 }
 }

@@ -9,6 +9,7 @@ sma_pmm2(
   order = 1,
   season = list(period = 12),
   method = "pmm2",
+  pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
   max_iter = 50,
   tol = 1e-06,
   include.mean = TRUE,
@@ -26,6 +27,11 @@ sma_pmm2(
 \item{season}{List with seasonal specification: list(period = s)}
 
 \item{method}{Estimation method: "pmm2" or "css"}
+
+\item{pmm2_variant}{Character string specifying PMM2 implementation variant.
+Options: \code{"unified_global"} (default, one-step correction),
+\code{"unified_iterative"} (full Newton-Raphson), or
+\code{"linearized"} (specialized for MA/SMA models, \strong{recommended for SMA}).}
 
 \item{max_iter}{Maximum iterations for PMM2 algorithm}
 
@@ -75,6 +81,14 @@ The PMM2 method provides more efficient parameter estimates than ML/CSS when
 the innovation distribution is asymmetric (non-Gaussian). The expected
 variance reduction is given by g = 1 - c3^2 / (2 + c4), where c3 and c4
 are the skewness and excess kurtosis coefficients.
+
+\strong{Variant Recommendations for SMA:}
+\itemize{
+\item \code{"linearized"} (recommended): Fastest and most stable for SMA models,
+avoids complex Jacobian computation while maintaining accuracy
+\item \code{"unified_global"} (default): Good balance of speed and accuracy
+\item \code{"unified_iterative"}: Best accuracy but slower, use for complex SMA patterns
+}
 }
 \examples{
 \dontrun{

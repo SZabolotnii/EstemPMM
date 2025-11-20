@@ -9,6 +9,7 @@ sar_pmm2(
   order = c(0, 1),
   season = list(period = 12),
   method = "pmm2",
+  pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
   include.mean = TRUE,
   multiplicative = FALSE,
   max_iter = 50,
@@ -31,6 +32,11 @@ sar_pmm2(
 where s is the seasonal period (e.g., 12 for monthly data with annual seasonality)}
 
 \item{method}{Estimation method: "pmm2" (default), "ols", "css"}
+
+\item{pmm2_variant}{Character string specifying PMM2 implementation variant.
+Options: \code{"unified_global"} (default, one-step correction from MLE/CSS),
+\code{"unified_iterative"} (full Newton-Raphson), or
+\code{"linearized"} (not recommended for SAR models).}
 
 \item{include.mean}{Logical, include intercept/mean term (default TRUE)}
 
@@ -77,6 +83,13 @@ The PMM2 method provides more efficient parameter estimates than OLS when
 the innovation distribution is asymmetric (non-Gaussian). The expected
 variance reduction is given by g = 1 - c3^2 / (2 + c4), where c3 and c4
 are the skewness and excess kurtosis coefficients.
+
+\strong{Variant Recommendations for SAR:}
+\itemize{
+\item \code{"unified_global"} (default): Fast one-step correction, suitable for most SAR models
+\item \code{"unified_iterative"}: Best accuracy for complex seasonal patterns
+\item \code{"linearized"}: Not recommended for SAR (designed for MA/SMA)
+}
 }
 \examples{
 \dontrun{

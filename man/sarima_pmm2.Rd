@@ -9,13 +9,15 @@ sarima_pmm2(
   order = c(0, 1, 0, 1),
   seasonal = list(order = c(1, 1), period = 12),
   method = "pmm2",
+  pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
   include.mean = NULL,
   max_iter = 50,
   tol = 1e-06,
   regularize = TRUE,
   reg_lambda = 1e-08,
   ma_method = c("mle", "pmm2"),
-  verbose = FALSE
+  verbose = FALSE,
+  multiplicative = TRUE
 )
 }
 \arguments{
@@ -37,6 +39,11 @@ sarima_pmm2(
 }}
 
 \item{method}{Estimation method: "pmm2" (default), "css-ml", "css"}
+
+\item{pmm2_variant}{Character string specifying PMM2 implementation variant.
+Options: \code{"unified_global"} (default, one-step correction),
+\code{"unified_iterative"} (full Newton-Raphson, \strong{recommended for SARIMA}), or
+\code{"linearized"} (specialized for MA/SMA models).}
 
 \item{include.mean}{Logical, include drift term (default TRUE for d+D=0, FALSE otherwise)}
 
@@ -77,6 +84,15 @@ Where B is the backshift operator. The model combines:
 \item Non-seasonal ARMA components
 \item Seasonal ARMA components
 }
+
+\strong{Variant Recommendations for SARIMA:}
+\itemize{
+\item \code{"unified_iterative"} (recommended): Monte Carlo experiments showed
+16.4\\% MSE improvement over MLE for SARIMA models - best accuracy for complex
+seasonal dynamics
+\item \code{"unified_global"} (default): Faster alternative with good accuracy
+\item \code{"linearized"}: Not recommended for SARIMA (designed for MA/SMA)
+}
 }
 \examples{
 \dontrun{
@@ -96,6 +112,10 @@ fit <- sarima_pmm2(y,
 summary(fit)
 }
 
+}
+\references{
+Monte Carlo validation (R=50, n=200): Unified Iterative achieved 16.4\\% MSE
+improvement for SARIMA models. See NEWS.md (Version 0.2.0).
 }
 \seealso{
 \code{\link{sarma_pmm2}}, \code{\link{arima_pmm2}}

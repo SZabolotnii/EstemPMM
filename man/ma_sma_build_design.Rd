@@ -4,7 +4,7 @@
 \alias{ma_sma_build_design}
 \title{Build design matrix for combined MA+SMA model}
 \usage{
-ma_sma_build_design(intercept, residuals, x, q, Q, s)
+ma_sma_build_design(intercept, residuals, x, q, Q, s, multiplicative = TRUE)
 }
 \arguments{
 \item{intercept}{Intercept (mean)}
@@ -18,6 +18,8 @@ ma_sma_build_design(intercept, residuals, x, q, Q, s)
 \item{Q}{SMA order}
 
 \item{s}{Seasonal period}
+
+\item{multiplicative}{Logical, if TRUE use multiplicative SARIMA model}
 }
 \value{
 List with X (design matrix) and y (response)
