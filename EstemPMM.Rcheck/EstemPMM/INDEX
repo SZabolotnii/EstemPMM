@@ -1,0 +1,90 @@
+AIC,PMM2fit-method      Calculate AIC for PMM2fit object
+ARIMAPMM2-class         S4 class for storing PMM2 ARIMA model results
+ARMAPMM2-class          S4 class for storing PMM2 ARMA model results
+ARPMM2-class            S4 class for storing PMM2 AR model results
+BasePMM2-class          Base S4 class for storing PMM2 model results
+DCOILWTICO              WTI Crude Oil Prices
+MAPMM2-class            S4 class for storing PMM2 MA model results
+PMM2fit-class           S4 class for storing PMM2 regression model
+                        results
+SARIMAPMM2-class        S4 class for Seasonal ARIMA model results with
+                        PMM2
+SARMAPMM2-class         S4 class for Seasonal ARMA model results with
+                        PMM2
+SARPMM2-class           S4 class for Seasonal AR model results with
+                        PMM2
+SMAPMM2-class           S4 class for Seasonal MA PMM2 results
+TS2fit-class            Base S4 class for storing PMM2 time series
+                        model results
+ar_pmm2                 Fit an AR model using PMM2 (wrapper)
+arima_pmm2              Fit an ARIMA model using PMM2 (wrapper)
+arma_pmm2               Fit an ARMA model using PMM2 (wrapper)
+coef,PMM2fit-method     Extract coefficients from PMM2fit object
+coef,SARPMM2-method     Extract coefficients from SARPMM2 object
+coef,SMAPMM2-method     Extract coefficients from SMAPMM2 object
+coef,TS2fit-method      Extract coefficients from TS2fit object
+compare_ar_methods      Compare AR methods
+compare_arima_methods   Compare ARIMA methods
+compare_arma_methods    Compare ARMA methods
+compare_ma_methods      Compare MA methods
+compare_sar_methods     Compare SAR model estimation methods
+compare_ts_methods      Compare PMM2 with classical time series
+                        estimation methods
+compare_with_ols        Compare PMM2 with OLS
+compute_moments         Calculate moments and cumulants of error
+                        distribution
+compute_pmm2_components
+                        Обчислення ваг та компонентів PMM2
+create_sar_matrix       Create design matrix for seasonal AR model
+create_sarma_matrix     Create design matrix for seasonal ARMA model
+fitted,PMM2fit-method   Extract fitted values from PMM2fit object
+fitted,TS2fit-method    Extract fitted values from TS2fit object
+get_sarimax_jacobian    Calculate SARIMAX Jacobian (Numerical)
+get_sarimax_residuals   Calculate SARIMAX Residuals
+lm_pmm2                 PMM2: Main function for PMM2 (S=2)
+ma_pmm2                 Fit an MA model using PMM2 (wrapper)
+plot,PMM2fit,missing-method
+                        Plot diagnostic plots for PMM2fit object
+plot,TS2fit,missing-method
+                        Build diagnostic plots for TS2fit objects
+plot_pmm2_bootstrap     Plot bootstrap distributions for PMM2 fit
+pmm2_inference          Bootstrap inference for PMM2 fit
+pmm2_monte_carlo_compare
+                        Monte Carlo comparison of PMM2 estimation
+                        methods
+pmm2_nonlinear_iterative
+                        Універсальний PMM2 оцінювач (Iterative)
+pmm2_nonlinear_onestep
+                        Універсальний PMM2 оцінювач (One-step Global)
+pmm2_variance_factor    Calculate theoretical skewness, kurtosis
+                        coefficients and variance reduction factor
+pmm2_variance_matrices
+                        Calculate theoretical variance matrices for OLS
+                        and PMM2
+pmm_kurtosis            Calculate kurtosis from data
+pmm_skewness            Calculate skewness from data
+predict,PMM2fit-method
+                        Prediction method for PMM2fit objects
+predict,TS2fit-method   Prediction method for TS2fit objects
+residuals,PMM2fit-method
+                        Extract residuals from PMM2fit object
+residuals,TS2fit-method
+                        Extract residuals from TS2fit object
+sar_pmm2                Fit Seasonal AR model using PMM2 method
+sarima_pmm2             Fit a Seasonal ARIMA model using PMM2 method
+sarma_pmm2              Fit a Seasonal ARMA model using PMM2 method
+sma_pmm2                Fit a Seasonal MA model using PMM2
+solve_pmm2_step         Розв'язувач кроку PMM2 (PMM2 Step Solver)
+summary,PMM2fit-method
+                        Generic summary method for PMM2fit objects
+summary,SARIMAPMM2-method
+                        Generic summary method for SARIMAPMM2 objects
+summary,SARMAPMM2-method
+                        Generic summary method for SARMAPMM2 objects
+summary,SARPMM2-method
+                        Summary method for SARPMM2 objects
+summary,SMAPMM2-method
+                        Summary method for SMAPMM2 objects
+summary,TS2fit-method   Generic summary method for TS2fit objects
+ts_pmm2                 Fit a time series model using the PMM2 method
+ts_pmm2_inference       Bootstrap inference for PMM2 time series models

@@ -1,0 +1,20 @@
+* installing *source* package ‘EstemPMM’ ...
+** this is package ‘EstemPMM’ version ‘0.2.0’
+** using staged installation
+** R
+** data
+*** moving datasets to lazyload DB
+** demo
+** inst
+** byte-compile and prepare package for lazy loading
+Note: possible error in 'estpmm_style_ma(x, q = q, ': unused argument (tol = tol) 
+Note: possible error in 'estpmm_style_sma(x, Q = Q, ': unused argument (tol = tol) 
+Note: possible error in 'estpmm_style_ma_sma(x, ': unused argument (tol = tol) 
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (EstemPMM)
