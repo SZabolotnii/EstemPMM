@@ -1,0 +1,5 @@
+"Innovation","Mean_Var_Red","SD_Var_Red","Mean_RMSE_Imp","Mean_g"
+"exponential",43.24,12.13,25.45,0.4726
+"lognormal",33.47,11.16,18.61,0.5822
+"gamma",29.18,14.46,16.68,0.5966
+"gaussian",-11.54,18.84,-5.85,0.9819
