@@ -1,6 +1,6 @@
 source("R/unified_pmm2.R")
 source("R/sarimax_wrapper.R")
-source("new_sarima/experimental/05_nonlinear_pmm2_for_ma.R")
+source("R/optimized_direct_pmm2.R")
 source("new_sarima/experimental/06_estpmm_style_ma.R")
 
 library(numDeriv)
@@ -100,39 +100,10 @@ for (model in models) {
         pmm_it <- pmm2_nonlinear_iterative(theta_mle, fn_res, fn_jac, verbose = FALSE)
         mse_pmm_unified_it <- mse_pmm_unified_it + sum((pmm_it$coefficients - true_vec)^2)
 
-        # 4. Direct Nonlinear PMM2 (Article)
-        # Only supports MA/SMA structure easily via the provided script
-        # nonlinear_pmm2_ma(x, q, Q, s, ...)
-        if (model$name %in% c("MA(1)", "SARIMA(0,0,1)(0,0,1)[12]")) {
-            q_val <- model$order[3]
-            Q_val <- model$seasonal$order[3]
-            s_val <- if (is.na(model$seasonal$period)) 1 else model$seasonal$period
-
-            direct_fit <- nonlinear_pmm2_ma(sim_data,
-                q = q_val, Q = Q_val, s = s_val,
-                include.mean = TRUE, init_method = "mle", verbose = FALSE
-            )
-
-            # Map results to vector
-            theta_direct <- theta_mle # Start with MLE structure
-            # Fill in
-            idx <- 1
-            if (q_val > 0) {
-                theta_direct[grep("ma", names(theta_direct))] <- direct_fit$ma_coef
-            }
-            if (Q_val > 0) {
-                theta_direct[grep("sma", names(theta_direct))] <- direct_fit$sma_coef
-            }
-            if ("intercept" %in% names(theta_direct)) {
-                theta_direct["intercept"] <- direct_fit$mean
-            }
-
-            mse_pmm_direct <- mse_pmm_direct + sum((theta_direct - true_vec)^2)
-        } else {
-            # For AR(1), Direct PMM2 script doesn't support it (it's MA specific)
-            # Use MLE MSE as placeholder to not skew results (or mark as NA)
-            mse_pmm_direct <- mse_pmm_direct + sum((theta_mle - true_vec)^2)
-        }
+        # 4. Optimized Direct Nonlinear PMM2
+        # Now supports all models via generic wrapper
+        opt_fit <- optimized_direct_pmm2(theta_mle, sim_data, order = model$order, seasonal = model$seasonal)
+        mse_pmm_direct <- mse_pmm_direct + sum((opt_fit$coefficients - true_vec)^2)
 
         # 5. Linearized PMM2 (EstemPMM-style)
         # Only supports pure MA or pure SMA in the file we sourced
