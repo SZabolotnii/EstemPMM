@@ -6,7 +6,35 @@
 #'
 #' Реалізовано два підходи:
 #' 1. Iterative: Повна ітеративна процедура (Nonlinear PMM2).
-#' 2. One-step: Однокрокова корекція після класичного оцінювача (наприклад, MLE).
+#' 2. One-step (Global): Однокрокова корекція після класичного оцінювача (наприклад, MLE).
+
+
+#' Обчислення чисельного Якобіану функції залишків
+#'
+#' Використовує numDeriv::jacobian для обчислення матриці похідних.
+#'
+#' @param fn_residuals Функція function(theta), що повертає вектор залишків
+#' @param theta Поточні значення параметрів
+#' @param method Метод чисельного диференціювання ("Richardson", "simple")
+#' @return Матриця Якобіану (n x p)
+#' @keywords internal
+compute_numerical_jacobian <- function(fn_residuals, theta, method = "Richardson") {
+    if (!requireNamespace("numDeriv", quietly = TRUE)) {
+        stop("Package 'numDeriv' is required for numerical Jacobian. Please install it.", call. = FALSE)
+    }
+    
+    # Обчислюємо Якобіан: d(residuals)/d(theta)
+    # Для регресії e = y - f(theta), тому d(e)/d(theta) = -d(f)/d(theta)
+    # numDeriv::jacobian обчислює d(fn)/d(theta)
+    J_residuals <- numDeriv::jacobian(fn_residuals, theta, method = method)
+    
+    # Для PMM2 solver нам потрібно J = d(f)/d(theta) = -d(e)/d(theta)
+    # Тому змінюємо знак
+    J <- -J_residuals
+    
+    return(J)
+}
+
 
 #' Обчислення ваг та компонентів PMM2
 #'
@@ -158,13 +186,14 @@ solve_pmm2_step <- function(residuals, J, pmm_stats) {
 #' @param fn_residuals Функція function(theta), що повертає вектор залишків
 #' @param fn_jacobian Функція function(theta), що повертає матрицю Якобіана (n x p).
 #'                    J[i,j] = d(y_hat_i)/d(theta_j) = -d(epsilon_i)/d(theta_j)
+#'                    Якщо NULL, використовується чисельний Якобіан через numDeriv
 #' @param max_iter Максимальна кількість ітерацій
 #' @param tol Точність збіжності
 #' @param verbose Вивід прогресу
 #'
 #' @return Список з результатами (theta, residuals, convergence, etc.)
 #' @export
-pmm2_nonlinear_iterative <- function(theta_init, fn_residuals, fn_jacobian,
+pmm2_nonlinear_iterative <- function(theta_init, fn_residuals, fn_jacobian = NULL,
                                      max_iter = 100, tol = 1e-6, verbose = FALSE) {
     theta <- theta_init
     p <- length(theta)
@@ -174,7 +203,13 @@ pmm2_nonlinear_iterative <- function(theta_init, fn_residuals, fn_jacobian,
     for (iter in 1:max_iter) {
         # 1. Обчислення залишків та Якобіана в поточній точці
         res <- fn_residuals(theta)
-        J <- fn_jacobian(theta)
+        
+        if (is.null(fn_jacobian)) {
+            # Використовуємо чисельний Якобіан
+            J <- compute_numerical_jacobian(fn_residuals, theta)
+        } else {
+            J <- fn_jacobian(theta)
+        }
 
         # Перевірка розмірностей
         if (length(res) != nrow(J)) stop("Mismatch between residuals length and Jacobian rows")
@@ -232,18 +267,25 @@ pmm2_nonlinear_iterative <- function(theta_init, fn_residuals, fn_jacobian,
 #'
 #' @param theta_classical Оцінки параметрів, отримані класичним методом (наприклад, MLE)
 #' @param fn_residuals Функція function(theta), що повертає вектор залишків
-#' @param fn_jacobian Функція function(theta), що повертає матрицю Якобіана
+#' @param fn_jacobian Функція function(theta), що повертає матрицю Якобіана.
+#'                    Якщо NULL, використовується чисельний Якобіан через numDeriv
 #' @param verbose Вивід прогресу
 #'
 #' @return Список з результатами (theta, residuals, etc.)
 #' @export
-pmm2_nonlinear_onestep <- function(theta_classical, fn_residuals, fn_jacobian, verbose = FALSE) {
+pmm2_nonlinear_onestep <- function(theta_classical, fn_residuals, fn_jacobian = NULL, verbose = FALSE) {
     if (verbose) cat("Starting One-step PMM2 correction...\n")
 
     # 1. Обчислення залишків та Якобіана в точці класичної оцінки
     # Це "Global" частина - ми оцінюємо структуру задачі один раз
     res <- fn_residuals(theta_classical)
-    J <- fn_jacobian(theta_classical)
+    
+    if (is.null(fn_jacobian)) {
+        # Використовуємо чисельний Якобіан
+        J <- compute_numerical_jacobian(fn_residuals, theta_classical)
+    } else {
+        J <- fn_jacobian(theta_classical)
+    }
 
     # 2. Статистики PMM2
     stats <- compute_pmm2_components(res)

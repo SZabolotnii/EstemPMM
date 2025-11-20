@@ -1925,3 +1925,283 @@ sarima_pmm2 <- function(x,
 
   return(result)
 }
+
+
+# ============================================================================
+# Unified PMM2 Wrapper Functions
+# ============================================================================
+
+#' Unified PMM2 Wrapper for Time Series Models
+#'
+#' Universal wrapper that dispatches to appropriate PMM2 variant based on
+#' model structure and user preference.
+#'
+#' @param x Time series data
+#' @param order Model order specification (depends on model_type)
+#' @param model_type Type of model: "ar", "ma", "arma", "arima", "sarima"
+#' @param pmm2_variant PMM2 implementation variant:
+#'   \itemize{
+#'     \item \code{"unified_global"} (default) - One-step correction, fast and stable
+#'     \item \code{"unified_iterative"} - Full iterative procedure for maximum accuracy
+#'     \item \code{"linearized"} - Specialized linear approach for MA/SMA models
+#'   }
+#' @param seasonal Seasonal specification for SARIMA models
+#' @param include.mean Include intercept/mean term
+#' @param max_iter Maximum iterations
+#' @param tol Convergence tolerance
+#' @param verbose Print progress information
+#'
+#' @return List with PMM2 estimation results
+#' @keywords internal
+unified_pmm2_wrapper <- function(x, order, model_type,
+                                  pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
+                                  seasonal = NULL,
+                                  include.mean = TRUE,
+                                  max_iter = 100,
+                                  tol = 1e-6,
+                                  verbose = FALSE) {
+  
+  pmm2_variant <- match.arg(pmm2_variant)
+  
+  # Get initial classical estimates (MLE/CSS)
+  theta_init <- get_classical_estimates(x, order, model_type, seasonal, include.mean)
+  
+  # Create residual function for this model
+  fn_residuals <- create_residual_function(x, order, model_type, seasonal, include.mean)
+  
+  # Choose PMM2 method
+  if (pmm2_variant == "unified_global") {
+    # One-step correction (default, recommended)
+    result <- pmm2_nonlinear_onestep(
+      theta_classical = theta_init,
+      fn_residuals = fn_residuals,
+      fn_jacobian = NULL,  # Use numerical Jacobian
+      verbose = verbose
+    )
+    
+  } else if (pmm2_variant == "unified_iterative") {
+    # Full iterative procedure
+    result <- pmm2_nonlinear_iterative(
+      theta_init = theta_init,
+      fn_residuals = fn_residuals,
+      fn_jacobian = NULL,  # Use numerical Jacobian
+      max_iter = max_iter,
+      tol = tol,
+      verbose = verbose
+    )
+    
+  } else if (pmm2_variant == "linearized") {
+    # Specialized linearized approach (for MA/SMA models)
+    result <- linearized_pmm2_wrapper(
+      x = x,
+      order = order,
+      model_type = model_type,
+      seasonal = seasonal,
+      include.mean = include.mean,
+      max_iter = max_iter,
+      tol = tol,
+      verbose = verbose
+    )
+  }
+  
+  return(result)
+}
+
+
+#' Get classical (MLE/CSS) estimates for initialization
+#'
+#' @param x Time series data
+#' @param order Model order
+#' @param model_type Model type
+#' @param seasonal Seasonal specification
+#' @param include.mean Include intercept
+#'
+#' @return Vector of initial parameter estimates
+#' @keywords internal
+get_classical_estimates <- function(x, order, model_type, seasonal, include.mean) {
+  
+  if (model_type == "ar") {
+    p <- order[1]
+    fit <- stats::ar.yw(x, order.max = p, aic = FALSE)
+    theta <- fit$ar
+    if (include.mean) {
+      theta <- c(mean(x), theta)
+    }
+    
+  } else if (model_type == "ma") {
+    q <- order[1]
+    fit <- stats::arima(x, order = c(0, 0, q), method = "CSS-ML", include.mean = include.mean)
+    theta <- as.numeric(fit$coef)
+    
+  } else if (model_type == "arma") {
+    p <- order[1]
+    q <- order[2]
+    fit <- stats::arima(x, order = c(p, 0, q), method = "CSS-ML", include.mean = include.mean)
+    theta <- as.numeric(fit$coef)
+    
+  } else if (model_type == "arima") {
+    p <- order[1]
+    d <- order[2]
+    q <- order[3]
+    fit <- stats::arima(x, order = c(p, d, q), method = "CSS-ML", include.mean = include.mean)
+    theta <- as.numeric(fit$coef)
+    
+  } else if (model_type == "sarima") {
+    p <- order[1]
+    d <- order[2]
+    q <- order[3]
+    P <- seasonal$order[1]
+    D <- seasonal$order[2]
+    Q <- seasonal$order[3]
+    s <- seasonal$period
+    
+    fit <- stats::arima(x, 
+                       order = c(p, d, q),
+                       seasonal = list(order = c(P, D, Q), period = s),
+                       method = "CSS-ML",
+                       include.mean = include.mean)
+    theta <- as.numeric(fit$coef)
+  }
+  
+  return(theta)
+}
+
+
+#' Create residual function for PMM2 optimization
+#'
+#' @param x Time series data
+#' @param order Model order
+#' @param model_type Model type
+#' @param seasonal Seasonal specification
+#' @param include.mean Include intercept
+#'
+#' @return Function that computes residuals given parameters
+#' @keywords internal
+create_residual_function <- function(x, order, model_type, seasonal, include.mean) {
+  
+  # Return a function that takes theta and returns residuals
+  fn_residuals <- function(theta) {
+    
+    if (model_type == "ar") {
+      p <- order[1]
+      if (include.mean) {
+        intercept <- theta[1]
+        ar_coef <- theta[-1]
+      } else {
+        intercept <- 0
+        ar_coef <- theta
+      }
+      
+      # Compute AR residuals
+      n <- length(x)
+      residuals <- numeric(n)
+      x_centered <- x - intercept
+      
+      for (t in (p + 1):n) {
+        fitted <- sum(ar_coef * x_centered[(t - 1):(t - p)])
+        residuals[t] <- x_centered[t] - fitted
+      }
+      residuals[1:p] <- 0
+      
+    } else if (model_type %in% c("ma", "arma", "arima", "sarima")) {
+      # For MA/ARMA/ARIMA/SARIMA, use stats::arima with fixed parameters
+      if (model_type == "ma") {
+        fit <- stats::arima(x, order = c(0, 0, order[1]), 
+                           fixed = theta, 
+                           include.mean = include.mean,
+                           transform.pars = FALSE)
+      } else if (model_type == "arma") {
+        fit <- stats::arima(x, order = c(order[1], 0, order[2]), 
+                           fixed = theta, 
+                           include.mean = include.mean,
+                           transform.pars = FALSE)
+      } else if (model_type == "arima") {
+        fit <- stats::arima(x, order = order, 
+                           fixed = theta, 
+                           include.mean = include.mean,
+                           transform.pars = FALSE)
+      } else if (model_type == "sarima") {
+        fit <- stats::arima(x, 
+                           order = order,
+                           seasonal = seasonal,
+                           fixed = theta, 
+                           include.mean = include.mean,
+                           transform.pars = FALSE)
+      }
+      
+      residuals <- as.numeric(fit$residuals)
+      residuals[is.na(residuals)] <- 0
+    }
+    
+    return(residuals)
+  }
+  
+  return(fn_residuals)
+}
+
+
+#' Wrapper for linearized PMM2 approach (MA/SMA models)
+#'
+#' @param x Time series data
+#' @param order Model order
+#' @param model_type Model type
+#' @param seasonal Seasonal specification
+#' @param include.mean Include intercept
+#' @param max_iter Maximum iterations
+#' @param tol Convergence tolerance
+#' @param verbose Print progress
+#'
+#' @return PMM2 estimation results
+#' @keywords internal
+linearized_pmm2_wrapper <- function(x, order, model_type, seasonal,
+                                     include.mean, max_iter, tol, verbose) {
+  
+  # Check if linearized approach is applicable
+  if (model_type == "ma" && (is.null(seasonal) || seasonal$order[3] == 0)) {
+    # Pure MA model
+    q <- order[1]
+    result <- estpmm_style_ma(x, q = q, 
+                              include.mean = include.mean,
+                              max_iter = max_iter,
+                              tol = tol,
+                              verbose = verbose)
+    
+  } else if (model_type == "sarima" && order[1] == 0 && order[3] == 0 && 
+             seasonal$order[1] == 0 && seasonal$order[3] > 0) {
+    # Pure SMA model
+    Q <- seasonal$order[3]
+    s <- seasonal$period
+    result <- estpmm_style_sma(x, Q = Q, s = s,
+                               include.mean = include.mean,
+                               max_iter = max_iter,
+                               tol = tol,
+                               verbose = verbose)
+    
+  } else if (model_type == "ma" || (model_type == "sarima" && order[3] > 0 && seasonal$order[3] > 0)) {
+    # Mixed MA+SMA model
+    if (model_type == "ma") {
+      q <- order[1]
+      Q <- 0
+      s <- 1
+    } else {
+      q <- order[3]
+      Q <- seasonal$order[3]
+      s <- seasonal$period
+    }
+    
+    result <- estpmm_style_ma_sma(x, q = q, Q = Q, s = s,
+                                  include.mean = include.mean,
+                                  max_iter = max_iter,
+                                  tol = tol,
+                                  verbose = verbose)
+  } else {
+    # Linearized not applicable, fallback to unified_global
+    warning("Linearized PMM2 not applicable for this model. Using unified_global instead.")
+    theta_init <- get_classical_estimates(x, order, model_type, seasonal, include.mean)
+    fn_residuals <- create_residual_function(x, order, model_type, seasonal, include.mean)
+    result <- pmm2_nonlinear_onestep(theta_init, fn_residuals, fn_jacobian = NULL, verbose = verbose)
+  }
+  
+  return(result)
+}
+

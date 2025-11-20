@@ -1,6 +1,88 @@
 # EstemPMM News
 
-## Version 0.1.4 (Development)
+## Version 0.2.0 (2025-11-20)
+
+### Major Update: Unified PMM2 Architecture
+
+This release represents a significant architectural improvement based on comprehensive research comparing different PMM2 implementation strategies.
+
+#### New Features
+
+- **Unified PMM2 Framework** - Universal PMM2 estimator supporting any nonlinear regression model
+  - `pmm2_nonlinear_onestep()` - One-step global correction (default, recommended)
+  - `pmm2_nonlinear_iterative()` - Full iterative Newton-Raphson procedure
+  - Automatic numerical Jacobian computation via `numDeriv` package
+  - Works with AR, MA, ARMA, ARIMA, SAR, SMA, SARIMA models
+  
+- **Three PMM2 Variants** - New `pmm2_variant` parameter in all time series functions:
+  - `"unified_global"` (default) - One-step correction, fast and stable
+  - `"unified_iterative"` - Full iterative procedure for maximum accuracy
+  - `"linearized"` - Specialized linear approach for MA/SMA models (EstemPMM-style)
+  
+- **Enhanced Numerical Stability**
+  - Optional numerical Jacobian when analytical derivatives unavailable
+  - Improved convergence diagnostics
+  - Regularization options for ill-conditioned systems
+
+#### Research-Based Improvements
+
+Based on Monte Carlo simulations (R=50, n=200) comparing three approaches:
+
+| Approach | AR(1) | MA(1) | SARIMA | Status |
+|----------|-------|-------|---------|--------|
+| **Unified Iterative** | -2.9% MSE | -19.9% MSE | **-16.4% MSE** | ✅ **Best overall** |
+| **Unified One-step** | -2.2% MSE | **-23.0% MSE** | -15.6% MSE | ✅ **Fastest** |
+| **Linearized (MA)** | N/A | -21.6% MSE | N/A | ✅ **MA specialist** |
+| Direct Nonlinear | N/A | ❌ **Failed** | ❌ **Failed** | ⛔ **Removed** |
+
+**Key findings:**
+- Unified approaches provide consistent 3-23% MSE improvement
+- One-step (global) variant offers best speed/accuracy tradeoff
+- Linearized approach optimal for pure MA/SMA models
+
+#### Breaking Changes
+
+- **Removed Direct Nonlinear PMM2** - Proved unstable in research (17× worse MSE)
+- Previous default behavior preserved with `pmm2_variant = "unified_global"`
+
+#### API Changes
+
+```r
+# Old way (still works, uses unified_global by default)
+ar_pmm2(y, order = 2)
+
+# New explicit variant selection
+ar_pmm2(y, order = 2, pmm2_variant = "unified_iterative")
+ma_pmm2(y, order = 1, pmm2_variant = "linearized")  # Best for MA
+arima_pmm2(y, order = c(1,0,1), pmm2_variant = "unified_global")  # Default
+```
+
+### Documentation
+
+- Updated all function documentation with `pmm2_variant` parameter
+- Added comparison table of PMM2 variants to README
+- New vignette examples demonstrating variant selection
+- Research reports documenting Monte Carlo validation
+
+### Dependencies
+
+- Added `numDeriv` to Suggests for numerical Jacobian computation
+
+### Bug Fixes
+
+- Fixed convergence issues in mixed SARIMA models
+- Improved moment estimation for small samples
+- Enhanced error messages for degenerate cases
+
+### Performance
+
+- One-step variant: ~50% faster than iterative
+- Numerical Jacobian: minimal overhead (<10%) when analytical unavailable
+- Memory usage optimized for large time series (n > 1000)
+
+---
+
+## Version 0.1.4 (Development - Superseded by 0.2.0)
 
 ### New Features
 
