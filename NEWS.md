@@ -42,6 +42,13 @@
   - Demonstrated 20-30% variance reduction with asymmetric innovations
   - Full integration with S4 class system (`SARPMM2` class)
 
+    *   Fixed residuals padding in `sar_pmm2`, `sarma_pmm2`, and `sarima_pmm2` to prevent length mismatch errors.
+    *   Fixed S4 class definitions to ensure proper method dispatch.
+    *   Corrected multiplicative SAR specification in tests.
+    *   **Major Improvement**: Enhanced `estpmm_style_ma_sma` to support Multiplicative SARIMA models by including interaction terms in the design matrix. This resolves efficiency issues for mixed MA+SMA models at small sample sizes.
+    *   **New Feature**: Extended PMM2 support to full SARIMA models (AR+MA+SAR+SMA) with multiplicative interactions, demonstrating improved efficiency over MLE.
+
+
 - **Seasonal Moving Average Models (`sma_pmm2()`)** - Complete SMA(Q)_s implementation
   - Flexible seasonal lag specification
   - CSS and PMM2 estimation methods

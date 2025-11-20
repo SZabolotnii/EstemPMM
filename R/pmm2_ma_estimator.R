@@ -107,9 +107,10 @@ sma_build_design <- function(intercept, residuals, x, Q, s) {
 #' @param q MA order
 #' @param Q SMA order
 #' @param s Seasonal period
+#' @param multiplicative Logical, if TRUE use multiplicative SARIMA model
 #' @return Vector of innovations
 #' @keywords internal
-ma_sma_compute_innovations <- function(x, theta_ma, theta_sma, q, Q, s) {
+ma_sma_compute_innovations <- function(x, theta_ma, theta_sma, q, Q, s, multiplicative = TRUE) {
     n <- length(x)
     innovations <- numeric(n)
 
@@ -131,8 +132,22 @@ ma_sma_compute_innovations <- function(x, theta_ma, theta_sma, q, Q, s) {
             }
         }
 
+        # Interaction component (Multiplicative only)
+        interaction_component <- 0
+        if (multiplicative && q > 0 && Q > 0) {
+            for (j in 1:q) {
+                for (J in 1:Q) {
+                    lag_interaction <- j + J * s
+                    if (t - lag_interaction >= 1) {
+                        interaction_component <- interaction_component +
+                            (theta_ma[j] * theta_sma[J]) * innovations[t - lag_interaction]
+                    }
+                }
+            }
+        }
+
         # Total innovation
-        innovations[t] <- x[t] - ma_component - sma_component
+        innovations[t] <- x[t] - ma_component - sma_component - interaction_component
 
         # Update MA history
         if (q > 0) {
@@ -152,18 +167,25 @@ ma_sma_compute_innovations <- function(x, theta_ma, theta_sma, q, Q, s) {
 #' @param q MA order
 #' @param Q SMA order
 #' @param s Seasonal period
+#' @param multiplicative Logical, if TRUE use multiplicative SARIMA model
 #' @return List with X (design matrix) and y (response)
 #' @keywords internal
-ma_sma_build_design <- function(intercept, residuals, x, q, Q, s) {
+ma_sma_build_design <- function(intercept, residuals, x, q, Q, s, multiplicative = TRUE) {
     # Maximum lag determines where we start
     max_ma_lag <- q
     max_sma_lag <- Q * s
     max_lag <- max(max_ma_lag, max_sma_lag)
 
+    if (multiplicative && q > 0 && Q > 0) {
+        max_lag <- max(max_lag, q + Q * s)
+    }
+
     idx <- seq.int(max_lag + 1L, length(x))
 
-    # Design matrix: [intercept, ma_1, ..., ma_q, sma_1, ..., sma_Q]
-    ncol_total <- 1 + q + Q
+    # Design matrix: [intercept, ma_1, ..., ma_q, sma_1, ..., sma_Q, interaction_1_1, ...]
+    num_interaction <- if (multiplicative && q > 0 && Q > 0) q * Q else 0
+    ncol_total <- 1 + q + Q + num_interaction
+
     X <- matrix(1, nrow = length(idx), ncol = ncol_total)
 
     # Add regular MA lags
@@ -178,6 +200,18 @@ ma_sma_build_design <- function(intercept, residuals, x, q, Q, s) {
         for (J in seq_len(Q)) {
             lag_seasonal <- J * s
             X[, q + J + 1L] <- residuals[idx - lag_seasonal]
+        }
+    }
+
+    # Add interaction lags
+    if (num_interaction > 0) {
+        col_idx <- q + Q + 1L
+        for (j in seq_len(q)) {
+            for (J in seq_len(Q)) {
+                lag_interaction <- j + J * s
+                X[, col_idx + 1L] <- residuals[idx - lag_interaction]
+                col_idx <- col_idx + 1L
+            }
         }
     }
 
@@ -463,6 +497,7 @@ estpmm_style_sma <- function(x,
 #' @param include.mean Include intercept
 #' @param max_iter Maximum PMM2 iterations
 #' @param verbose Print diagnostics
+#' @param multiplicative Logical, if TRUE use multiplicative SARIMA model
 #'
 #' @return List with ma_coef, sma_coef, mean, innovations, convergence, method
 #' @keywords internal
@@ -472,7 +507,8 @@ estpmm_style_ma_sma <- function(x,
                                 s = 12,
                                 include.mean = TRUE,
                                 max_iter = 50,
-                                verbose = FALSE) {
+                                verbose = FALSE,
+                                multiplicative = TRUE) {
     n <- length(x)
 
     # Validate inputs
@@ -531,12 +567,15 @@ estpmm_style_ma_sma <- function(x,
     residuals_css <- as.numeric(residuals(css_fit))
 
     # STEP 2: Build design matrix from FIXED residuals
-    design <- ma_sma_build_design(intercept_init, residuals_css, x, q, Q, s)
+    design <- ma_sma_build_design(intercept_init, residuals_css, x, q, Q, s, multiplicative)
     X <- design$X
     y <- design$y
 
     # STEP 3: Compute moments from CSS residuals
     max_lag <- max(q, Q * s)
+    if (multiplicative) {
+        max_lag <- max(max_lag, q + Q * s)
+    }
     eff_residuals <- residuals_css[(max_lag + 1):n]
 
     m2 <- mean(eff_residuals^2)
@@ -544,8 +583,21 @@ estpmm_style_ma_sma <- function(x,
     m4 <- mean(eff_residuals^4)
 
     # STEP 4: PMM2 optimization
-    # Combined parameter vector: [intercept, ma_1, ..., ma_q, sma_1, ..., sma_Q]
+    # Combined parameter vector: [intercept, ma_1, ..., ma_q, sma_1, ..., sma_Q, interaction_1_1, ...]
     b_init <- c(intercept_init, theta_ma_init, theta_sma_init)
+
+    # Add initial interaction terms if multiplicative
+    if (multiplicative) {
+        interaction_init <- numeric(q * Q)
+        idx <- 1
+        for (j in 1:q) {
+            for (J in 1:Q) {
+                interaction_init[idx] <- theta_ma_init[j] * theta_sma_init[J]
+                idx <- idx + 1
+            }
+        }
+        b_init <- c(b_init, interaction_init)
+    }
 
     pmm2_result <- ma_solve_pmm2(b_init, X, y, m2, m3, m4,
         max_iter = max_iter,
@@ -557,11 +609,15 @@ estpmm_style_ma_sma <- function(x,
     all_coefs <- pmm2_result$coefficients
     theta_ma_final <- if (q > 0) all_coefs[1:q] else numeric(0)
     theta_sma_final <- if (Q > 0) all_coefs[(q + 1):(q + Q)] else numeric(0)
+
+    # We ignore the estimated interaction coefficients for the final result,
+    # relying on the multiplicative structure implied by theta_ma and theta_sma
+
     intercept_final <- pmm2_result$intercept
 
     # STEP 5: Compute final innovations
     x_centered <- as.numeric(x) - intercept_final
-    innovations <- ma_sma_compute_innovations(x_centered, theta_ma_final, theta_sma_final, q, Q, s)
+    innovations <- ma_sma_compute_innovations(x_centered, theta_ma_final, theta_sma_final, q, Q, s, multiplicative)
 
     list(
         ma_coef = theta_ma_final,

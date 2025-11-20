@@ -1490,7 +1490,8 @@ sarima_pmm2 <- function(x,
                         regularize = TRUE,
                         reg_lambda = 1e-8,
                         ma_method = c("mle", "pmm2"),
-                        verbose = FALSE) {
+                        verbose = FALSE,
+                        multiplicative = TRUE) {
   # Store original call
   cl <- match.call()
 
@@ -1699,7 +1700,7 @@ sarima_pmm2 <- function(x,
 
           ma_sma_fit <- estpmm_style_ma_sma(x_diff,
             q = q, Q = Q, s = s, include.mean = include.mean,
-            max_iter = max_iter, verbose = verbose
+            max_iter = max_iter, verbose = verbose, multiplicative = multiplicative
           )
 
           # Construct result object
@@ -1745,13 +1746,31 @@ sarima_pmm2 <- function(x,
     # Align residuals with differenced series
     residuals_diff <- tail(residuals_init, length(x_diff))
 
+    # Prepare initial coefficients for interaction terms if multiplicative
+    if (multiplicative) {
+      ar_inter_init <- numeric(0)
+      ma_inter_init <- numeric(0)
+
+      if (p > 0 && P > 0) {
+        # Initialize AR interactions with zeros
+        ar_inter_init <- rep(0, p * P)
+      }
+
+      if (q > 0 && Q > 0) {
+        # Initialize MA interactions with zeros
+        ma_inter_init <- rep(0, q * Q)
+      }
+
+      b_init <- c(b_init, ar_inter_init, ma_inter_init)
+    }
+
     # Step 2: Build design matrix for PMM2
     # If no seasonal components, s can be 1, but create_sarma_matrix expects s > 1
     # We pass a dummy s=2 if P=0 and Q=0 to satisfy validation
     s_for_matrix <- if (P == 0 && Q == 0) max(s, 2) else s
 
     X_base <- create_sarma_matrix(x_diff, residuals_diff,
-      p = p, P = P, q = q, Q = Q, s = s_for_matrix
+      p = p, P = P, q = q, Q = Q, s = s_for_matrix, multiplicative = multiplicative
     )
     if (include.mean) {
       X <- cbind(`(Intercept)` = rep(1, nrow(X_base)), X_base)
@@ -1762,6 +1781,11 @@ sarima_pmm2 <- function(x,
     max_ar_lag <- max(p, P * s)
     max_ma_lag <- max(q, Q * s)
     max_lag <- max(max_ar_lag, max_ma_lag)
+
+    if (multiplicative) {
+      if (p > 0 && P > 0) max_lag <- max(max_lag, p + P * s)
+      if (q > 0 && Q > 0) max_lag <- max(max_lag, q + Q * s)
+    }
 
     y <- x_diff[(max_lag + 1):length(x_diff)]
 
@@ -1791,9 +1815,16 @@ sarima_pmm2 <- function(x,
     coef_final <- pmm2_result$b
 
     # Reconstruct full coefficient vector with names
+    n_standard <- p + P + q + Q
+
     if (include.mean) {
       intercept_est <- as.numeric(coef_final[1])
-      coef_est <- as.numeric(coef_final[-1])
+      # Take only standard parameters, ignore interactions for reporting
+      if (length(coef_final) > (1 + n_standard)) {
+        coef_est <- as.numeric(coef_final[2:(1 + n_standard)])
+      } else {
+        coef_est <- as.numeric(coef_final[-1])
+      }
       final_coef_names <- c(
         if (d + D == 0) "intercept" else "drift",
         if (p > 0) paste0("ar", 1:p) else NULL,
@@ -1804,7 +1835,12 @@ sarima_pmm2 <- function(x,
       final_coef_values <- c(intercept = intercept_est, coef_est)
     } else {
       intercept_est <- 0
-      coef_est <- as.numeric(coef_final)
+      # Take only standard parameters, ignore interactions for reporting
+      if (length(coef_final) > n_standard) {
+        coef_est <- as.numeric(coef_final[1:n_standard])
+      } else {
+        coef_est <- as.numeric(coef_final)
+      }
       final_coef_names <- c(
         if (p > 0) paste0("ar", 1:p) else NULL,
         if (P > 0) paste0("sar", 1:P) else NULL,
