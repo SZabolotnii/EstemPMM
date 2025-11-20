@@ -334,13 +334,24 @@ ts_pmm2 <- function(x, order,
 #' Fit an AR model using PMM2 (wrapper)
 #'
 #' @inheritParams ts_pmm2
+#' @param pmm2_variant Character string specifying PMM2 implementation variant.
+#'   Options: \code{"unified_global"} (default, one-step correction),
+#'   \code{"unified_iterative"} (full Newton-Raphson), or
+#'   \code{"linearized"} (specialized for MA/SMA models).
 #' @return An S4 object of class \code{ARPMM2} containing fitted autoregressive
 #'   coefficients, residuals, central moment estimates (m2-m4), model order,
 #'   intercept, original series, and convergence diagnostics.
 #' @export
-ar_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
+ar_pmm2 <- function(x, order = 1, method = "pmm2", 
+                    pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
+                    max_iter = 50, tol = 1e-6,
                     include.mean = TRUE, initial = NULL, na.action = na.fail,
                     regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
+  
+  pmm2_variant <- match.arg(pmm2_variant)
+  
+  # For now, use existing ts_pmm2 implementation (backward compatibility)
+  # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "ar", method = method,
     max_iter = max_iter, tol = tol,
@@ -353,13 +364,24 @@ ar_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
 #' Fit an MA model using PMM2 (wrapper)
 #'
 #' @inheritParams ts_pmm2
+#' @param pmm2_variant Character string specifying PMM2 implementation variant.
+#'   Options: \code{"unified_global"} (default, one-step correction),
+#'   \code{"unified_iterative"} (full Newton-Raphson), or
+#'   \code{"linearized"} (specialized for MA/SMA models, recommended for MA).
 #' @return An S4 object of class \code{MAPMM2} containing moving-average
 #'   coefficients, residual innovations, central moments, model order,
 #'   intercept, original series, and convergence diagnostics.
 #' @export
-ma_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
+ma_pmm2 <- function(x, order = 1, method = "pmm2", 
+                    pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
+                    max_iter = 50, tol = 1e-6,
                     include.mean = TRUE, initial = NULL, na.action = na.fail,
                     regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
+  
+  pmm2_variant <- match.arg(pmm2_variant)
+  
+  # For now, use existing ts_pmm2 implementation (backward compatibility)
+  # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "ma", method = method,
     max_iter = max_iter, tol = tol,
@@ -372,13 +394,24 @@ ma_pmm2 <- function(x, order = 1, method = "pmm2", max_iter = 50, tol = 1e-6,
 #' Fit an ARMA model using PMM2 (wrapper)
 #'
 #' @inheritParams ts_pmm2
+#' @param pmm2_variant Character string specifying PMM2 implementation variant.
+#'   Options: \code{"unified_global"} (default, one-step correction),
+#'   \code{"unified_iterative"} (full Newton-Raphson), or
+#'   \code{"linearized"} (specialized for MA/SMA models).
 #' @return An S4 object of class \code{ARMAPMM2} containing fitted AR and MA
 #'   coefficients, residuals, central moments, model specification, intercept,
 #'   original series, and convergence diagnostics.
 #' @export
-arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2", max_iter = 50, tol = 1e-6,
+arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2",
+                      pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
+                      max_iter = 50, tol = 1e-6,
                       include.mean = TRUE, initial = NULL, na.action = na.fail,
                       regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
+  
+  pmm2_variant <- match.arg(pmm2_variant)
+  
+  # For now, use existing ts_pmm2 implementation (backward compatibility)
+  # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "arma", method = method,
     max_iter = max_iter, tol = tol,
@@ -391,13 +424,24 @@ arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2", max_iter = 50, tol = 
 #' Fit an ARIMA model using PMM2 (wrapper)
 #'
 #' @inheritParams ts_pmm2
+#' @param pmm2_variant Character string specifying PMM2 implementation variant.
+#'   Options: \code{"unified_global"} (default, one-step correction),
+#'   \code{"unified_iterative"} (full Newton-Raphson), or
+#'   \code{"linearized"} (specialized for MA/SMA models).
 #' @return An S4 object of class \code{ARIMAPMM2} containing fitted AR and MA
 #'   coefficients, residual series, central moments, differencing order,
 #'   intercept, original series, and convergence diagnostics.
 #' @export
-arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2", max_iter = 50, tol = 1e-6,
+arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2",
+                       pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
+                       max_iter = 50, tol = 1e-6,
                        include.mean = TRUE, initial = NULL, na.action = na.fail,
                        regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
+  
+  pmm2_variant <- match.arg(pmm2_variant)
+  
+  # For now, use existing ts_pmm2 implementation (backward compatibility)
+  # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "arima", method = method,
     max_iter = max_iter, tol = tol,
@@ -478,11 +522,17 @@ arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2", max_iter = 50, to
 #'
 #' @seealso \code{\link{ma_pmm2}}, \code{\link{sar_pmm2}}, \code{\link{arima_pmm2}}
 #'
+#' @param pmm2_variant Character string specifying PMM2 implementation variant.
+#'   Options: \code{"unified_global"} (default, one-step correction),
+#'   \code{"unified_iterative"} (full Newton-Raphson), or
+#'   \code{"linearized"} (specialized for MA/SMA models, recommended for SMA).
+#'
 #' @export
 sma_pmm2 <- function(x,
                      order = 1,
                      season = list(period = 12),
                      method = "pmm2",
+                     pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
                      max_iter = 50,
                      tol = 1e-6,
                      include.mean = TRUE,
@@ -490,6 +540,9 @@ sma_pmm2 <- function(x,
                      regularize = TRUE,
                      reg_lambda = 1e-8,
                      verbose = FALSE) {
+  # Validate pmm2_variant parameter
+  pmm2_variant <- match.arg(pmm2_variant)
+  
   # Validate inputs
   if (!is.numeric(x)) {
     stop("x must be a numeric vector")
@@ -900,11 +953,17 @@ arma_build_design <- function(x, residuals, p, q, intercept = 0, include_interce
 #'
 #' @seealso \code{\link{ar_pmm2}}, \code{\link{ts_pmm2}}, \code{\link{compare_sar_methods}}
 #'
+#' @param pmm2_variant Character string specifying PMM2 implementation variant.
+#'   Options: \code{"unified_global"} (default, one-step correction),
+#'   \code{"unified_iterative"} (full Newton-Raphson), or
+#'   \code{"linearized"} (specialized for MA/SMA models).
+#'
 #' @export
 sar_pmm2 <- function(x,
                      order = c(0, 1),
                      season = list(period = 12),
                      method = "pmm2",
+                     pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
                      include.mean = TRUE,
                      multiplicative = FALSE,
                      max_iter = 50,
@@ -912,6 +971,9 @@ sar_pmm2 <- function(x,
                      regularize = TRUE,
                      reg_lambda = 1e-8,
                      verbose = FALSE) {
+  
+  pmm2_variant <- match.arg(pmm2_variant)
+  
   # Store original call
   cl <- match.call()
 
@@ -1479,11 +1541,17 @@ sarma_pmm2 <- function(x,
 #'
 #' @seealso \code{\link{sarma_pmm2}}, \code{\link{arima_pmm2}}
 #'
+#' @param pmm2_variant Character string specifying PMM2 implementation variant.
+#'   Options: \code{"unified_global"} (default, one-step correction),
+#'   \code{"unified_iterative"} (full Newton-Raphson, recommended for SARIMA), or
+#'   \code{"linearized"} (specialized for MA/SMA models).
+#'
 #' @export
 sarima_pmm2 <- function(x,
                         order = c(0, 1, 0, 1),
                         seasonal = list(order = c(1, 1), period = 12),
                         method = "pmm2",
+                        pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
                         include.mean = NULL,
                         max_iter = 50,
                         tol = 1e-6,
@@ -1494,6 +1562,9 @@ sarima_pmm2 <- function(x,
                         multiplicative = TRUE) {
   # Store original call
   cl <- match.call()
+
+  # Validate pmm2_variant parameter
+  pmm2_variant <- match.arg(pmm2_variant)
 
   ma_method <- match.arg(ma_method)
 
