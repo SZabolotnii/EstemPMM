@@ -7,9 +7,6 @@
 ** demo
 ** inst
 ** byte-compile and prepare package for lazy loading
-Note: possible error in 'estpmm_style_ma(x, q = q, ': unused argument (tol = tol) 
-Note: possible error in 'estpmm_style_sma(x, Q = Q, ': unused argument (tol = tol) 
-Note: possible error in 'estpmm_style_ma_sma(x, ': unused argument (tol = tol) 
 ** help
 *** installing help indices
 ** building package indices

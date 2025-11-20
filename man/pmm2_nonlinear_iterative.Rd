@@ -19,7 +19,7 @@ pmm2_nonlinear_iterative(
 \item{fn_residuals}{Функція function(theta), що повертає вектор залишків}
 
 \item{fn_jacobian}{Функція function(theta), що повертає матрицю Якобіана (n x p).
-J\link{i,j} = d(y_hat_i)/d(theta_j) = -d(epsilon_i)/d(theta_j)
+J_ij = d(y_hat_i)/d(theta_j) = -d(epsilon_i)/d(theta_j)
 Якщо NULL, використовується чисельний Якобіан через numDeriv}
 
 \item{max_iter}{Максимальна кількість ітерацій}

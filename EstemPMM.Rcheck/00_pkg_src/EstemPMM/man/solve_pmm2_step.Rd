@@ -9,7 +9,7 @@ solve_pmm2_step(residuals, J, pmm_stats)
 \arguments{
 \item{residuals}{Поточні залишки}
 
-\item{J}{Матриця Якобіана (n x p), де J\link{i, j} = - d(e_i)/d(theta_j)
+\item{J}{Матриця Якобіана (n x p), де J_ij = - d(e_i)/d(theta_j)
 УВАГА: Знак мінус важливий. Якщо J це d(y_hat)/d(theta), то це ок.
 Якщо J це d(e)/d(theta), то у формулі має бути мінус.
 Тут припускаємо стандартне визначення регресії: y = f(theta) + e

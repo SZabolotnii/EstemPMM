@@ -58,6 +58,10 @@ Options: \code{"unified_global"} (default, one-step correction),
 \item{ma_method}{Method for MA/SMA estimation: "mle" (default) or "pmm2"}
 
 \item{verbose}{Logical, print progress information (default FALSE)}
+
+\item{multiplicative}{Logical, use multiplicative seasonal model form with
+cross-terms between non-seasonal and seasonal components (default TRUE).
+If FALSE, uses additive form.}
 }
 \value{
 S4 object of class SARIMAPMM2 containing:

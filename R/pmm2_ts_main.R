@@ -1776,6 +1776,9 @@ sarma_pmm2 <- function(x,
 #'   Options: \code{"unified_global"} (default, one-step correction),
 #'   \code{"unified_iterative"} (full Newton-Raphson, \strong{recommended for SARIMA}), or
 #'   \code{"linearized"} (specialized for MA/SMA models).
+#' @param multiplicative Logical, use multiplicative seasonal model form with
+#'   cross-terms between non-seasonal and seasonal components (default TRUE).
+#'   If FALSE, uses additive form.
 #'
 #' @details
 #' \strong{Variant Recommendations for SARIMA:}
@@ -2479,7 +2482,6 @@ linearized_pmm2_wrapper <- function(x, order, model_type, seasonal,
     result <- estpmm_style_ma(x, q = q, 
                               include.mean = include.mean,
                               max_iter = max_iter,
-                              tol = tol,
                               verbose = verbose)
     
   } else if (model_type == "sarima" && order[1] == 0 && order[3] == 0 && 
@@ -2490,7 +2492,6 @@ linearized_pmm2_wrapper <- function(x, order, model_type, seasonal,
     result <- estpmm_style_sma(x, Q = Q, s = s,
                                include.mean = include.mean,
                                max_iter = max_iter,
-                               tol = tol,
                                verbose = verbose)
     
   } else if (model_type == "ma" || (model_type == "sarima" && order[3] > 0 && seasonal$order[3] > 0)) {
@@ -2508,7 +2509,6 @@ linearized_pmm2_wrapper <- function(x, order, model_type, seasonal,
     result <- estpmm_style_ma_sma(x, q = q, Q = Q, s = s,
                                   include.mean = include.mean,
                                   max_iter = max_iter,
-                                  tol = tol,
                                   verbose = verbose)
   } else {
     # Linearized not applicable, fallback to unified_global

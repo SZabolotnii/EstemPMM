@@ -32,7 +32,7 @@ Optimization result
 Monte Carlo experiments (R=50, n=200) showed this direct optimization approach
 performs catastrophically worse than classical methods:
 \itemize{
-\item AR(1): 17.0× worse MSE than MLE (3.67 vs 0.22)
+\item AR(1): 17.0x worse MSE than MLE (3.67 vs 0.22)
 \item MA(1): Failed to converge in most replications
 \item SARIMA: Severe numerical instability
 }

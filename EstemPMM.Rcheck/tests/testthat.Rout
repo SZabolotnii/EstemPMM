@@ -53,4 +53,4 @@ To view p-values, provide formula= and data=
 > 
 > proc.time()
    user  system elapsed 
-  1.246   0.183   1.649 
+  1.203   0.223   2.367 

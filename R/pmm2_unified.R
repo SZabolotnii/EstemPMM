@@ -75,7 +75,7 @@ compute_pmm2_components <- function(residuals) {
 #' Базується на розкладанні Тейлора: e(theta) ~ e(theta_k) - J * delta
 #'
 #' @param residuals Поточні залишки
-#' @param J Матриця Якобіана (n x p), де J[i, j] = - d(e_i)/d(theta_j)
+#' @param J Матриця Якобіана (n x p), де J_ij = - d(e_i)/d(theta_j)
 #'          УВАГА: Знак мінус важливий. Якщо J це d(y_hat)/d(theta), то це ок.
 #'          Якщо J це d(e)/d(theta), то у формулі має бути мінус.
 #'          Тут припускаємо стандартне визначення регресії: y = f(theta) + e
@@ -185,7 +185,7 @@ solve_pmm2_step <- function(residuals, J, pmm_stats) {
 #' @param theta_init Початкові значення параметрів
 #' @param fn_residuals Функція function(theta), що повертає вектор залишків
 #' @param fn_jacobian Функція function(theta), що повертає матрицю Якобіана (n x p).
-#'                    J[i,j] = d(y_hat_i)/d(theta_j) = -d(epsilon_i)/d(theta_j)
+#'                    J_ij = d(y_hat_i)/d(theta_j) = -d(epsilon_i)/d(theta_j)
 #'                    Якщо NULL, використовується чисельний Якобіан через numDeriv
 #' @param max_iter Максимальна кількість ітерацій
 #' @param tol Точність збіжності

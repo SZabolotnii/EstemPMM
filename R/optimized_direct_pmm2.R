@@ -8,7 +8,7 @@ source("R/sarimax_wrapper.R")
 #' Monte Carlo experiments (R=50, n=200) showed this direct optimization approach
 #' performs catastrophically worse than classical methods:
 #' \itemize{
-#'   \item AR(1): 17.0× worse MSE than MLE (3.67 vs 0.22)
+#'   \item AR(1): 17.0x worse MSE than MLE (3.67 vs 0.22)
 #'   \item MA(1): Failed to converge in most replications
 #'   \item SARIMA: Severe numerical instability
 #' }
@@ -63,11 +63,11 @@ source("R/sarimax_wrapper.R")
 #' @param seasonal Seasonal order
 #' @return Optimization result
 optimized_direct_pmm2 <- function(theta_init, y, order = c(0, 0, 0), seasonal = list(order = c(0, 0, 0), period = NA)) {
-    # DEPRECATED: This function fails catastrophically in practice (17× worse MSE than MLE)
+    # DEPRECATED: This function fails catastrophically in practice (17x worse MSE than MLE)
     # Use unified PMM2 variants instead: ar_pmm2(), ma_pmm2(), arima_pmm2() with pmm2_variant parameter
     .Deprecated(
         msg = paste(
-            "optimized_direct_pmm2() is deprecated due to poor performance (17× worse MSE than MLE).",
+            "optimized_direct_pmm2() is deprecated due to poor performance (17x worse MSE than MLE).",
             "Use unified PMM2 variants instead:",
             "  - ar_pmm2(x, order=..., pmm2_variant='unified_global')",
             "  - ma_pmm2(x, order=..., pmm2_variant='linearized')",
