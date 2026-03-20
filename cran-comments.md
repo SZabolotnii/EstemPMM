@@ -9,18 +9,19 @@
 ## Test environments
 | Platform | R version | Notes |
 | --- | --- | --- |
-| macOS Tahoe 26.3.1 (arm64) | 4.5.2 | `R CMD check --as-cran` |
-| macOS Tahoe 26.3.1 (arm64) | 4.5.2 | Local development and testing |
+| macOS Tahoe 26.3.1 (arm64) | 4.5.2 | `R CMD check --as-cran`: 0 NOTE |
+| win-builder (CRAN incoming pretest) | R-devel | 2 NOTEs in first submission — both fixed |
+| Debian (CRAN incoming pretest) | R-devel | 2 NOTEs in first submission — both fixed |
 
-## R CMD check results
+## R CMD check results (resubmission)
 ```
-Status: 0 ERROR, 0 WARNING, 1 NOTE
+Status: 0 ERROR, 0 WARNING, 0 NOTE
 ```
 
-### Notes explained
-1. **Non-standard top-level files/directories:** `CRAN_CHECK_INSTRUCTIONS.md`,
-   `CRAN_SUBMISSION_CHECKLIST.md`, `README_uk.md` — supplementary documentation
-   files for contributors. Does not affect package functionality.
+### Notes from initial submission (now fixed)
+1. **Non-standard top-level directory `figure/`** — added `^figure$` to `.Rbuildignore`.
+2. **Possibly misspelled word "platykurtic" in DESCRIPTION** — valid statistical term
+   (distribution with negative excess kurtosis); added to `inst/WORDLIST`.
 
 ## Reverse dependencies
 None. This package has no reverse dependencies on CRAN.

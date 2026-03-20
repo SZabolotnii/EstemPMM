@@ -1,0 +1,16 @@
+"model","dist","g3_emp","mse_ratio","conv_rate"
+"ar_pmm3","Beta(2,2)",0.6942,0.6792,100
+"arima_pmm3","Beta(2,2)",0.6976,0.6814,100
+"arma_pmm3","Beta(2,2)",0.7876,0.7966,100
+"lm_pmm3","Beta(2,2)",0.6784,0.6791,100
+"ma_pmm3","Beta(2,2)",0.9981,0.9977,100
+"ar_pmm3","TN(lambda=1.5)",0.6547,0.6455,100
+"arima_pmm3","TN(lambda=1.5)",0.6833,0.6672,100
+"arma_pmm3","TN(lambda=1.5)",0.7969,0.8021,100
+"lm_pmm3","TN(lambda=1.5)",0.7038,0.7033,100
+"ma_pmm3","TN(lambda=1.5)",0.992,0.995,100
+"ar_pmm3","Uniform",0.3302,0.3121,100
+"arima_pmm3","Uniform",0.3415,0.3366,100
+"arma_pmm3","Uniform",0.4164,0.4187,100
+"lm_pmm3","Uniform",0.3574,0.3572,100
+"ma_pmm3","Uniform",0.5433,0.5446,100
