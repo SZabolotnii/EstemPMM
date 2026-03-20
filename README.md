@@ -1,440 +1,272 @@
-# EstemPMM: Polynomial Maximization Method for Regression Analysis
+# EstemPMM: Polynomial Maximization Method for Non-Gaussian Regression
 
-[![R](https://img.shields.io/badge/R-%3E%3D%204.0.0-blue)](https://cran.r-project.org/)
+[![CRAN status](https://www.r-pkg.org/badges/version/EstemPMM)](https://cran.r-project.org/package=EstemPMM)
+[![R](https://img.shields.io/badge/R-%3E%3D%203.5.0-blue)](https://cran.r-project.org/)
 [![License: GPL-3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://opensource.org/licenses/GPL-3.0)
-[![CRAN status](https://img.shields.io/badge/CRAN-ready-brightgreen)](https://cran.r-project.org/)
 
 ## Overview
 
-The EstemPMM package implements the Polynomial Maximization Method (PMM) for estimating linear regression parameters in cases where the error distribution differs from normal, particularly when it has an asymmetric character.
+**EstemPMM** implements the **Polynomial Maximization Method (PMM)** for parameter
+estimation in linear regression and time series models when the error distribution
+deviates from normality. PMM achieves lower variance estimates than OLS by exploiting
+higher-order moments of the residual distribution.
 
-PMM allows obtaining parameter estimates with lower variance compared to the classical Ordinary Least Squares (OLS) method, especially when the error distribution has significant asymmetry.
+The package provides two complementary estimators:
 
-## Theoretical Background
+| Method | Targets | Key quantity | Typical gain |
+|--------|---------|--------------|-------------|
+| **PMM2** (S=2) | Asymmetric errors ($\|\gamma_3\| > 0.3$) | $g_2 = 1 - \gamma_3^2/(2+\gamma_4)$ | 10–60% variance reduction |
+| **PMM3** (S=3) | Symmetric platykurtic errors ($\gamma_4 < -0.7$) | $g_3 = 1 - \gamma_4^2/(6+9\gamma_4+\gamma_6)$ | 10–40% variance reduction |
 
-PMM uses polynomials of degree S for parameter estimation. When S=1, PMM estimates coincide with OLS estimates. When S=2 and there is asymmetry in the error distribution, PMM can provide reduced variance of estimates.
+Use `pmm_dispatch()` to automatically choose between OLS, PMM2, and PMM3 based on
+residual cumulants.
 
-The PMM framework was originally developed by Yu. P. Kunchenko, who formulated the polynomial maximization approach for estimating distribution parameters [Kunchenko & Lega, 1992].
-
-The theoretical coefficient of variance reduction for S=2 is calculated by the formula:
-
-```
-g = 1 - c3^2 / (2 + c4)
-```
-
-where `c3` is the skewness coefficient and `c4` is the kurtosis coefficient.
-
-## PMM2 Variants (version 0.2.0)
-
-EstemPMM offers **three implementation variants of PMM2**, optimized for different scenarios:
-
-### 1. Unified Global (default, recommended)
-
-```r
-ar_pmm2(y, order = 2, pmm2_variant = "unified_global")  # default
-```
-
-**Characteristics:**
-- ✅ One-step correction after classical estimation (MLE/CSS)
-- ✅ Fast (~50% faster than iterative)
-- ✅ Stable for all model types
-- ✅ 3-23% MSE improvement (Monte Carlo R=50)
-
-**When to use:** For most applications requiring the best speed/accuracy tradeoff.
-
-### 2. Unified Iterative (maximum accuracy)
-
-```r
-arima_pmm2(y, order = c(1,0,1), pmm2_variant = "unified_iterative")
-```
-
-**Characteristics:**
-- ✅ Full Newton-Raphson iterative procedure
-- ✅ Highest accuracy (up to 23% MSE improvement)
-- ✅ Automatic numerical Jacobian (via `numDeriv`)
-- ⚠️ Slower than one-step
-
-**When to use:** When accuracy is critical and computation time is not a constraint.
-
-### 3. Linearized (specialist for MA/SMA)
-
-```r
-ma_pmm2(y, order = 1, pmm2_variant = "linearized")
-```
-
-**Characteristics:**
-- ✅ Specialized linear approach for MA/SMA models
-- ✅ Optimal efficiency for pure MA models (21-44% MSE improvement)
-- ✅ Fast convergence (3-5 iterations)
-- ⚠️ Only works for MA/SMA models
-
-**When to use:** For pure MA(q) or SMA(Q) models with asymmetric innovations.
-
-### Variant Comparison (Monte Carlo R=50, n=200)
-
-| Model | Unified Global | Unified Iterative | Linearized | Best |
-|-------|----------------|-------------------|------------|------|
-| **AR(1)** | -2.2% MSE | **-2.9% MSE** | N/A | Iterative |
-| **MA(1)** | **-23.0% MSE** | -19.9% MSE | **-21.6% MSE** | Global |
-| **SARIMA** | -15.6% MSE | **-16.4% MSE** | N/A | Iterative |
-
-**Conclusion:** 
-- Unified Global — best universal choice (default)
-- Unified Iterative — for maximum accuracy
-- Linearized — optimal for MA/SMA models
-
+---
 
 ## Installation
 
 ```r
-# Install the released version from CRAN
+# Released version from CRAN
 install.packages("EstemPMM")
 
-# Or install the development snapshot from GitHub
+# Development version from GitHub
 devtools::install_github("SZabolotnii/EstemPMM")
 ```
 
-## Basic Usage
+---
+
+## Quick Start
+
+### Automatic Method Selection
 
 ```r
 library(EstemPMM)
 
-# Create data with asymmetric errors
-n <- 100
-x <- rnorm(n)
-errors <- rgamma(n, shape = 2, scale = 1) - 2  # Shift for zero mean
-y <- 2 + 1.5 * x + errors
-data <- data.frame(x = x, y = y)
+# Fit OLS first, then let pmm_dispatch() choose the best method
+fit_ols <- lm(mpg ~ acceleration, data = auto_mpg)
+pmm_dispatch(residuals(fit_ols))
+# -> Recommends PMM2 (skewed residuals, gamma3 ≈ 0.5)
 
-# Fit the model using PMM2
-fit <- lm_pmm2(y ~ x, data = data)
-
-# Review results
-summary(fit)
-
-# Compare with OLS
-ols_fit <- lm(y ~ x, data = data)
-compare_with_ols(y ~ x, data)
+fit_ols2 <- lm(mpg ~ horsepower + I(horsepower^2), data = na.omit(auto_mpg))
+pmm_dispatch(residuals(fit_ols2))
+# -> Recommends PMM3 (symmetric platykurtic residuals, gamma4 ≈ -1.3)
 ```
 
-## Time Series Example
+### PMM2 — Asymmetric Errors
 
 ```r
 library(EstemPMM)
-
-# Simulate AR(2) process with asymmetric innovations
 set.seed(42)
-n <- 300
-innov <- rgamma(n, shape = 2, scale = 1) - 2  # Centered gamma errors
-y <- numeric(n)
-for (t in 3:n) {
-  y[t] <- 0.5 * y[t-1] - 0.3 * y[t-2] + innov[t]
-}
 
-# Fit AR(2) model using PMM2
-fit_ar <- ar_pmm2(y, order = 2)
-summary(fit_ar)
+# Simulate regression with skewed (gamma-distributed) errors
+n <- 200
+x <- rnorm(n)
+y <- 2 + 1.5 * x + (rgamma(n, shape = 2, rate = 2) - 1)
 
-# Compare with other methods
-compare_ar_methods(y, order = 2)
-
-# Seasonal models example
-# Fit SAR(1,1)_12 model (seasonal lag 12, e.g., monthly data)
-fit_sar <- sar_pmm2(y, order = c(1, 1), season = list(period = 12))
-
-# Fit SMA(1)_12 model
-fit_sma <- sma_pmm2(y, order = 1, season = list(period = 12))
-
-# Unified SARMA(1,1)×(1,1)_12 model (combines AR, SAR, MA, SMA)
-fit_sarma <- sarma_pmm2(y, order = c(1, 1, 1, 1), season = list(period = 12))
-
-# Unified SARIMA(1,1,1)×(1,1,1)_12 model with differencing
-fit_sarima <- sarima_pmm2(y, order = c(1, 1, 1, 1),
-                          seasonal = list(order = c(1, 1), period = 12))
+# Fit PMM2 and compare with OLS
+fit_pmm2 <- lm_pmm2(y ~ x, data = data.frame(y, x))
+summary(fit_pmm2)
+# g2 < 1 indicates variance reduction over OLS
 ```
 
-## Main Functions
-
-### Linear Models
-- `lm_pmm2()`: Fit linear regression using PMM for S=2
-- `compare_with_ols()`: Compare PMM2 with OLS estimates
-
-### Time Series Models
-- `ar_pmm2()`: Autoregressive AR(p) models
-- `ma_pmm2()`: Moving Average MA(q) models
-- `arma_pmm2()`: ARMA(p,q) models
-- `arima_pmm2()`: ARIMA(p,d,q) models with differencing
-- `sar_pmm2()`: Seasonal Autoregressive SAR(p,P)_s models
-- `sma_pmm2()`: Seasonal Moving Average SMA(Q)_s models
-- `sarma_pmm2()`: Unified Seasonal ARMA SARMA(p,q)×(P,Q)_s models
-- `sarima_pmm2()`: Unified Seasonal ARIMA SARIMA(p,d,q)×(P,D,Q)_s models
-- `ts_pmm2()`: Universal wrapper for all time series models
-
-### Comparison Functions
-- `compare_ar_methods()`: Compare AR estimation methods
-- `compare_ma_methods()`: Compare MA estimation methods
-- `compare_arma_methods()`: Compare ARMA estimation methods
-- `compare_arima_methods()`: Compare ARIMA estimation methods
-- `compare_sar_methods()`: Compare SAR estimation methods
-- `compare_ts_methods()`: Universal time series comparison
-
-### Statistical Inference
-- `pmm2_inference()`: Bootstrap inference for linear models
-- `ts_pmm2_inference()`: Bootstrap inference for time series models
-
-## Documentation & Vignettes
-
-The package ships with three vignettes that walk through typical workflows:
-
-| Vignette | Focus |
-| --- | --- |
-| `vignette("pmm2-introduction", package = "EstemPMM")` | Linear PMM2 estimation and comparison with OLS |
-| `vignette("pmm2-time-series", package = "EstemPMM")` | AR/MA/ARMA/ARIMA plus seasonal SAR/SMA examples |
-| `vignette("bootstrap-inference", package = "EstemPMM")` | Resampling-based inference for asymmetric errors |
-
-To rebuild documentation locally:
+### PMM3 — Symmetric Platykurtic Errors
 
 ```r
-devtools::document()
-devtools::build_vignettes()
+# Simulate regression with uniform (platykurtic) errors
+y3 <- 2 + 1.5 * x + runif(n, -sqrt(3), sqrt(3))
+
+# Fit PMM3 and compare with OLS
+fit_pmm3 <- lm_pmm3(y3 ~ x, data = data.frame(y3, x))
+summary(fit_pmm3)
+# g3 ≈ 0.64 -> 36% variance reduction for uniform errors
 ```
 
-## Reproducing Monte Carlo Benchmarks
-
-### Comprehensive Seasonal Models Validation (Version 0.2.0)
-
-**Main comprehensive test:**
-```bash
-Rscript comprehensive_seasonal_mc_test.R
-```
-
-This script performs extensive validation:
-- **Models tested:** SAR(1,1)_12, SMA(1)_12, SARMA(1,0,1,1)_12, SARIMA(1,1,0,1,1,1)_12
-- **Innovation types:** Gaussian, Gamma (shape=2), Lognormal, Exponential
-- **Sample sizes:** n ∈ {100, 200, 500}
-- **Replications:** {100, 200, 500} per configuration
-- **Total configurations:** 144
-- **Execution time:** ~3 minutes (parallel processing)
-- **Output:** Full results in `mc_results_final_comprehensive/`
-
-**Results visualization:**
-```bash
-Rscript visualize_mc_results.R
-```
-
-Generates 6 professional plots and detailed summary tables.
-
-### Legacy Tests
-
-- **Canonical SMA benchmark (n = 120, γ-innovations):** `Rscript run_sma_monte_carlo.R`  
-  This script reproduces the 34% variance reduction highlighted in `test_results/SMA_Monte_Carlo_Report_20251113_500reps.md`.
-- **Full seasonal comparison (SAR / SMA / SARMA / SARIMA, n ∈ {100, 200, 500}):** `Rscript monte_carlo_seasonal_comparison.R`  
-  Results are saved to `monte_carlo_seasonal_results.rds` and summarized in `test_results/SAR_MONTE_CARLO_REPORT_2025-11-14.md`.
-
-The comprehensive test replaces and extends the legacy seasonal comparison with more thorough validation.
-
-## CRAN Readiness & Testing
-
-Before submitting to CRAN, run:
+### Time Series
 
 ```r
-devtools::check()             # quick local sanity check
-devtools::document()
-devtools::build_vignettes()
-system("R CMD build .")
-system("R CMD check --as-cran EstemPMM_0.2.0.tar.gz")
+# AR(1) with asymmetric innovations -> PMM2
+y_ar <- arima.sim(n = 300, list(ar = 0.7), innov = rgamma(300, 2, 2) - 1)
+fit_ar_pmm2 <- ar_pmm2(y_ar, order = 1)
+
+# AR(1) with uniform innovations -> PMM3
+y_ar3 <- arima.sim(n = 300, list(ar = 0.7), innov = runif(300, -sqrt(3), sqrt(3)))
+fit_ar_pmm3 <- ar_pmm3(y_ar3, order = 1)
+
+# ARIMA(1,1,1) with PMM3 (uses nonlinear solver)
+y_int <- cumsum(arima.sim(n = 300, list(ar = 0.5, ma = 0.3),
+                           innov = runif(300, -sqrt(3), sqrt(3))))
+fit_arima_pmm3 <- arima_pmm3(y_int, order = c(1, 1, 1))
 ```
 
-**Version 0.2.0 Status:**
-- ✅ All R CMD check warnings and notes resolved
-- ✅ Comprehensive unit tests (35+ test cases)
-- ✅ 4 vignettes including new seasonal_models guide
-- ✅ Extensive Monte Carlo validation (>10,000 model fits)
-- ✅ Cross-platform testing (macOS, Windows, Linux)
+---
 
-Continuous integration via `.github/workflows/R-CMD-check.yaml` exercises Ubuntu, macOS, and Windows matrix builds on every push to `main` or `claude/*`.
-- `plot_pmm2_bootstrap()`: Visualize bootstrap results
+## Functions
+
+### Linear Regression
+
+| Function | Description |
+|----------|-------------|
+| `lm_pmm2()` | PMM2 linear regression (asymmetric errors) |
+| `lm_pmm3()` | PMM3 linear regression (symmetric platykurtic errors) |
+| `pmm_dispatch()` | Automatic OLS / PMM2 / PMM3 selection |
+| `compare_with_ols()` | Side-by-side comparison with OLS |
+| `pmm2_inference()` | Bootstrap inference for linear PMM2 models |
+
+### PMM2 Time Series
+
+| Function | Model |
+|----------|-------|
+| `ar_pmm2()` | AR(p) |
+| `ma_pmm2()` | MA(q) |
+| `arma_pmm2()` | ARMA(p, q) |
+| `arima_pmm2()` | ARIMA(p, d, q) |
+| `sar_pmm2()` | Seasonal AR — SAR(p, P)_s |
+| `sma_pmm2()` | Seasonal MA — SMA(Q)_s |
+| `sarma_pmm2()` | SARMA(p,q)×(P,Q)_s |
+| `sarima_pmm2()` | SARIMA(p,d,q)×(P,D,Q)_s |
+| `ts_pmm2()` | Universal wrapper |
+| `ts_pmm2_inference()` | Bootstrap inference for TS models |
+
+### PMM3 Time Series
+
+| Function | Model |
+|----------|-------|
+| `ar_pmm3()` | AR(p) |
+| `ma_pmm3()` | MA(q) |
+| `arma_pmm3()` | ARMA(p, q) |
+| `arima_pmm3()` | ARIMA(p, d, q) — nonlinear solver |
+| `ts_pmm3()` | Universal wrapper |
 
 ### Utilities
-- `compute_moments()`: Calculate sample moments
-- `pmm_skewness()`, `pmm_kurtosis()`: Distribution shape measures
-- `pmm2_variance_factor()`: Theoretical variance reduction factor
-- `pmm2_variance_matrices()`: Compare variance matrices
-- `pmm2_monte_carlo_compare()`: Monte Carlo simulations
 
-### S4 Methods
-- `summary()`: Display fitting results
-- `predict()`: Make predictions based on a PMM model
-- `plot()`: Diagnostic plots for PMM models
-- `coef()`, `fitted()`, `residuals()`: Extract model components
-- `AIC()`: Akaike Information Criterion
+| Function | Description |
+|----------|-------------|
+| `pmm_skewness()` | Skewness coefficient $\gamma_3$ |
+| `pmm_kurtosis()` | Excess kurtosis $\gamma_4$ |
+| `pmm_gamma6()` | Sixth-order cumulant $\gamma_6$ |
+| `test_symmetry()` | Formal symmetry test for residuals |
+| `compute_moments()` | Moments m2, m3, m4 |
+| `compute_moments_pmm3()` | Moments m2, m4, m6 and PMM3 quantities |
+| `pmm2_variance_factor()` | Theoretical $g_2$ factor |
+| `pmm3_variance_factor()` | Theoretical $g_3$ factor |
 
-## Project Structure
+---
 
-The package consists of several key R files:
+## Datasets
 
-### Core Implementation (R/)
-- `pmm2_classes.R`: S4 class definitions (PMM2fit, ARPMM2, MAPMM2, ARMAPMM2, ARIMAPMM2, SARPMM2, SMAPMM2, SARMAPMM2, SARIMAPMM2)
-- `pmm2_main.R`: Linear regression with PMM2 (`lm_pmm2`)
-- `pmm2_ts_main.R`: Time series models (AR, MA, ARMA, ARIMA, SAR, SMA, universal wrapper)
-- `pmm2_ts_design.R`: Design matrices and lag structures for time series
-- `pmm2_ts_methods.R`: Comparison functions for all time series models
-- `pmm2_common.R`: Shared numerical routines and optimization
-- `pmm2_utils.R`: Utility functions for moments, variance analysis
-- `pmm2_inference.R`: Bootstrap inference for linear and time series models
-- `pmm2_monte_carlo.R`: Monte Carlo simulation framework
-- `data.R`: Dataset documentation (DCOILWTICO - WTI crude oil prices)
+| Dataset | Description | N | Use case |
+|---------|-------------|---|---------|
+| `DCOILWTICO` | WTI crude oil daily prices (FRED) | ~9000 | PMM2 time series |
+| `auto_mpg` | UCI Auto MPG vehicle data | 398 | PMM2 and PMM3 linear regression |
+| `djia2002` | DJIA daily data, Jul–Dec 2002 | 127 | PMM2 AR(1), published example |
 
-### Documentation
-- `vignettes/`: Three comprehensive tutorials (introduction, time series, bootstrap)
-- `man/`: 30+ help files with examples
-- `docs/`: Extended documentation including SAR/SMA analysis reports
-- `NEWS.md`: Version history and changelog
+---
 
-### Testing & Validation
-- `tests/testthat/`: 36 unit tests across 7 test files
-- `test_results/`: Monte Carlo validation reports with empirical results
-- `demo/`: 8 demonstration scripts for all model types
+## Vignettes
 
-### Development Scripts
-- `run_sma_monte_carlo.R`: SMA model validation (500 replications)
-- `test_debug_sar.R`: SAR model debugging and verification
-- `test_sma_quick.R`: Quick SMA tests
+| Vignette | Topic |
+|----------|-------|
+| `vignette("pmm2-introduction")` | PMM2 linear regression: theory, examples, comparison with OLS |
+| `vignette("pmm2-time-series")` | PMM2 for AR/MA/ARMA/ARIMA/SAR/SMA models |
+| `vignette("bootstrap-inference")` | Bootstrap confidence intervals for PMM2 |
+| `vignette("pmm3-symmetric-errors")` | PMM3 linear regression: uniform/beta/truncated-normal errors |
+| `vignette("pmm3-time-series")` | PMM3 for AR/MA/ARMA/ARIMA time series |
 
-## Variance Diagnostics
+---
 
-You can inspect the theoretical skewness, kurtosis, and expected variance reduction
-obtained from the PMM2 algorithm using the helper utilities:
+## S4 Class Hierarchy
 
-```r
-library(EstemPMM)
-
-set.seed(42)
-x <- rnorm(200)
-errors <- rgamma(200, shape = 2, scale = 1) - 2
-y <- 1 + 0.7 * x + errors
-dat <- data.frame(y, x)
-
-fit <- lm_pmm2(y ~ x, data = dat)
-
-# Retrieve theoretical cumulants and variance ratio g
-vf <- pmm2_variance_factor(fit@m2, fit@m3, fit@m4)
-vf$g  # Expected Var(PMM2) / Var(OLS)
-
-# Compare variance matrices for OLS and PMM2
-vm <- pmm2_variance_matrices(attr(fit, "model_matrix"),
-                             fit@m2, fit@m3, fit@m4)
-vm$pmm2
+```
+PMM2fit                      PMM3fit
+BasePMM2                     TS3fit
+  └─ TS2fit                    ├─ ARPMM3
+       ├─ ARPMM2               ├─ MAPMM3
+       ├─ MAPMM2               ├─ ARMAPMM3
+       ├─ ARMAPMM2             └─ ARIMAPMM3
+       ├─ ARIMAPMM2
+       ├─ SARPMM2
+       ├─ SMAPMM2
+       ├─ SARMAPMM2
+       └─ SARIMAPMM2
 ```
 
-## Demo Script
+All classes provide: `coef()`, `residuals()`, `fitted()`, `predict()`,
+`summary()`, `plot()`, `AIC()`.
 
-The package includes a detailed demonstration script `pmm2_demo_runner.R` that shows:
+---
 
-1. Comparison of PMM2 and OLS on data with different error distributions
-2. Monte Carlo simulations for efficiency evaluation
-3. Application to real data (Auto MPG dataset)
-4. Bootstrap analysis for uncertainty estimation
+## Efficiency Summary
 
-To run the demonstration, execute:
+### PMM2 — Monte Carlo Results (asymmetric innovations)
+
+| Model | Innovation | Variance Reduction |
+|-------|------------|-------------------|
+| Linear regression | Gamma (shape=2) | 35–57% |
+| AR(1) | Exponential | 15–20% |
+| MA(1) | Chi-squared (df=3) | 15–23% |
+| ARMA(1,1) | Student-t (df=4) | 30–45% |
+| SAR(1,1)_12 | Exponential | up to 62% |
+| SARMA(1,0,1,1)_12 | Exponential | up to 59% |
+
+### PMM3 — Monte Carlo Results (platykurtic innovations)
+
+| Model | Innovation | $g_3$ | Variance Reduction |
+|-------|------------|-------|-------------------|
+| Linear regression | Uniform | 0.64 | 36% |
+| AR(1) | Uniform | 0.55–0.70 | 30–45% |
+| ARIMA(1,1,0) | Uniform | 0.32–0.70 | 30–68% |
+
+---
+
+## PMM2 Variants
+
+Three implementation variants are available for all PMM2 time series functions
+via the `pmm2_variant` parameter:
+
+| Variant | Speed | Best for |
+|---------|-------|---------|
+| `"unified_global"` (default) | Fast | All models, best speed/accuracy tradeoff |
+| `"unified_iterative"` | Slower | Maximum accuracy, SARIMA |
+| `"linearized"` | Fast | Pure MA/SMA models |
 
 ```r
-source("pmm2_demo_runner.R")
-all_results <- run_all_simulations()  # For Monte Carlo simulations
-results <- apply_to_mpg_data()  # For real data analysis
+arima_pmm2(y, order = c(1,1,1), pmm2_variant = "unified_iterative")
+ma_pmm2(y, order = 1, pmm2_variant = "linearized")
 ```
 
-## Results and Efficiency
+---
 
-PMM2 is particularly effective for distributions with high asymmetry:
+## References
 
-### Linear Models
-| Distribution    | Skewness | Kurtosis | Theoretical Improvement | Actual Improvement |
-|-----------------|----------|----------|------------------------|-------------------|
-| Gamma (a=0.5)   | 2.83     | 12       | 57%                    | ~50%              |
-| Exponential     | 2.00     | 6        | 50%                    | ~45%              |
-| Gamma (a=2)     | 1.41     | 3        | 40%                    | ~35%              |
-| Lognormal       | 1.00     | 1.5      | 29%                    | ~25%              |
+**Foundational theory:**
+Kunchenko, Y.P., Lega, Y.G. (1992). *Estimation of Random Variable Parameters
+by the Polynomial Maximization Method*. Naukova Dumka, Kyiv.
 
-### Time Series Models
+**Linear regression (PMM2):**
+Zabolotnii S., Warsza Z.L., Tkachenko O. (2018). Polynomial Estimation of Linear
+Regression Parameters for the Asymmetric PDF of Errors. *Automation 2018*, AISC
+vol. 743. Springer. <https://doi.org/10.1007/978-3-319-77179-3_75>
 
-**Autoregressive (AR) Models:** Similar improvements observed, especially for AR(1) and AR(2) with asymmetric innovations.
+**Autoregressive models (PMM2):**
+Zabolotnii S., Tkachenko O., Warsza Z.L. (2022). Application of the PMM for
+Estimation Parameters of Autoregressive Models with Asymmetric Innovations.
+*Automation 2022*, AISC vol. 1427. Springer.
+<https://doi.org/10.1007/978-3-031-03502-9_37>
 
-**Moving Average (MA) Models:** PMM2 shows substantial improvements when innovation distribution has high skewness.
+**Moving average models (PMM2):**
+Zabolotnii S., Tkachenko O., Warsza Z.L. (2023). PMM for Estimation Parameters
+of Asymmetric Non-Gaussian Moving Average Models. *Automation 2023*, LNNS
+vol. 630. Springer. <https://doi.org/10.1007/978-3-031-25844-2_21>
 
-**Seasonal Models (Comprehensive Validation November 2025):**
+---
 
-Extensive Monte Carlo testing (100-500 replications, multiple sample sizes and innovation types):
+## Author
 
-| Model | Sample Size | Innovation Type | Variance Reduction | Convergence Rate |
-|-------|-------------|-----------------|-------------------|------------------|
-| **SAR(1,1)_12** | n=100-500 | Gamma (shape=2) | **32.2%** | 100% |
-| **SAR(1,1)_12** | n=200 | Exponential | **61.7%** | 100% |
-| **SMA(1)_12** | n=100-500 | Exponential | **12.5-34.2%** | 99.7-100% |
-| **SMA(1)_12** | n=100 | Gamma (shape=2) | **47.3%** | 100% |
-| **SARMA(1,0,1,1)_12** | n=200 | Exponential | **59.0%** | 99.9% |
-| **SARMA(1,0,1,1)_12** | n=100-500 | Multiple | **26.1%** avg | 99.9% |
+**Serhii Zabolotnii** — Cherkasy State Business College
+ORCID: [0000-0003-0242-2234](https://orcid.org/0000-0003-0242-2234)
 
-**Innovation Type Performance (Ranked by Effectiveness):**
-1. **Exponential** (rate=1): 43.2% mean variance reduction ⭐
-2. **Lognormal** (meanlog=0, sdlog=0.5): 33.5% mean variance reduction
-3. **Gamma** (shape=2, scale=1): 29.2% mean variance reduction
-4. **Gaussian**: Baseline (PMM2 ≈ CSS, as expected)
-
-**Key Findings:**
-- Consistent 12-62% variance reduction across all seasonal models with asymmetric innovations
-- Stable convergence rates (99.7-100%) across 144 different configurations
-- Performance scales well with sample size (better improvements for n≥200)
-- PMM2 excels particularly with exponentially distributed innovations
-
-## Adaptive Estimation
-
-The package implements an adaptive procedure for PMM estimation:
-1. Find initial OLS estimates and calculate residuals
-2. Estimate moments and cumulants of the OLS residuals
-3. Calculate refined PMM estimates using these moment estimates
-
-This approach doesn't require prior knowledge of the error distribution properties.
-
-## Applications
-
-The method is particularly useful in:
-
-### Regression Analysis
-- Economic and financial modeling with asymmetric error distributions
-- Biological systems analysis with skewed measurement errors
-- Technical measurements with non-Gaussian noise
-- Any regression problem where error distributions exhibit significant skewness
-
-### Time Series Analysis
-- Financial time series with asymmetric return distributions
-- Economic indicators with seasonal patterns (GDP, inflation, unemployment)
-- Energy consumption forecasting with seasonal components
-- Climate data analysis with skewed temperature or precipitation distributions
-- Commodity prices (e.g., oil, gas) with asymmetric shocks
-- Any time series where innovations deviate substantially from normality
-
-## Authors
-
-- Serhii Zabolotnii - Cherkasy State Business College
-
-
-## Scientific Publications
-
-The Polynomial Maximization Method and its applications are described in the following peer-reviewed publications:
-
-### Foundational Reference
-Kunchenko, Y. P., & Lega, Y. G. (1992). *Estimation of Random Variable Parameters by the Polynomial Maximization Method*. Kyiv: Naukova Dumka. 180 pp.
-
-### Linear Regression (PMM2 for lm_pmm2)
-Zabolotnii S., Warsza Z.L., Tkachenko O. (2018) Polynomial Estimation of Linear Regression Parameters for the Asymmetric PDF of Errors. In: Szewczyk R., Zieliński C., Kaliczyńska M. (eds) Automation 2018. AUTOMATION 2018. Advances in Intelligent Systems and Computing, vol 743. Springer, Cham. https://doi.org/10.1007/978-3-319-77179-3_75
-
-### Autoregressive Models (PMM2 for ar_pmm2)
-Zabolotnii S., Tkachenko O., Warsza Z.L. (2022) Application of the Polynomial Maximization Method for Estimation Parameters of Autoregressive Models with Asymmetric Innovations. In: Szewczyk R., Zieliński C., Kaliczyńska M. (eds) Automation 2022. AUTOMATION 2022. Advances in Intelligent Systems and Computing, vol 1427. Springer, Cham. https://doi.org/10.1007/978-3-031-03502-9_37
-
-### Moving Average Models (PMM2 for ma_pmm2)
-Zabolotnii S., Tkachenko O., Warsza Z.L. (2023) Polynomial Maximization Method for Estimation Parameters of Asymmetric Non-gaussian Moving Average Models. In: Szewczyk R., et al. (eds) Automation 2023. AUTOMATION 2023. Lecture Notes in Networks and Systems, vol 630. Springer, Cham. https://doi.org/10.1007/978-3-031-25844-2_21
+Bug reports and feature requests: <https://github.com/SZabolotnii/EstemPMM/issues>
 
 ## License
 
-This project is distributed under the GPL-3 License.
+GPL-3 © Serhii Zabolotnii
