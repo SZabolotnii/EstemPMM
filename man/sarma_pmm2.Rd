@@ -73,7 +73,7 @@ The PMM2 method provides more efficient parameter estimates than ML/CSS when
 the innovation distribution is asymmetric (non-Gaussian).
 }
 \examples{
-\dontrun{
+\donttest{
 # Generate synthetic seasonal data with SARMA structure
 set.seed(123)
 n <- 200

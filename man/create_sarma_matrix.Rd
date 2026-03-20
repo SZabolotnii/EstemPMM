@@ -61,7 +61,7 @@ Where:
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Simple SARMA(1,0) x (1,0)_12 model (AR+SAR, no MA)
 x <- rnorm(120)
 residuals <- rnorm(120)

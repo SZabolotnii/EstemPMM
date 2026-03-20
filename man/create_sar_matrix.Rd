@@ -41,7 +41,7 @@ For a multiplicative AR(p) x SAR(P)_s model (multiplicative = TRUE):
 Includes cross-terms such as \eqn{y_{t-1-s}}, \eqn{y_{t-1-2s}}, etc.
 }
 \examples{
-\dontrun{
+\donttest{
 # Simple SAR(1)_12 model
 x <- rnorm(120)
 X <- create_sar_matrix(x, p = 0, P = 1, s = 12)

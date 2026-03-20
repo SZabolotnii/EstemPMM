@@ -782,63 +782,66 @@ setMethod("summary", "SMAPMM2",
 #' @param order Model order c(p, P) for SAR specification
 #' @param period Seasonal period
 #' @param methods Character vector of methods to compare (default: c("ols", "pmm2", "css"))
+#' @param verbose Logical: print results to console (default TRUE)
 #'
-#' @return Data frame with comparison results
+#' @return Data frame with comparison results (invisibly)
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Generate seasonal data
-#' y <- arima.sim(120, list(ar = 0.7, seasonal = list(sar = 0.5, period = 12)))
-#'
-#' # Compare methods
+#' \donttest{
+#' set.seed(42)
+#' y <- arima.sim(n = 120,
+#'   model = list(order = c(1, 0, 0), ar = 0.7,
+#'     seasonal = list(order = c(1, 0, 0), ar = 0.5, period = 12)))
 #' compare_sar_methods(y, order = c(1, 1), period = 12)
 #' }
 compare_sar_methods <- function(x,
                                  order = c(1, 1),
                                  period = 12,
-                                 methods = c("ols", "pmm2", "css")) {
-
-  cat("\n")
-  cat("Comparing SAR Estimation Methods\n")
-  cat("=", rep("=", 70), "\n\n", sep = "")
+                                 methods = c("ols", "pmm2", "css"),
+                                 verbose = TRUE) {
 
   p <- order[1]
   P <- order[2]
 
-  cat(sprintf("Model: SAR(%d,%d)_%d\n", p, P, period))
-  cat(sprintf("Sample size: %d\n", length(x)))
-  cat(sprintf("Methods: %s\n\n", paste(methods, collapse = ", ")))
+  if (verbose) {
+    cat("\n")
+    cat("Comparing SAR Estimation Methods\n")
+    cat("=", rep("=", 70), "\n\n", sep = "")
+    cat(sprintf("Model: SAR(%d,%d)_%d\n", p, P, period))
+    cat(sprintf("Sample size: %d\n", length(x)))
+    cat(sprintf("Methods: %s\n\n", paste(methods, collapse = ", ")))
+  }
 
   # Fit with each method
   fits <- list()
 
   if ("ols" %in% methods) {
-    cat("Fitting OLS...\n")
+    if (verbose) cat("Fitting OLS...\n")
     fits$OLS <- tryCatch(
       sar_pmm2(x, order = order, season = list(period = period),
                method = "ols", verbose = FALSE),
       error = function(e) {
-        cat("  Error:", e$message, "\n")
+        if (verbose) cat("  Error:", e$message, "\n")
         NULL
       }
     )
   }
 
   if ("pmm2" %in% methods) {
-    cat("Fitting PMM2...\n")
+    if (verbose) cat("Fitting PMM2...\n")
     fits$PMM2 <- tryCatch(
       sar_pmm2(x, order = order, season = list(period = period),
                method = "pmm2", verbose = FALSE),
       error = function(e) {
-        cat("  Error:", e$message, "\n")
+        if (verbose) cat("  Error:", e$message, "\n")
         NULL
       }
     )
   }
 
   if ("css" %in% methods) {
-    cat("Fitting CSS (via arima)...\n")
+    if (verbose) cat("Fitting CSS (via arima)...\n")
     fits$CSS <- tryCatch({
       fit_arima <- stats::arima(x, order = c(p, 0, 0),
                                 seasonal = list(order = c(P, 0, 0), period = period),
@@ -847,13 +850,13 @@ compare_sar_methods <- function(x,
            sigma2 = fit_arima$sigma2,
            residuals = residuals(fit_arima))
     }, error = function(e) {
-      cat("  Error:", e$message, "\n")
+      if (verbose) cat("  Error:", e$message, "\n")
       NULL
     })
   }
 
   if ("ml" %in% methods) {
-    cat("Fitting ML (via arima)...\n")
+    if (verbose) cat("Fitting ML (via arima)...\n")
     fits$ML <- tryCatch({
       fit_arima <- stats::arima(x, order = c(p, 0, 0),
                                 seasonal = list(order = c(P, 0, 0), period = period),
@@ -862,12 +865,10 @@ compare_sar_methods <- function(x,
            sigma2 = fit_arima$sigma2,
            residuals = residuals(fit_arima))
     }, error = function(e) {
-      cat("  Error:", e$message, "\n")
+      if (verbose) cat("  Error:", e$message, "\n")
       NULL
     })
   }
-
-  cat("\n")
 
   # Extract coefficients and create comparison table
   param_names <- c(
@@ -893,50 +894,52 @@ compare_sar_methods <- function(x,
   }
 
   # Print coefficient comparison
-  cat("Coefficient Estimates:\n")
-  cat("=", rep("=", 70), "\n", sep = "")
-  print(result_df, digits = 5, row.names = FALSE)
-  cat("\n")
+  if (verbose) {
+    cat("Coefficient Estimates:\n")
+    cat("=", rep("=", 70), "\n", sep = "")
+    print(result_df, digits = 5, row.names = FALSE)
+    cat("\n")
 
-  # Print residual standard errors
-  cat("Residual Standard Errors:\n")
-  cat("=", rep("=", 70), "\n", sep = "")
+    # Print residual standard errors
+    cat("Residual Standard Errors:\n")
+    cat("=", rep("=", 70), "\n", sep = "")
 
-  for (method_name in names(fits)) {
-    fit <- fits[[method_name]]
-    if (!is.null(fit)) {
-      if (inherits(fit, "SARPMM2")) {
-        sigma <- sqrt(fit@m2)
-      } else if (is.list(fit) && !is.null(fit$sigma2)) {
-        sigma <- sqrt(fit$sigma2)
-      } else {
-        sigma <- NA
+    for (method_name in names(fits)) {
+      fit <- fits[[method_name]]
+      if (!is.null(fit)) {
+        if (inherits(fit, "SARPMM2")) {
+          sigma <- sqrt(fit@m2)
+        } else if (is.list(fit) && !is.null(fit$sigma2)) {
+          sigma <- sqrt(fit$sigma2)
+        } else {
+          sigma <- NA
+        }
+        cat(sprintf("  %-6s: %.6f\n", method_name, sigma))
       }
-      cat(sprintf("  %-6s: %.6f\n", method_name, sigma))
     }
-  }
 
-  cat("\n")
+    cat("\n")
 
-  # Distribution characteristics (for SARPMM2 objects)
-  cat("Distribution Characteristics:\n")
-  cat("=", rep("=", 70), "\n", sep = "")
+    # Distribution characteristics (for SARPMM2 objects)
+    cat("Distribution Characteristics:\n")
+    cat("=", rep("=", 70), "\n", sep = "")
 
-  for (method_name in names(fits)) {
-    fit <- fits[[method_name]]
-    if (!is.null(fit) && inherits(fit, "SARPMM2")) {
-      c3 <- fit@m3 / (fit@m2^(3/2))
-      c4 <- fit@m4 / (fit@m2^2) - 3
-      g <- 1 - c3^2 / (2 + c4)
+    for (method_name in names(fits)) {
+      fit <- fits[[method_name]]
+      if (!is.null(fit) && inherits(fit, "SARPMM2")) {
+        c3 <- fit@m3 / (fit@m2^(3/2))
+        c4 <- fit@m4 / (fit@m2^2) - 3
+        g <- 1 - c3^2 / (2 + c4)
 
-      cat(sprintf("  %s:\n", method_name))
-      cat(sprintf("    Skewness (c3): %.4f\n", c3))
-      cat(sprintf("    Excess kurtosis (c4): %.4f\n", c4))
-      cat(sprintf("    Variance factor (g): %.4f\n", g))
+        cat(sprintf("  %s:\n", method_name))
+        cat(sprintf("    Skewness (c3): %.4f\n", c3))
+        cat(sprintf("    Excess kurtosis (c4): %.4f\n", c4))
+        cat(sprintf("    Variance factor (g): %.4f\n", g))
+      }
     }
-  }
 
-  cat("\n")
+    cat("\n")
+  }
 
   invisible(result_df)
 }

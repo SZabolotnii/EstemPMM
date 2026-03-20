@@ -1,0 +1,155 @@
+---
+title: "PMM3: Estimation for Symmetric Platykurtic Errors"
+author: "Serhii Zabolotnii"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{PMM3: Estimation for Symmetric Platykurtic Errors}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## When to Use PMM3 Instead of PMM2 or OLS
+
+The Polynomial Maximization Method of order 3 (PMM3) is designed for situations
+where regression errors are **symmetric** but **platykurtic** (lighter tails
+than the normal distribution). Common examples include uniform, beta-symmetric,
+and truncated normal errors.
+
+| Error property          | Recommended method |
+|-------------------------|--------------------|
+| Skewed (|gamma3| > 0.3) | PMM2 (`lm_pmm2`)  |
+| Symmetric, platykurtic (gamma4 < -0.7) | **PMM3** (`lm_pmm3`) |
+| Near-Gaussian           | OLS (`lm`)         |
+
+You can use `pmm_dispatch()` to automatically determine the best method:
+
+```{r dispatch-example}
+library(EstemPMM)
+
+set.seed(42)
+n <- 200
+x <- rnorm(n)
+eps <- runif(n, -sqrt(3), sqrt(3))  # Uniform: symmetric, platykurtic
+y <- 1 + 2 * x + eps
+
+fit_ols <- lm(y ~ x)
+recommendation <- pmm_dispatch(residuals(fit_ols))
+```
+
+## Basic Usage
+
+```{r basic-fit}
+fit_pmm3 <- lm_pmm3(y ~ x, data = data.frame(y = y, x = x))
+summary(fit_pmm3)
+```
+
+## Interpreting the Results
+
+PMM3 reports several key quantities:
+
+- **m2, m4, m6**: Central moments of initial (OLS) residuals
+- **gamma4**: Excess kurtosis (negative = platykurtic)
+- **gamma6**: Sixth-order cumulant coefficient
+- **g3**: Theoretical efficiency factor — `Var(PMM3) = g3 * Var(OLS)`
+- **kappa**: Moment ratio used internally by the Newton-Raphson solver
+
+A smaller `g3` means greater variance reduction over OLS.
+
+## Comparison with OLS
+
+```{r ols-comparison}
+coef_ols  <- coef(fit_ols)
+coef_pmm3 <- coef(fit_pmm3)
+
+comparison <- data.frame(
+  OLS  = round(coef_ols, 5),
+  PMM3 = round(coef_pmm3, 5),
+  Diff = round(coef_pmm3 - coef_ols, 5)
+)
+print(comparison)
+
+cat("\nResidual sum of squares:\n")
+cat("  OLS:  ", sum(residuals(fit_ols)^2), "\n")
+cat("  PMM3: ", sum(residuals(fit_pmm3)^2), "\n")
+```
+
+## Adaptive Mode
+
+By default, PMM3 computes kappa from OLS residuals and holds it fixed. In
+adaptive mode, kappa is re-estimated from the current residuals at each
+Newton-Raphson iteration:
+
+```{r adaptive}
+fit_adaptive <- lm_pmm3(y ~ x, data = data.frame(y = y, x = x), adaptive = TRUE)
+cat("Fixed kappa coefficients: ", round(coef(fit_pmm3), 5), "\n")
+cat("Adaptive coefficients:    ", round(coef(fit_adaptive), 5), "\n")
+```
+
+## Diagnostic Plots
+
+```{r diagnostics, fig.height=6}
+plot(fit_pmm3)
+```
+
+## Time Series Models
+
+PMM3 supports AR, MA, ARMA, and ARIMA models through dedicated functions.
+
+### AR Model
+
+```{r ar-model}
+set.seed(42)
+innov <- runif(200, -sqrt(3), sqrt(3))
+ar_data <- arima.sim(n = 200, list(ar = 0.7), innov = innov)
+
+fit_ar <- ar_pmm3(ar_data, order = 1)
+summary(fit_ar)
+```
+
+### ARMA Model
+
+```{r arma-model}
+innov2 <- runif(250, -sqrt(3), sqrt(3))
+arma_data <- arima.sim(n = 250, list(ar = 0.5, ma = 0.3), innov = innov2)
+fit_arma <- arma_pmm3(arma_data, order = c(1, 1))
+coef(fit_arma)
+```
+
+### Forecasting
+
+```{r forecast}
+predict(fit_ar, n.ahead = 5)
+```
+
+## Utility Functions
+
+### Testing Symmetry
+
+```{r symmetry}
+test_symmetry(residuals(fit_ols))
+```
+
+### Sixth-Order Cumulant
+
+```{r gamma6}
+pmm_gamma6(residuals(fit_ols))
+```
+
+### Variance Factor
+
+```{r variance-factor}
+mom <- compute_moments_pmm3(residuals(fit_ols))
+pmm3_variance_factor(mom$m2, mom$m4, mom$m6)
+```

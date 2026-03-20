@@ -356,6 +356,12 @@ fitted_values <- function(object, data = NULL) {
 #' @param pmm2_args List of arguments to pass to lm_pmm2()
 #'
 #' @return List with OLS and PMM2 fit objects
+#'
+#' @examples
+#' \donttest{
+#' result <- compare_with_ols(mpg ~ wt, data = mtcars)
+#' }
+#'
 #' @export
 compare_with_ols <- function(formula, data, pmm2_args = list()) {
   # Fit OLS model
@@ -462,7 +468,7 @@ compare_with_ols <- function(formula, data, pmm2_args = list()) {
 #' }
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Fit model
 #' fit <- lm_pmm2(mpg ~ wt + hp, data = mtcars)
 #'

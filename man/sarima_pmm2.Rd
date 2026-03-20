@@ -99,20 +99,15 @@ seasonal dynamics
 }
 }
 \examples{
-\dontrun{
-# Generate synthetic data
+\donttest{
 set.seed(123)
 n <- 200
-y <- arima.sim(n = n, list(
-  order = c(1, 1, 1),
-  seasonal = list(order = c(1, 1, 1), period = 12)
-))
-
-# Fit SARIMA(1,1,1) x (1,1,1)_12 model
+y <- arima.sim(n = n,
+  model = list(order = c(1, 0, 1), ar = 0.5, ma = 0.3,
+    seasonal = list(order = c(1, 0, 0), ar = 0.4, period = 12)))
 fit <- sarima_pmm2(y,
-  order = c(1, 1, 1, 1),
-  seasonal = list(order = c(1, 1), period = 12)
-)
+  order = c(1, 0, 1, 0),
+  seasonal = list(order = c(1, 0), period = 12))
 summary(fit)
 }
 

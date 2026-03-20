@@ -1,5 +1,53 @@
 # EstemPMM News
 
+## Version 0.3.0 (2026-03-19)
+
+### New Feature: PMM3 for Symmetric Platykurtic Errors
+
+PMM3 (S=3) extends the Polynomial Maximization Method to handle symmetric
+error distributions with negative excess kurtosis (platykurtic), such as
+uniform, beta-symmetric, and truncated normal errors.
+
+#### New Functions
+
+- **`lm_pmm3()`** - Linear regression estimation using PMM3 (S=3) with
+  Newton-Raphson solver. Includes adaptive kappa mode, step-size limiting,
+  and divergence guard.
+- **`pmm_dispatch()`** - Automatic method selection (OLS / PMM2 / PMM3)
+  based on residual cumulant analysis.
+- **`compute_moments_pmm3()`** - Compute central moments m2, m4, m6 and
+  derived quantities (gamma4, gamma6, g3, kappa) from residuals.
+- **`pmm3_variance_factor()`** - Theoretical variance reduction factor
+  g3 = 1 - gamma4^2 / (6 + 9*gamma4 + gamma6).
+- **`pmm_gamma6()`** - Sixth-order cumulant coefficient.
+- **`test_symmetry()`** - Test residual symmetry to guide PMM2 vs PMM3 choice.
+
+#### PMM3 Time Series Functions
+
+- **`ts_pmm3()`** - General PMM3 time series estimation (AR/MA/ARMA/ARIMA).
+- **`ar_pmm3()`** - AR model estimation using PMM3.
+- **`ma_pmm3()`** - MA model estimation using PMM3.
+- **`arma_pmm3()`** - ARMA model estimation using PMM3.
+- **`arima_pmm3()`** - ARIMA model estimation using PMM3.
+
+#### New S4 Classes
+
+- **`PMM3fit`** - Standalone class for linear regression (no inheritance
+  from BasePMM2) with slots for m2, m4, m6, gamma4, gamma6, g_coefficient,
+  and kappa. Full S4 methods: `coef()`, `residuals()`, `fitted()`,
+  `predict()`, `summary()`, `plot()`, `AIC()`.
+- **`TS3fit`** - Base class for PMM3 time series, with subclasses
+  `ARPMM3`, `MAPMM3`, `ARMAPMM3`, `ARIMAPMM3`. Full S4 methods:
+  `coef()`, `residuals()`, `fitted()`, `predict()`, `summary()`,
+  `plot()`, `AIC()`.
+
+#### Documentation
+
+- New vignette: "PMM3: Estimation for Symmetric Platykurtic Errors"
+- Updated package-level documentation with PMM3 and method selection sections
+
+---
+
 ## Version 0.2.0 (2025-11-20)
 
 ### Major Update: Unified PMM2 Architecture
@@ -229,23 +277,11 @@ arima_pmm2(y, order = c(1,0,1), pmm2_variant = "unified_global")  # Default
 - Time series models assume stationarity for AR, MA components
 - ARIMA differencing handled via preprocessing, not integrated into core algorithm
 
-### Roadmap for Future Versions
-
-**0.2.0 (PMM3 Ready Architecture):**
-- PMM3 implementation (S=3 polynomial methods)
-- Refactored base classes supporting method extensibility
-- Vignette documentation with practical use cases
-- Enhanced bootstrap procedures for small samples
-- GitHub Actions CI/CD integration
-
-**0.3.0 (Advanced Methods):**
-- Adaptive PMM order selection
-- Robust variance estimation
-- Model selection criteria (AIC/BIC for PMM)
-- Generalized Linear Models (GLM) with PMM
+### Roadmap
 
 **1.0.0 (Stable API):**
 - API stabilization and backward compatibility guarantee
+- Seasonal PMM3 models (sar_pmm3, sarima_pmm3)
 - Extended performance benchmarks
 - Specialized applications (econometrics, biostatistics)
 

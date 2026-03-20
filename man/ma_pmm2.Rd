@@ -94,7 +94,7 @@ non-identifiability and flat likelihood regions. PMM2 uses moment constraints
 that better resolve these issues, leading to larger improvements than for AR models.
 }
 \examples{
-\dontrun{
+\donttest{
 # Fit MA(1) model with linearized variant (recommended)
 x <- arima.sim(n = 200, list(ma = 0.6))
 fit1 <- ma_pmm2(x, order = 1, pmm2_variant = "linearized")

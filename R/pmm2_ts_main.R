@@ -381,7 +381,7 @@ ts_pmm2 <- function(x, order,
 #' @seealso \code{\link{ma_pmm2}}, \code{\link{arma_pmm2}}, \code{\link{arima_pmm2}}
 #'   
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Fit AR(2) model with default variant
 #' x <- arima.sim(n = 200, list(ar = c(0.7, -0.3)))
 #' fit1 <- ar_pmm2(x, order = 2)
@@ -468,7 +468,7 @@ ar_pmm2 <- function(x, order = 1, method = "pmm2",
 #' @seealso \code{\link{ar_pmm2}}, \code{\link{arma_pmm2}}, \code{\link{sma_pmm2}}
 #'   
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Fit MA(1) model with linearized variant (recommended)
 #' x <- arima.sim(n = 200, list(ma = 0.6))
 #' fit1 <- ma_pmm2(x, order = 1, pmm2_variant = "linearized")
@@ -545,7 +545,7 @@ ma_pmm2 <- function(x, order = 1, method = "pmm2",
 #' @seealso \code{\link{ar_pmm2}}, \code{\link{ma_pmm2}}, \code{\link{arima_pmm2}}
 #'   
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Fit ARMA(2,1) model
 #' x <- arima.sim(n = 250, list(ar = c(0.7, -0.3), ma = 0.5))
 #' fit1 <- arma_pmm2(x, order = c(2, 1))
@@ -630,7 +630,7 @@ arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2",
 #' @seealso \code{\link{arma_pmm2}}, \code{\link{sarima_pmm2}}, \code{\link{ar_pmm2}}
 #'   
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Fit ARIMA(1,1,1) model to non-stationary series
 #' x <- cumsum(arima.sim(n = 200, list(ar = 0.6, ma = -0.4)))
 #' fit1 <- arima_pmm2(x, order = c(1, 1, 1))
@@ -711,7 +711,7 @@ arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2",
 #' are the skewness and excess kurtosis coefficients.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Generate synthetic seasonal data
 #' set.seed(123)
 #' n <- 120
@@ -1158,7 +1158,7 @@ arma_build_design <- function(x, residuals, p, q, intercept = 0, include_interce
 #' are the skewness and excess kurtosis coefficients.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Generate synthetic seasonal data
 #' n <- 120
 #' y <- arima.sim(n = n, list(ar = 0.7, seasonal = list(sar = 0.5, period = 12)))
@@ -1429,7 +1429,7 @@ sar_pmm2 <- function(x,
 #' the innovation distribution is asymmetric (non-Gaussian).
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Generate synthetic seasonal data with SARMA structure
 #' set.seed(123)
 #' n <- 200
@@ -1753,20 +1753,15 @@ sarma_pmm2 <- function(x,
 #'   - Seasonal ARMA components
 #'
 #' @examples
-#' \dontrun{
-#' # Generate synthetic data
+#' \donttest{
 #' set.seed(123)
 #' n <- 200
-#' y <- arima.sim(n = n, list(
-#'   order = c(1, 1, 1),
-#'   seasonal = list(order = c(1, 1, 1), period = 12)
-#' ))
-#'
-#' # Fit SARIMA(1,1,1) x (1,1,1)_12 model
+#' y <- arima.sim(n = n,
+#'   model = list(order = c(1, 0, 1), ar = 0.5, ma = 0.3,
+#'     seasonal = list(order = c(1, 0, 0), ar = 0.4, period = 12)))
 #' fit <- sarima_pmm2(y,
-#'   order = c(1, 1, 1, 1),
-#'   seasonal = list(order = c(1, 1), period = 12)
-#' )
+#'   order = c(1, 0, 1, 0),
+#'   seasonal = list(order = c(1, 0), period = 12))
 #' summary(fit)
 #' }
 #'

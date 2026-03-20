@@ -86,7 +86,7 @@ more sensitive to initialization and numerical stability. PMM2 benefits from
 robust moment-based constraints that help regularize the parameter space.
 }
 \examples{
-\dontrun{
+\donttest{
 # Fit ARMA(2,1) model
 x <- arima.sim(n = 250, list(ar = c(0.7, -0.3), ma = 0.5))
 fit1 <- arma_pmm2(x, order = c(2, 1))

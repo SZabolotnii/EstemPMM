@@ -94,7 +94,7 @@ The \code{d} parameter determines how many times the series is differenced.
 is rare but useful for some economic series with trend acceleration.
 }
 \examples{
-\dontrun{
+\donttest{
 # Fit ARIMA(1,1,1) model to non-stationary series
 x <- cumsum(arima.sim(n = 200, list(ar = 0.6, ma = -0.4)))
 fit1 <- arima_pmm2(x, order = c(1, 1, 1))

@@ -92,7 +92,7 @@ are the skewness and excess kurtosis coefficients.
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Generate synthetic seasonal data
 n <- 120
 y <- arima.sim(n = n, list(ar = 0.7, seasonal = list(sar = 0.5, period = 12)))

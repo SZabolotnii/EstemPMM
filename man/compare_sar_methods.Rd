@@ -8,7 +8,8 @@ compare_sar_methods(
   x,
   order = c(1, 1),
   period = 12,
-  methods = c("ols", "pmm2", "css")
+  methods = c("ols", "pmm2", "css"),
+  verbose = TRUE
 )
 }
 \arguments{
@@ -19,20 +20,22 @@ compare_sar_methods(
 \item{period}{Seasonal period}
 
 \item{methods}{Character vector of methods to compare (default: c("ols", "pmm2", "css"))}
+
+\item{verbose}{Logical: print results to console (default TRUE)}
 }
 \value{
-Data frame with comparison results
+Data frame with comparison results (invisibly)
 }
 \description{
 Compares different estimation methods (OLS, PMM2, CSS, ML) for SAR models
 on the same data.
 }
 \examples{
-\dontrun{
-# Generate seasonal data
-y <- arima.sim(120, list(ar = 0.7, seasonal = list(sar = 0.5, period = 12)))
-
-# Compare methods
+\donttest{
+set.seed(42)
+y <- arima.sim(n = 120,
+  model = list(order = c(1, 0, 0), ar = 0.7,
+    seasonal = list(order = c(1, 0, 0), ar = 0.5, period = 12)))
 compare_sar_methods(y, order = c(1, 1), period = 12)
 }
 }

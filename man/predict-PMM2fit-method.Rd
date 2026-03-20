@@ -38,7 +38,7 @@ estimated coefficients. The method automatically handles:
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Fit model
 fit <- lm_pmm2(mpg ~ wt + hp, data = mtcars)
 

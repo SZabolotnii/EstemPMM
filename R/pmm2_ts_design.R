@@ -579,7 +579,7 @@ compute_ts_residuals <- function(coefs, model_info) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Simple SAR(1)_12 model
 #' x <- rnorm(120)
 #' X <- create_sar_matrix(x, p = 0, P = 1, s = 12)
@@ -729,7 +729,7 @@ create_sar_matrix <- function(x, p = 0, P = 1, s = 12, multiplicative = FALSE) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Simple SARMA(1,0) x (1,0)_12 model (AR+SAR, no MA)
 #' x <- rnorm(120)
 #' residuals <- rnorm(120)

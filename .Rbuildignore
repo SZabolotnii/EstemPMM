@@ -52,3 +52,10 @@
 ^test_optimized_pmm2\.R$
 ^test_unified_pmm2\.R$
 ^\.env$
+^dev_scripts$
+^mc_results_pmm3$
+^mc_results_final_comprehensive$
+^SUBMISSION_READY\.txt$
+^seasonal_models\.Rmd\.draft$
+^Rplots\.pdf$
+^vignettes/\.build\.timestamp$

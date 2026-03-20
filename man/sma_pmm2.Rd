@@ -91,7 +91,7 @@ avoids complex Jacobian computation while maintaining accuracy
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Generate synthetic seasonal data
 set.seed(123)
 n <- 120

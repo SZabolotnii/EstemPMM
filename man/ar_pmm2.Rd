@@ -89,7 +89,7 @@ AR models; designed for MA/SMA where Jacobian computation is complex.
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Fit AR(2) model with default variant
 x <- arima.sim(n = 200, list(ar = c(0.7, -0.3)))
 fit1 <- ar_pmm2(x, order = 2)
