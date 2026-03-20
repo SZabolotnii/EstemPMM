@@ -365,9 +365,9 @@ ts_pmm2 <- function(x, order,
 #'
 #' \strong{Computational Characteristics:}
 #' \itemize{
-#'   \item \code{unified_global}: ~2× slower than MLE (single correction step)
-#'   \item \code{unified_iterative}: 5-10× slower than MLE (iterative refinement)
-#'   \item \code{linearized}: ~1.5× slower than MLE (approximation-based)
+#'   \item \code{unified_global}: ~2x slower than MLE (single correction step)
+#'   \item \code{unified_iterative}: 5-10x slower than MLE (iterative refinement)
+#'   \item \code{linearized}: ~1.5x slower than MLE (approximation-based)
 #' }
 #'
 #' @return An S4 object of class \code{ARPMM2} containing fitted autoregressive
@@ -446,9 +446,9 @@ ar_pmm2 <- function(x, order = 1, method = "pmm2",
 #'
 #' \strong{Computational Characteristics:}
 #' \itemize{
-#'   \item \code{linearized}: ~1.5× slower than MLE (recommended)
-#'   \item \code{unified_global}: ~2× slower than MLE (high accuracy)
-#'   \item \code{unified_iterative}: 5-10× slower than MLE (iterative)
+#'   \item \code{linearized}: ~1.5x slower than MLE (recommended)
+#'   \item \code{unified_global}: ~2x slower than MLE (high accuracy)
+#'   \item \code{unified_iterative}: 5-10x slower than MLE (iterative)
 #' }
 #'
 #' \strong{Why MA Models Benefit Most:}
@@ -528,7 +528,7 @@ ma_pmm2 <- function(x, order = 1, method = "pmm2",
 #'
 #' \strong{Variant Selection Guidelines:}
 #' \itemize{
-#'   \item For ARMA(p,q) with p,q ≤ 2: Use \code{"unified_global"} (default)
+#'   \item For ARMA(p,q) with p,q <= 2: Use \code{"unified_global"} (default)
 #'   \item For higher-order ARMA or ill-conditioned models: Try \code{"unified_iterative"}
 #'   \item For quick exploration: Start with \code{"unified_global"}
 #' }
@@ -607,7 +607,7 @@ arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2",
 #' \strong{Variant Selection Guidelines:}
 #' \itemize{
 #'   \item For standard ARIMA(p,d,q): Use \code{"unified_global"} (default)
-#'   \item For models with d ≥ 2 or high orders: Try \code{"unified_iterative"}
+#'   \item For models with d >= 2 or high orders: Try \code{"unified_iterative"}
 #'   \item If MA component is large relative to AR: Consider \code{"unified_iterative"}
 #' }
 #'

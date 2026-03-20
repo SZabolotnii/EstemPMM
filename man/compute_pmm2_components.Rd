@@ -2,16 +2,16 @@
 % Please edit documentation in R/pmm2_unified.R
 \name{compute_pmm2_components}
 \alias{compute_pmm2_components}
-\title{Обчислення ваг та компонентів PMM2}
+\title{Compute PMM2 weights and components}
 \usage{
 compute_pmm2_components(residuals)
 }
 \arguments{
-\item{residuals}{Вектор залишків}
+\item{residuals}{Residual vector}
 }
 \value{
-Список з моментами та параметрами PMM2 (gamma3, gamma4, weights)
+List with moments and PMM2 parameters (gamma3, gamma4, weights)
 }
 \description{
-Обчислення ваг та компонентів PMM2
+Compute PMM2 weights and components
 }

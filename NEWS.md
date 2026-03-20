@@ -43,7 +43,8 @@ uniform, beta-symmetric, and truncated normal errors.
 
 #### Documentation
 
-- New vignette: "PMM3: Estimation for Symmetric Platykurtic Errors"
+- New vignette: "PMM3: Linear Regression for Symmetric Platykurtic Errors"
+- New vignette: "PMM3 for Time Series: AR, MA, ARMA, and ARIMA Models"
 - Updated package-level documentation with PMM3 and method selection sections
 
 ---

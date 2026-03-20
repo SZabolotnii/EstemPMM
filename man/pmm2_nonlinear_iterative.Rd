@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_unified.R
 \name{pmm2_nonlinear_iterative}
 \alias{pmm2_nonlinear_iterative}
-\title{Універсальний PMM2 оцінювач (Iterative)}
+\title{Universal PMM2 estimator (Iterative)}
 \usage{
 pmm2_nonlinear_iterative(
   theta_init,
@@ -14,23 +14,23 @@ pmm2_nonlinear_iterative(
 )
 }
 \arguments{
-\item{theta_init}{Початкові значення параметрів}
+\item{theta_init}{Initial parameter values}
 
-\item{fn_residuals}{Функція function(theta), що повертає вектор залишків}
+\item{fn_residuals}{Function(theta) returning the residual vector}
 
-\item{fn_jacobian}{Функція function(theta), що повертає матрицю Якобіана (n x p).
-J_ij = d(y_hat_i)/d(theta_j) = -d(epsilon_i)/d(theta_j)
-Якщо NULL, використовується чисельний Якобіан через numDeriv}
+\item{fn_jacobian}{Function(theta) returning the Jacobian matrix (n x p).
+J_ij = d(y_hat_i)/d(theta_j) = -d(epsilon_i)/d(theta_j).
+If NULL, numerical Jacobian via numDeriv is used}
 
-\item{max_iter}{Максимальна кількість ітерацій}
+\item{max_iter}{Maximum number of iterations}
 
-\item{tol}{Точність збіжності}
+\item{tol}{Convergence tolerance}
 
-\item{verbose}{Вивід прогресу}
+\item{verbose}{Print progress}
 }
 \value{
-Список з результатами (theta, residuals, convergence, etc.)
+List with results (theta, residuals, convergence, etc.)
 }
 \description{
-Універсальний PMM2 оцінювач (Iterative)
+Universal PMM2 estimator (Iterative)
 }

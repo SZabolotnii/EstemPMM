@@ -83,9 +83,9 @@ while maintaining accuracy. Fastest option for MA models.
 
 \strong{Computational Characteristics:}
 \itemize{
-\item \code{linearized}: ~1.5× slower than MLE (recommended)
-\item \code{unified_global}: ~2× slower than MLE (high accuracy)
-\item \code{unified_iterative}: 5-10× slower than MLE (iterative)
+\item \code{linearized}: ~1.5x slower than MLE (recommended)
+\item \code{unified_global}: ~2x slower than MLE (high accuracy)
+\item \code{unified_iterative}: 5-10x slower than MLE (iterative)
 }
 
 \strong{Why MA Models Benefit Most:}

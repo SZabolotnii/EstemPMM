@@ -77,7 +77,7 @@ for ARIMA unless MA component dominates.
 \strong{Variant Selection Guidelines:}
 \itemize{
 \item For standard ARIMA(p,d,q): Use \code{"unified_global"} (default)
-\item For models with d ≥ 2 or high orders: Try \code{"unified_iterative"}
+\item For models with d >= 2 or high orders: Try \code{"unified_iterative"}
 \item If MA component is large relative to AR: Consider \code{"unified_iterative"}
 }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmm2_unified.R
 \name{pmm2_nonlinear_onestep}
 \alias{pmm2_nonlinear_onestep}
-\title{Універсальний PMM2 оцінювач (One-step Global)}
+\title{Universal PMM2 estimator (One-step Global)}
 \usage{
 pmm2_nonlinear_onestep(
   theta_classical,
@@ -12,18 +12,18 @@ pmm2_nonlinear_onestep(
 )
 }
 \arguments{
-\item{theta_classical}{Оцінки параметрів, отримані класичним методом (наприклад, MLE)}
+\item{theta_classical}{Parameter estimates from a classical method (e.g., MLE)}
 
-\item{fn_residuals}{Функція function(theta), що повертає вектор залишків}
+\item{fn_residuals}{Function(theta) returning the residual vector}
 
-\item{fn_jacobian}{Функція function(theta), що повертає матрицю Якобіана.
-Якщо NULL, використовується чисельний Якобіан через numDeriv}
+\item{fn_jacobian}{Function(theta) returning the Jacobian matrix.
+If NULL, numerical Jacobian via numDeriv is used}
 
-\item{verbose}{Вивід прогресу}
+\item{verbose}{Print progress}
 }
 \value{
-Список з результатами (theta, residuals, etc.)
+List with results (theta, residuals, etc.)
 }
 \description{
-Застосовує одноразову корекцію PMM2 до результатів класичного оцінювання.
+Applies a single PMM2 correction to classical estimation results.
 }

@@ -75,7 +75,7 @@ for ARMA; better suited for pure MA/SMA models.
 
 \strong{Variant Selection Guidelines:}
 \itemize{
-\item For ARMA(p,q) with p,q ≤ 2: Use \code{"unified_global"} (default)
+\item For ARMA(p,q) with p,q <= 2: Use \code{"unified_global"} (default)
 \item For higher-order ARMA or ill-conditioned models: Try \code{"unified_iterative"}
 \item For quick exploration: Start with \code{"unified_global"}
 }

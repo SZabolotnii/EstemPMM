@@ -83,9 +83,9 @@ AR models; designed for MA/SMA where Jacobian computation is complex.
 
 \strong{Computational Characteristics:}
 \itemize{
-\item \code{unified_global}: ~2× slower than MLE (single correction step)
-\item \code{unified_iterative}: 5-10× slower than MLE (iterative refinement)
-\item \code{linearized}: ~1.5× slower than MLE (approximation-based)
+\item \code{unified_global}: ~2x slower than MLE (single correction step)
+\item \code{unified_iterative}: 5-10x slower than MLE (iterative refinement)
+\item \code{linearized}: ~1.5x slower than MLE (approximation-based)
 }
 }
 \examples{

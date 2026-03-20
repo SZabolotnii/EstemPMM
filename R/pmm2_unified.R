@@ -1,49 +1,49 @@
 #' Unified PMM2 Estimator for Nonlinear Regression Models
 #'
-#' Цей файл містить уніфіковану реалізацію методу PMM2, придатну для будь-яких
-#' нелінійних регресійних моделей (включаючи SARIMAX), для яких можна обчислити
-#' залишки та їх похідні (Якобіан) по параметрах.
+#' This file contains a unified PMM2 implementation suitable for arbitrary
+#' nonlinear regression models (including SARIMAX) for which residuals
+#' and their derivatives (Jacobian) can be computed.
 #'
-#' Реалізовано два підходи:
-#' 1. Iterative: Повна ітеративна процедура (Nonlinear PMM2).
-#' 2. One-step (Global): Однокрокова корекція після класичного оцінювача (наприклад, MLE).
+#' Two approaches are implemented:
+#' 1. Iterative: Full iterative procedure (Nonlinear PMM2).
+#' 2. One-step (Global): Single-step correction after a classical estimator (e.g., MLE).
 
 
-#' Обчислення чисельного Якобіану функції залишків
+#' Compute numerical Jacobian of the residual function
 #'
-#' Використовує numDeriv::jacobian для обчислення матриці похідних.
+#' Uses numDeriv::jacobian to compute the derivative matrix.
 #'
-#' @param fn_residuals Функція function(theta), що повертає вектор залишків
-#' @param theta Поточні значення параметрів
-#' @param method Метод чисельного диференціювання ("Richardson", "simple")
-#' @return Матриця Якобіану (n x p)
+#' @param fn_residuals Function(theta) returning the residual vector
+#' @param theta Current parameter values
+#' @param method Numerical differentiation method ("Richardson", "simple")
+#' @return Jacobian matrix (n x p)
 #' @keywords internal
 compute_numerical_jacobian <- function(fn_residuals, theta, method = "Richardson") {
     if (!requireNamespace("numDeriv", quietly = TRUE)) {
         stop("Package 'numDeriv' is required for numerical Jacobian. Please install it.", call. = FALSE)
     }
-    
-    # Обчислюємо Якобіан: d(residuals)/d(theta)
-    # Для регресії e = y - f(theta), тому d(e)/d(theta) = -d(f)/d(theta)
-    # numDeriv::jacobian обчислює d(fn)/d(theta)
+
+    # Compute Jacobian: d(residuals)/d(theta)
+    # For regression e = y - f(theta), so d(e)/d(theta) = -d(f)/d(theta)
+    # numDeriv::jacobian computes d(fn)/d(theta)
     J_residuals <- numDeriv::jacobian(fn_residuals, theta, method = method)
-    
-    # Для PMM2 solver нам потрібно J = d(f)/d(theta) = -d(e)/d(theta)
-    # Тому змінюємо знак
+
+    # For the PMM2 solver we need J = d(f)/d(theta) = -d(e)/d(theta)
+    # Therefore we flip the sign
     J <- -J_residuals
-    
+
     return(J)
 }
 
 
-#' Обчислення ваг та компонентів PMM2
+#' Compute PMM2 weights and components
 #'
-#' @param residuals Вектор залишків
-#' @return Список з моментами та параметрами PMM2 (gamma3, gamma4, weights)
+#' @param residuals Residual vector
+#' @return List with moments and PMM2 parameters (gamma3, gamma4, weights)
 compute_pmm2_components <- function(residuals) {
     n <- length(residuals)
 
-    # Моменти
+    # Central moments
     m1 <- mean(residuals)
     m2 <- mean((residuals - m1)^2)
     m3 <- mean((residuals - m1)^3)
@@ -51,13 +51,13 @@ compute_pmm2_components <- function(residuals) {
 
     if (m2 < 1e-10) {
         return(NULL)
-    } # Вироджений випадок
+    } # Degenerate case
 
-    # Стандартизовані моменти
+    # Standardized moments
     gamma3 <- m3 / m2^(1.5)
     gamma4 <- m4 / m2^2 - 3
 
-    # Перевірка знаменника PMM2
+    # PMM2 denominator check
     denom <- 2 + gamma4
     if (abs(denom) < 1e-6) denom <- 1e-6
 
@@ -69,103 +69,52 @@ compute_pmm2_components <- function(residuals) {
     )
 }
 
-#' Розв'язувач кроку PMM2 (PMM2 Step Solver)
+#' PMM2 step solver
 #'
-#' Розв'язує лінеаризовану систему для знаходження оновлення параметрів.
-#' Базується на розкладанні Тейлора: e(theta) ~ e(theta_k) - J * delta
+#' Solves the linearized system to find the parameter update.
+#' Based on the Taylor expansion: e(theta) ~ e(theta_k) - J * delta
 #'
-#' @param residuals Поточні залишки
-#' @param J Матриця Якобіана (n x p), де J_ij = - d(e_i)/d(theta_j)
-#'          УВАГА: Знак мінус важливий. Якщо J це d(y_hat)/d(theta), то це ок.
-#'          Якщо J це d(e)/d(theta), то у формулі має бути мінус.
-#'          Тут припускаємо стандартне визначення регресії: y = f(theta) + e
-#'          Тоді e = y - f(theta). d(e)/d(theta) = - d(f)/d(theta).
-#'          Ми очікуємо J = d(f)/d(theta) (градієнт функції регресії).
-#' @param pmm_stats Статистики з compute_pmm2_components
+#' @param residuals Current residuals
+#' @param J Jacobian matrix (n x p), where J_ij = d(y_hat_i)/d(theta_j).
+#'          We assume the standard regression definition: y = f(theta) + e,
+#'          so e = y - f(theta) and d(e)/d(theta) = -d(f)/d(theta).
+#'          We expect J = d(f)/d(theta) (gradient of the regression function).
+#' @param pmm_stats Statistics from compute_pmm2_components
 #'
-#' @return Вектор оновлення delta
+#' @return Update vector delta
 solve_pmm2_step <- function(residuals, J, pmm_stats) {
-    # У класичному PMM2 для лінійної регресії y = Xb + e:
-    # b_pmm = (X'X)^(-1) X' (y - c * s * (gamma3/denom)) ... це спрощено
+    # PMM2 maximizes (gamma3)^2 / (2 + gamma4).
+    # The gradient of this function with respect to theta leads to the
+    # estimating equations.
     #
-    # Більш загально, PMM2 максимізує (gamma3)^2 / (2 + gamma4).
-    # Градієнт цієї функції по theta веде до системи рівнянь.
-    #
-    # Для реалізації ми використовуємо підхід "Iterative Reweighted Least Squares"
-    # або еквівалентний метод корекції зсуву.
-    #
-    # Формула оновлення (спрощена для PMM2):
+    # Update formula (simplified for PMM2):
     # delta = (J'J)^(-1) J' * (residuals + correction)
-    # Де correction залежить від асиметрії розподілу.
-
-    # Але чекайте, PMM2 це не просто зсув. Це метод, що використовує моменти вищих порядків.
-    # Основна ідея PMM2: мінімізувати дисперсію оцінки, використовуючи інформацію про розподіл.
-    # Для асиметричних розподілів це означає врахування gamma3.
-
-    # Згідно з теорією PMM (Polynomially Modified Maximum Likelihood аналог):
-    # Оптимальне рівняння оцінювання: sum( w(e_t) * grad(f_t) ) = 0
-    # Де w(e) - поліноміальна вагова функція. Для PMM2 (поліном 2-го порядку):
+    # where correction depends on the distribution asymmetry.
+    #
+    # Optimal estimating equation: sum( w(e_t) * grad(f_t) ) = 0
+    # where w(e) is a polynomial weight function. For PMM2 (degree 2):
     # w(z) = z + a * (z^2 - 1)
     #
-    # Коефіцієнт 'a' визначається як:
-    # a = - gamma3 / (2 + gamma4)  (або з іншим знаком залежно від визначення)
+    # Coefficient 'a' is defined as:
+    # a = - gamma3 / (2 + gamma4)
     #
-    # Перевіримо знак. Якщо gamma3 > 0 (правий хвіст), ми хочемо зменшити вагу великих позитивних помилок?
-    # Ні, PMM2 намагається наблизити score function log-likelihood'у.
-    # Score function g(z) = -f'(z)/f(z).
-    # Ми апроксимуємо g(z) поліномом.
-
-    # Використовуємо формулу з наших попередніх реалізацій (EstemPMM):
-    # correction_factor = - (gamma3 / (2 + gamma4)) * (residuals^2 / sqrt(m2) - sqrt(m2))
-    # Або простіше, працюємо з стандартизованими залишками z = e / sigma
+    # Using the scoring approach where E[1 + 2*lambda*z] = 1:
+    # delta = (J'J)^(-1) J' * (residuals + sigma * lambda * (z^2 - 1))
 
     sigma <- sqrt(pmm_stats$m2)
     z <- residuals / sigma
 
-    # Коефіцієнт при квадратичному члені
+    # Coefficient for the quadratic term
     lambda <- -pmm_stats$gamma3 / pmm_stats$denom
 
-    # "Модифіковані" залишки, які ми хочемо зробити ортогональними до градієнта
-    # pseudo_residuals = z + lambda * (z^2 - 1)
-    # Ми хочемо J' * pseudo_residuals = 0
-    #
-    # Лінеаризація:
-    # z(new) ~ z(old) - (J/sigma) * delta
-    # Підставляємо в рівняння:
-    # J' * [ (z - J/sigma * delta) + lambda * ((z - J/sigma * delta)^2 - 1) ] = 0
-    #
-    # Це дає квадратичне рівняння відносно delta, але ми можемо спростити,
-    # ігноруючи квадратичні члени delta (Newton-Raphson крок).
-    #
-    # J' * [ z - J/sigma * delta + lambda * (z^2 - 1 - 2*z*(J/sigma)*delta) ] = 0
-    # J' * [ z + lambda*(z^2 - 1) ] = J' * [ J/sigma * delta + lambda * 2 * z * J/sigma * delta ]
-    # J' * [ z + lambda*(z^2 - 1) ] = J' * diag(1 + 2*lambda*z) * (J/sigma) * delta
-    #
-    # Ліва частина (LHS) - це градієнт цільової функції PMM2.
-    # Права частина - це наближений Гессіан.
-
-    # Ваги для Гессіана
-    W_diag <- 1 + 2 * lambda * z
-
-    # Щоб уникнути нестабільності, іноді W_diag замінюють на його очікування (=1),
-    # що перетворює метод на Modified Newton або Scoring.
-    # Спробуємо спрощений варіант (Scoring), де E[1 + 2*lambda*z] = 1 + 0 = 1.
-    # Тоді Hessian ~ J'J / sigma.
-    #
-    # LHS = J' * (z + lambda * (z^2 - 1))
-    # (J'J / sigma) * delta = J' * (z + lambda * (z^2 - 1))
-    # delta = sigma * (J'J)^(-1) J' * (z + lambda * (z^2 - 1))
-    # delta = (J'J)^(-1) J' * (sigma * z + sigma * lambda * (z^2 - 1))
-    # delta = (J'J)^(-1) J' * (residuals + sigma * lambda * (z^2 - 1))
-
-    # Вектор корекції
+    # Correction vector
     correction <- sigma * lambda * (z^2 - 1)
 
-    # Ефективні "спостереження" для кроку МНК
+    # Effective "observations" for the LS step
     y_effective <- residuals + correction
 
-    # Крок МНК: delta = (J'J)^(-1) J' y_effective
-    # Використовуємо qr.solve для стабільності
+    # LS step: delta = (J'J)^(-1) J' y_effective
+    # Using qr.solve for numerical stability
     delta <- tryCatch(
         {
             qr.solve(J, y_effective)
@@ -180,18 +129,18 @@ solve_pmm2_step <- function(residuals, J, pmm_stats) {
 }
 
 
-#' Універсальний PMM2 оцінювач (Iterative)
+#' Universal PMM2 estimator (Iterative)
 #'
-#' @param theta_init Початкові значення параметрів
-#' @param fn_residuals Функція function(theta), що повертає вектор залишків
-#' @param fn_jacobian Функція function(theta), що повертає матрицю Якобіана (n x p).
-#'                    J_ij = d(y_hat_i)/d(theta_j) = -d(epsilon_i)/d(theta_j)
-#'                    Якщо NULL, використовується чисельний Якобіан через numDeriv
-#' @param max_iter Максимальна кількість ітерацій
-#' @param tol Точність збіжності
-#' @param verbose Вивід прогресу
+#' @param theta_init Initial parameter values
+#' @param fn_residuals Function(theta) returning the residual vector
+#' @param fn_jacobian Function(theta) returning the Jacobian matrix (n x p).
+#'                    J_ij = d(y_hat_i)/d(theta_j) = -d(epsilon_i)/d(theta_j).
+#'                    If NULL, numerical Jacobian via numDeriv is used
+#' @param max_iter Maximum number of iterations
+#' @param tol Convergence tolerance
+#' @param verbose Print progress
 #'
-#' @return Список з результатами (theta, residuals, convergence, etc.)
+#' @return List with results (theta, residuals, convergence, etc.)
 #' @export
 pmm2_nonlinear_iterative <- function(theta_init, fn_residuals, fn_jacobian = NULL,
                                      max_iter = 100, tol = 1e-6, verbose = FALSE) {
@@ -201,34 +150,33 @@ pmm2_nonlinear_iterative <- function(theta_init, fn_residuals, fn_jacobian = NUL
     if (verbose) cat("Starting Iterative PMM2...\n")
 
     for (iter in 1:max_iter) {
-        # 1. Обчислення залишків та Якобіана в поточній точці
+        # 1. Compute residuals and Jacobian at current point
         res <- fn_residuals(theta)
-        
+
         if (is.null(fn_jacobian)) {
-            # Використовуємо чисельний Якобіан
             J <- compute_numerical_jacobian(fn_residuals, theta)
         } else {
             J <- fn_jacobian(theta)
         }
 
-        # Перевірка розмірностей
+        # Dimension check
         if (length(res) != nrow(J)) stop("Mismatch between residuals length and Jacobian rows")
         if (length(theta) != ncol(J)) stop("Mismatch between theta length and Jacobian cols")
 
-        # 2. Статистики PMM2
+        # 2. PMM2 statistics
         stats <- compute_pmm2_components(res)
         if (is.null(stats)) {
             warning("PMM2 stats computation failed (degenerate residuals).")
             break
         }
 
-        # 3. Обчислення кроку оновлення
+        # 3. Compute update step
         delta <- solve_pmm2_step(res, J, stats)
 
-        # 4. Оновлення параметрів
+        # 4. Update parameters
         theta_new <- theta + delta
 
-        # 5. Перевірка збіжності
+        # 5. Check convergence
         max_change <- max(abs(delta))
         if (verbose) {
             cat(sprintf(
@@ -246,7 +194,7 @@ pmm2_nonlinear_iterative <- function(theta_init, fn_residuals, fn_jacobian = NUL
         theta <- theta_new
     }
 
-    # Фінальний перерахунок
+    # Final recomputation
     final_res <- fn_residuals(theta)
     final_stats <- compute_pmm2_components(final_res)
 
@@ -261,43 +209,41 @@ pmm2_nonlinear_iterative <- function(theta_init, fn_residuals, fn_jacobian = NUL
 }
 
 
-#' Універсальний PMM2 оцінювач (One-step Global)
+#' Universal PMM2 estimator (One-step Global)
 #'
-#' Застосовує одноразову корекцію PMM2 до результатів класичного оцінювання.
+#' Applies a single PMM2 correction to classical estimation results.
 #'
-#' @param theta_classical Оцінки параметрів, отримані класичним методом (наприклад, MLE)
-#' @param fn_residuals Функція function(theta), що повертає вектор залишків
-#' @param fn_jacobian Функція function(theta), що повертає матрицю Якобіана.
-#'                    Якщо NULL, використовується чисельний Якобіан через numDeriv
-#' @param verbose Вивід прогресу
+#' @param theta_classical Parameter estimates from a classical method (e.g., MLE)
+#' @param fn_residuals Function(theta) returning the residual vector
+#' @param fn_jacobian Function(theta) returning the Jacobian matrix.
+#'                    If NULL, numerical Jacobian via numDeriv is used
+#' @param verbose Print progress
 #'
-#' @return Список з результатами (theta, residuals, etc.)
+#' @return List with results (theta, residuals, etc.)
 #' @export
 pmm2_nonlinear_onestep <- function(theta_classical, fn_residuals, fn_jacobian = NULL, verbose = FALSE) {
     if (verbose) cat("Starting One-step PMM2 correction...\n")
 
-    # 1. Обчислення залишків та Якобіана в точці класичної оцінки
-    # Це "Global" частина - ми оцінюємо структуру задачі один раз
+    # 1. Compute residuals and Jacobian at the classical estimate
     res <- fn_residuals(theta_classical)
-    
+
     if (is.null(fn_jacobian)) {
-        # Використовуємо чисельний Якобіан
         J <- compute_numerical_jacobian(fn_residuals, theta_classical)
     } else {
         J <- fn_jacobian(theta_classical)
     }
 
-    # 2. Статистики PMM2
+    # 2. PMM2 statistics
     stats <- compute_pmm2_components(res)
     if (is.null(stats)) {
         warning("PMM2 stats computation failed.")
         return(list(coefficients = theta_classical, method = "One-step PMM2 (Failed)"))
     }
 
-    # 3. Обчислення єдиного кроку оновлення
+    # 3. Compute single update step
     delta <- solve_pmm2_step(res, J, stats)
 
-    # 4. Оновлення
+    # 4. Update
     theta_new <- theta_classical + delta
 
     if (verbose) {
@@ -306,14 +252,14 @@ pmm2_nonlinear_onestep <- function(theta_classical, fn_residuals, fn_jacobian = 
         cat("Final Theta:    ", paste(round(theta_new, 4), collapse = ", "), "\n")
     }
 
-    # Фінальні залишки (опціонально, для звіту)
+    # Final residuals
     final_res <- fn_residuals(theta_new)
 
     list(
         coefficients = theta_new,
         residuals = final_res,
         correction = delta,
-        pmm_stats = stats, # Статистики на початковому етапі (важливо для аналізу)
+        pmm_stats = stats,
         method = "One-step PMM2"
     )
 }

@@ -7,28 +7,28 @@
 compute_numerical_jacobian(fn_residuals, theta, method = "Richardson")
 }
 \arguments{
-\item{fn_residuals}{Функція function(theta), що повертає вектор залишків}
+\item{fn_residuals}{Function(theta) returning the residual vector}
 
-\item{theta}{Поточні значення параметрів}
+\item{theta}{Current parameter values}
 
-\item{method}{Метод чисельного диференціювання ("Richardson", "simple")}
+\item{method}{Numerical differentiation method ("Richardson", "simple")}
 }
 \value{
-Матриця Якобіану (n x p)
+Jacobian matrix (n x p)
 }
 \description{
-Цей файл містить уніфіковану реалізацію методу PMM2, придатну для будь-яких
-нелінійних регресійних моделей (включаючи SARIMAX), для яких можна обчислити
-залишки та їх похідні (Якобіан) по параметрах.
+This file contains a unified PMM2 implementation suitable for arbitrary
+nonlinear regression models (including SARIMAX) for which residuals
+and their derivatives (Jacobian) can be computed.
 }
 \details{
-Реалізовано два підходи:
+Two approaches are implemented:
 \enumerate{
-\item Iterative: Повна ітеративна процедура (Nonlinear PMM2).
-\item One-step (Global): Однокрокова корекція після класичного оцінювача (наприклад, MLE).
-Обчислення чисельного Якобіану функції залишків
+\item Iterative: Full iterative procedure (Nonlinear PMM2).
+\item One-step (Global): Single-step correction after a classical estimator (e.g., MLE).
+Compute numerical Jacobian of the residual function
 }
 
-Використовує numDeriv::jacobian для обчислення матриці похідних.
+Uses numDeriv::jacobian to compute the derivative matrix.
 }
 \keyword{internal}

@@ -2,26 +2,24 @@
 % Please edit documentation in R/pmm2_unified.R
 \name{solve_pmm2_step}
 \alias{solve_pmm2_step}
-\title{Розв'язувач кроку PMM2 (PMM2 Step Solver)}
+\title{PMM2 step solver}
 \usage{
 solve_pmm2_step(residuals, J, pmm_stats)
 }
 \arguments{
-\item{residuals}{Поточні залишки}
+\item{residuals}{Current residuals}
 
-\item{J}{Матриця Якобіана (n x p), де J_ij = - d(e_i)/d(theta_j)
-УВАГА: Знак мінус важливий. Якщо J це d(y_hat)/d(theta), то це ок.
-Якщо J це d(e)/d(theta), то у формулі має бути мінус.
-Тут припускаємо стандартне визначення регресії: y = f(theta) + e
-Тоді e = y - f(theta). d(e)/d(theta) = - d(f)/d(theta).
-Ми очікуємо J = d(f)/d(theta) (градієнт функції регресії).}
+\item{J}{Jacobian matrix (n x p), where J_ij = d(y_hat_i)/d(theta_j).
+We assume the standard regression definition: y = f(theta) + e,
+so e = y - f(theta) and d(e)/d(theta) = -d(f)/d(theta).
+We expect J = d(f)/d(theta) (gradient of the regression function).}
 
-\item{pmm_stats}{Статистики з compute_pmm2_components}
+\item{pmm_stats}{Statistics from compute_pmm2_components}
 }
 \value{
-Вектор оновлення delta
+Update vector delta
 }
 \description{
-Розв'язує лінеаризовану систему для знаходження оновлення параметрів.
-Базується на розкладанні Тейлора: e(theta) ~ e(theta_k) - J * delta
+Solves the linearized system to find the parameter update.
+Based on the Taylor expansion: e(theta) ~ e(theta_k) - J * delta
 }
