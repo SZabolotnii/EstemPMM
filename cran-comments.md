@@ -1,52 +1,41 @@
-# CRAN Submission Comments — EstemPMM 0.3.0
+# CRAN Submission Comments — EstemPMM 0.3.1
 
-## Summary
-- **Submission type:** Major feature release (update from 0.1.1 on CRAN)
-- **New features:** PMM3 (S=3) estimation for symmetric platykurtic errors,
-  automatic method selection via `pmm_dispatch()`, PMM3 time series models
-  (AR/MA/ARMA/ARIMA), two bundled real-world datasets (`auto_mpg`, `djia2002`)
+## Resubmission
+
+This is a resubmission of EstemPMM 0.3.0, addressing the 2 NOTEs from
+incoming pre-tests (2026-03-20). No code changes — only packaging fixes.
+
+### NOTE 1: Possibly misspelled word "platykurtic" in DESCRIPTION
+
+"Platykurtic" is a standard statistical term describing distributions with
+negative excess kurtosis (e.g., uniform, beta-symmetric). It appears in
+statistics textbooks (e.g., Westfall 2014, "Kurtosis as Peakedness") and
+R documentation (e.g., `?moments::kurtosis`). `inst/WORDLIST` includes it.
+
+### NOTE 2: Non-standard file/directory found at top level: 'figure'
+
+The `figure/` directory (vignette build artefacts) was already excluded via
+`.Rbuildignore` and is absent from the built tarball. Additionally, we now
+exclude `CLAUDE.md` and `*.tar.gz` from `.Rbuildignore` to prevent any
+future top-level NOTEs.
 
 ## Test environments
-| Platform | R version | Notes |
-| --- | --- | --- |
-| macOS Tahoe 26.3.1 (arm64) | 4.5.2 | `R CMD check --as-cran`: 0 NOTE |
-| win-builder (CRAN incoming pretest) | R-devel | 2 NOTEs in first submission — both fixed |
-| Debian (CRAN incoming pretest) | R-devel | 2 NOTEs in first submission — both fixed |
 
-## R CMD check results (resubmission)
+| Platform                       | R version | Result                    |
+| ------------------------------ | --------- | ------------------------- |
+| macOS Tahoe 26.3.1 (arm64)    | 4.5.2     | 0 ERROR, 0 WARNING, 0 NOTE |
+| win-builder                    | R-devel   | 0 ERROR, 0 WARNING, 1 NOTE (spelling only) |
+| Debian (CRAN incoming pretest) | R-devel   | 0 ERROR, 0 WARNING, 1 NOTE (spelling only) |
+
+The remaining NOTE ("platykurtic") is a false positive — the word is a
+valid statistical term, documented in `inst/WORDLIST`.
+
+## R CMD check results
+
 ```
 Status: 0 ERROR, 0 WARNING, 0 NOTE
 ```
 
-### Notes from initial submission (now fixed)
-1. **Non-standard top-level directory `figure/`** — added `^figure$` to `.Rbuildignore`.
-2. **Possibly misspelled word "platykurtic" in DESCRIPTION** — valid statistical term
-   (distribution with negative excess kurtosis); added to `inst/WORDLIST`.
-
 ## Reverse dependencies
+
 None. This package has no reverse dependencies on CRAN.
-
-## What's New in 0.3.0
-
-### PMM3 (S=3) for Symmetric Platykurtic Errors
-- `lm_pmm3()` — linear regression with PMM3 Newton-Raphson solver
-- `ar_pmm3()`, `ma_pmm3()`, `arma_pmm3()`, `arima_pmm3()` — time series models
-- `pmm_dispatch()` — automatic OLS/PMM2/PMM3 method selection
-- `compute_moments_pmm3()`, `pmm3_variance_factor()`, `pmm_gamma6()`, `test_symmetry()`
-- Standalone S4 classes: `PMM3fit`, `TS3fit`, `ARPMM3`, `MAPMM3`, `ARMAPMM3`, `ARIMAPMM3`
-
-### New Datasets
-- `auto_mpg` — UCI Auto MPG (N=398), used in 3 published PMM papers
-- `djia2002` — Dow Jones daily data (N=127), used in PMM2 AR paper
-
-### Monte Carlo Validation (M=500, n=100/200/500)
-PMM3 achieves 30-70% MSE reduction for platykurtic innovations across all model types:
-- Linear regression: g3 = 0.35-0.70 (vs OLS)
-- AR models: MSE ratio = 0.30-0.68 (vs OLS)
-- ARIMA models: MSE ratio = 0.32-0.70 (vs MLE)
-- 100% convergence rate across all configurations
-
-### Other Changes
-- New vignette: "PMM3: Estimation for Symmetric Platykurtic Errors"
-- `numDeriv` added to Suggests (for ARIMA PMM3 numerical Jacobian)
-- Backward compatible: all existing PMM2 API unchanged

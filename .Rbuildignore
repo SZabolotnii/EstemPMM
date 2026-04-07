@@ -59,4 +59,6 @@
 ^seasonal_models\.Rmd\.draft$
 ^Rplots\.pdf$
 ^figure$
+^CLAUDE\.md$
+^EstemPMM_.*\.tar\.gz$
 ^vignettes/\.build\.timestamp$

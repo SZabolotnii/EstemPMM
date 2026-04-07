@@ -1,8 +1,8 @@
 Package: EstemPMM
 Type: Package
 Title: Polynomial Maximization Method for Non-Gaussian Regression
-Version: 0.3.0
-Date: 2026-03-19
+Version: 0.3.1
+Date: 2026-04-06
 Authors@R:
     person("Serhii", "Zabolotnii",
            email = "zabolotniua@gmail.com",

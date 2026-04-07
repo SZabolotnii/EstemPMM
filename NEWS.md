@@ -1,5 +1,15 @@
 # EstemPMM News
 
+## Version 0.3.1 (2026-04-06)
+
+### CRAN Resubmission
+
+- Added `CLAUDE.md` and built tarballs to `.Rbuildignore` to eliminate
+  non-standard top-level file NOTEs.
+- No code changes from 0.3.0; version bump required for CRAN resubmission.
+
+---
+
 ## Version 0.3.0 (2026-03-19)
 
 ### New Feature: PMM3 for Symmetric Platykurtic Errors
