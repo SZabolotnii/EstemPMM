@@ -1,8 +1,8 @@
 Package: EstemPMM
 Type: Package
 Title: Polynomial Maximization Method for Non-Gaussian Regression
-Version: 0.3.1
-Date: 2026-04-06
+Version: 0.3.2
+Date: 2026-05-03
 Authors@R:
     person("Serhii", "Zabolotnii",
            email = "zabolotniua@gmail.com",
@@ -18,7 +18,8 @@ Description:
     linear regression, 'AR'/'MA'/'ARMA'/'ARIMA' models, and bootstrap inference.
     Methodology described in Zabolotnii, Warsza, and Tkachenko (2018) <doi:10.1007/978-3-319-77179-3_75>,
     Zabolotnii, Tkachenko, and Warsza (2022) <doi:10.1007/978-3-031-03502-9_37>, and
-    Zabolotnii, Tkachenko, and Warsza (2023) <doi:10.1007/978-3-031-25844-2_21>.
+    Zabolotnii, Tkachenko, and Warsza (2023) <doi:10.1007/978-3-031-25844-2_21>, and
+    Zabolotnii (2025) <doi:10.48550/arXiv.2511.07059>.
 License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 3.5.0)
@@ -38,8 +39,8 @@ Suggests:
     numDeriv
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Config/testthat/edition: 3
 URL: https://github.com/SZabolotnii/EstemPMM
 BugReports: https://github.com/SZabolotnii/EstemPMM/issues
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0
