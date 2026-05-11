@@ -1,8 +1,8 @@
 Package: EstemPMM
 Type: Package
 Title: Polynomial Maximization Method for Non-Gaussian Regression
-Version: 0.3.1
-Date: 2026-04-06
+Version: 0.3.1.9001
+Date: 2026-05-11
 Authors@R:
     person("Serhii", "Zabolotnii",
            email = "zabolotniua@gmail.com",
@@ -43,3 +43,29 @@ Config/testthat/edition: 3
 URL: https://github.com/SZabolotnii/EstemPMM
 BugReports: https://github.com/SZabolotnii/EstemPMM/issues
 VignetteBuilder: knitr
+Collate: 
+    'data.R'
+    'pmm2_classes.R'
+    'fp_classes.R'
+    'optimized_direct_pmm2.R'
+    'pmm2_common.R'
+    'pmm2_inference.R'
+    'pmm2_ma_estimator.R'
+    'pmm2_main.R'
+    'pmm2_monte_carlo.R'
+    'pmm2_package.R'
+    'pmm2_ts_design.R'
+    'pmm2_ts_main.R'
+    'pmm2_ts_methods.R'
+    'pmm2_unified.R'
+    'pmm2_utils.R'
+    'pmm3_classes.R'
+    'pmm3_dispatch.R'
+    'pmm3_main.R'
+    'pmm3_solver.R'
+    'pmm3_ts_classes.R'
+    'pmm3_ts_main.R'
+    'pmm3_ts_methods.R'
+    'pmm3_utils.R'
+    'pmm_fp.R'
+    'sarimax_wrapper.R'

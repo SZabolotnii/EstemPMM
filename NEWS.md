@@ -1,5 +1,11 @@
 # EstemPMM News
 
+## EstemPMM 0.3.1.9001 (development)
+
+- Initial scaffold for `pmm_fp()` (fractional polynomial PMM estimator) — see PMM-FP article (Zabolotnii 2026).
+
+---
+
 ## Version 0.3.1 (2026-04-06)
 
 ### CRAN Resubmission
