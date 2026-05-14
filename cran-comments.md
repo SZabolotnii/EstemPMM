@@ -1,40 +1,36 @@
-# CRAN Submission Comments — EstemPMM 0.3.1
+# CRAN Submission Comments -- EstemPMM 0.3.2
 
-## Resubmission
+## Release summary
 
-This is a resubmission of EstemPMM 0.3.0, addressing the 2 NOTEs from
-incoming pre-tests (2026-03-20). No code changes — only packaging fixes.
+This candidate updates EstemPMM after the 0.3.1 CRAN release. The main changes
+are:
 
-### NOTE 1: Possibly misspelled word "platykurtic" in DESCRIPTION
-
-"Platykurtic" is a standard statistical term describing distributions with
-negative excess kurtosis (e.g., uniform, beta-symmetric). It appears in
-statistics textbooks (e.g., Westfall 2014, "Kurtosis as Peakedness") and
-R documentation (e.g., `?moments::kurtosis`). `inst/WORDLIST` includes it.
-
-### NOTE 2: Non-standard file/directory found at top level: 'figure'
-
-The `figure/` directory (vignette build artefacts) was already excluded via
-`.Rbuildignore` and is absent from the built tarball. Additionally, we now
-exclude `CLAUDE.md` and `*.tar.gz` from `.Rbuildignore` to prevent any
-future top-level NOTEs.
+- PMM3 documentation and examples now consistently describe the supported
+  symmetric platykurtic regime.
+- Seasonal SARIMA vignette examples were aligned with the current
+  `sarima_pmm2()` API.
+- S4 generic coverage was completed for `BIC`, `logLik`, and `nobs` methods
+  where the package provides Gaussian approximate information criteria.
 
 ## Test environments
 
-| Platform                       | R version | Result                    |
-| ------------------------------ | --------- | ------------------------- |
-| macOS Tahoe 26.3.1 (arm64)    | 4.5.2     | 0 ERROR, 0 WARNING, 0 NOTE |
-| win-builder                    | R-devel   | 0 ERROR, 0 WARNING, 1 NOTE (spelling only) |
-| Debian (CRAN incoming pretest) | R-devel   | 0 ERROR, 0 WARNING, 1 NOTE (spelling only) |
-
-The remaining NOTE ("platykurtic") is a false positive — the word is a
-valid statistical term, documented in `inst/WORDLIST`.
+| Platform                    | R version | Result                     |
+| --------------------------- | --------- | -------------------------- |
+| macOS Tahoe 26.4.1 (arm64) | 4.5.3     | 0 ERROR, 0 WARNING, 2 NOTE |
 
 ## R CMD check results
 
 ```
-Status: 0 ERROR, 0 WARNING, 0 NOTE
+Status: 0 ERROR, 0 WARNING, 2 NOTEs
 ```
+
+The two local NOTEs are environment/toolchain notes:
+
+1. `unable to verify current time` during future-timestamp checking.
+2. HTML manual validation/math rendering skipped because local HTML Tidy is not
+   recent enough and package `V8` is unavailable.
+
+No ERRORs or WARNINGs were reported.
 
 ## Reverse dependencies
 

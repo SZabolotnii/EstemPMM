@@ -139,6 +139,9 @@ lm_pmm2 <- function(formula, data,
     cat("  Iterations:", iter, "\n")
   }
 
+  # Restore coefficient names from design matrix columns
+  names(b_est) <- colnames(X)
+
   # Return S4 object with all results
   ans <- new("PMM2fit",
              coefficients = b_est,
@@ -215,6 +218,22 @@ setMethod("AIC", "PMM2fit",
             -2 * ll + k * p
           })
 
+#' Calculate BIC for PMM2fit object
+#'
+#' @param object PMM2fit object
+#' @param ... Additional arguments (not used)
+#'
+#' @return BIC value
+#' @export
+setMethod("BIC", "PMM2fit",
+          function(object, ...) {
+            res <- object@residuals
+            n <- length(res)
+            p <- length(object@coefficients)
+            ll <- -n/2 * log(sum(res^2)/n) - n/2 * (1 + log(2*pi))
+            -2 * ll + log(n) * p
+          })
+
 #' Extract log-likelihood from PMM2fit object
 #'
 #' Returns a Gaussian approximate log-likelihood, consistent with the AIC method.
@@ -230,7 +249,7 @@ setMethod("logLik", "PMM2fit",
             n   <- length(res)
             p   <- length(object@coefficients)
             ll  <- -n/2 * log(sum(res^2)/n) - n/2 * (1 + log(2*pi))
-            attr(ll, "df")   <- p + 1L
+            attr(ll, "df")   <- p   # consistent with the AIC method (sigma not counted)
             attr(ll, "nobs") <- n
             class(ll) <- "logLik"
             ll

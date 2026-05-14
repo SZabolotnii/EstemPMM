@@ -486,9 +486,9 @@ plot(y, type = "l", main = "SARIMA(1,1,0)×(1,1,1)_12 Process",
 # Fit SARIMA with PMM2
 fit_sarima_pmm2 <- sarima_pmm2(
   y,
-  order = c(1, 1, 0),          # Non-seasonal: (p, d, q)
+  order = c(1, 1, 0, 1),       # Model orders: (p, P, q, Q)
   seasonal = list(
-    order = c(1, 1, 1),        # Seasonal: (P, D, Q)
+    order = c(1, 1),           # Differencing orders: (d, D)
     period = 12
   ),
   method = "pmm2",
@@ -498,8 +498,8 @@ fit_sarima_pmm2 <- sarima_pmm2(
 # Fit with CSS
 fit_sarima_css <- sarima_pmm2(
   y,
-  order = c(1, 1, 0),          # Non-seasonal: (p, d, q)
-  seasonal = list(order = c(1, 1, 1), period = 12),
+  order = c(1, 1, 0, 1),       # Model orders: (p, P, q, Q)
+  seasonal = list(order = c(1, 1), period = 12),
   method = "css",
   verbose = FALSE
 )
@@ -655,9 +655,9 @@ par(mfrow = c(1, 1))
 # Fit SARIMA(0,1,1)×(0,1,1)_12 (classic airline model)
 fit_airline_pmm2 <- sarima_pmm2(
   log_passengers,
-  order = c(0, 1, 1, 0),           # (p, d, q, P)
+  order = c(0, 0, 1, 1),           # Model orders: (p, P, q, Q)
   seasonal = list(
-    order = c(0, 1, 1),            # (P, D, Q)
+    order = c(1, 1),               # Differencing orders: (d, D)
     period = 12
   ),
   method = "pmm2",
@@ -780,14 +780,16 @@ Some series have **multiple seasonal patterns** (e.g., daily data with weekly an
 
 ```{r seasonal_adjustment}
 # Extract seasonal component from fitted model
-fitted_values <- y - fit_sar_pmm2@residuals
+resid_sar <- as.numeric(fit_sar_pmm2@residuals)
+y_fit <- tail(as.numeric(y), length(resid_sar))
+fitted_values <- y_fit - resid_sar
 seasonal_component <- fitted_values - mean(fitted_values)
 
 # Plot seasonally adjusted series
-y_adjusted <- y - seasonal_component
+y_adjusted <- y_fit - seasonal_component
 
 par(mfrow = c(2, 1))
-plot(y, type = "l", main = "Original Series",
+plot(y_fit, type = "l", main = "Original Series (aligned to fitted residuals)",
      col = "steelblue", lwd = 1.5, ylab = "Value")
 plot(y_adjusted, type = "l", main = "Seasonally Adjusted Series",
      col = "darkgreen", lwd = 1.5, ylab = "Value")

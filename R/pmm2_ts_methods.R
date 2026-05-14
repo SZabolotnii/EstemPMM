@@ -963,7 +963,7 @@ setMethod("logLik", "TS2fit",
             n   <- length(res)
             p   <- length(object@coefficients)
             ll  <- -n/2 * log(sum(res^2)/n) - n/2 * (1 + log(2*pi))
-            attr(ll, "df")   <- p + 1L
+            attr(ll, "df")   <- p   # consistent with compare_ts_methods AIC convention
             attr(ll, "nobs") <- n
             class(ll) <- "logLik"
             ll
@@ -1040,4 +1040,35 @@ setMethod("confint", "TS2fit",
             colnames(ci) <- paste0(format(100 * c(a, 1 - a), trim = TRUE), " %")
             if (!missing(parm)) ci <- ci[parm, , drop = FALSE]
             ci
+          })
+
+#' AIC for TS2fit objects
+#'
+#' @param object TS2fit (or subclass) object
+#' @param ... Ignored
+#' @param k Penalty per parameter (default 2)
+#' @return Numeric AIC value
+#' @export
+setMethod("AIC", "TS2fit",
+          function(object, ..., k = 2) {
+            res <- object@residuals[is.finite(object@residuals)]
+            n   <- length(res)
+            p   <- length(object@coefficients)
+            ll  <- -n/2 * log(sum(res^2)/n) - n/2 * (1 + log(2*pi))
+            -2 * ll + k * p
+          })
+
+#' BIC for TS2fit objects
+#'
+#' @param object TS2fit (or subclass) object
+#' @param ... Additional arguments (not used)
+#' @return Numeric BIC value
+#' @export
+setMethod("BIC", "TS2fit",
+          function(object, ...) {
+            res <- object@residuals[is.finite(object@residuals)]
+            n   <- length(res)
+            p   <- length(object@coefficients)
+            ll  <- -n/2 * log(sum(res^2)/n) - n/2 * (1 + log(2*pi))
+            -2 * ll + log(n) * p
           })

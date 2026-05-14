@@ -1,100 +1,19 @@
-═══════════════════════════════════════════════════════════════
-  EstemPMM v0.2.0 - READY FOR CRAN SUBMISSION
-═══════════════════════════════════════════════════════════════
+EstemPMM v0.3.2 -- LOCAL CHECK SUMMARY
+======================================
 
-✅ Package Status: PRODUCTION READY
-✅ R CMD check: 0 errors | 0 warnings | 0 notes
-✅ Documentation: Complete with 3 vignettes
-✅ Tests: All passing (35+ test cases)
-✅ Monte Carlo: Validated (144 configs, >10k model fits)
+Date: 2026-05-14
 
-───────────────────────────────────────────────────────────────
-📦 PACKAGE FILES
-───────────────────────────────────────────────────────────────
-Main files in repository root:
-  ✓ DESCRIPTION           - v0.2.0 metadata
-  ✓ NAMESPACE             - Clean exports (fixed)
-  ✓ NEWS.md               - Version changelog
-  ✓ README.md             - Updated documentation
-  ✓ cran-comments.md      - CRAN submission notes
-  ✓ MONTE_CARLO_README.md - Validation guide
+Local package candidate:
+  EstemPMM_0.3.2.tar.gz
 
-Directory structure:
-  R/              - Source code
-  man/            - Documentation
-  tests/          - Unit tests
-  vignettes/      - 3 vignettes + 1 draft
-  data/           - Example datasets
-  demo/           - Demo scripts
-  dev_scripts/    - Development tools (not in package)
+Latest local check:
+  R CMD check --as-cran EstemPMM_0.3.2.tar.gz
+  Status: 0 ERROR, 0 WARNING, 2 NOTEs
 
-───────────────────────────────────────────────────────────────
-🎯 MONTE CARLO VALIDATION RESULTS
-───────────────────────────────────────────────────────────────
-SAR(1,1)_12:
-  • Avg variance reduction: 32.16%
-  • Peak performance: 61.7% (exponential, n=200)
-  • RMSE improvement: 18.73%
-  • Convergence: 100.0%
+Notes:
+  1. unable to verify current time
+  2. HTML manual validation/math rendering skipped because local HTML Tidy is
+     not recent enough and package V8 is unavailable
 
-SMA(1)_12:
-  • Avg variance reduction: 12.51%
-  • Peak performance: 47.3% (gamma, n=100)
-  • RMSE improvement: 6.95%
-  • Convergence: 99.9%
-
-SARMA(1,0,1,1)_12:
-  • Avg variance reduction: 26.09%
-  • Peak performance: 59.0% (exponential, n=200)
-  • RMSE improvement: 15.49%
-  • Convergence: 99.9%
-
-Innovation type ranking:
-  1. Exponential: 43.2% mean reduction
-  2. Lognormal:   33.5% mean reduction
-  3. Gamma:       29.2% mean reduction
-  4. Gaussian:    baseline
-
-───────────────────────────────────────────────────────────────
-📝 SUBMISSION STEPS
-───────────────────────────────────────────────────────────────
-Option 1 - Using devtools (recommended):
-  R> devtools::submit_cran()
-
-Option 2 - Manual upload:
-  1. Go to: https://cran.r-project.org/submit.html
-  2. Upload tarball (will be built automatically)
-  3. Or build locally:
-     $ R CMD build .
-     $ R CMD check --as-cran EstemPMM_0.2.0.tar.gz
-  4. Upload EstemPMM_0.2.0.tar.gz
-  5. Copy/paste cran-comments.md content
-
-───────────────────────────────────────────────────────────────
-📊 GIT STATUS
-───────────────────────────────────────────────────────────────
-Latest commit: 438be98
-Branch: main
-Status: Clean (all changes committed)
-
-Changes in this release:
-  • Comprehensive Monte Carlo validation
-  • Fixed NAMESPACE exports
-  • Fixed vignette bugs
-  • Cleaned repository structure
-  • Updated all documentation
-
-───────────────────────────────────────────────────────────────
-🚀 NEXT ACTION
-───────────────────────────────────────────────────────────────
-Run in R console:
-  devtools::submit_cran()
-
-Or build tarball:
-  R CMD build .
-
-Then submit at CRAN portal.
-
-═══════════════════════════════════════════════════════════════
-Generated: $(date)
-═══════════════════════════════════════════════════════════════
+This file is an internal local-check summary, not a record of a CRAN upload.
+External CRAN submission still requires explicit authorization.
