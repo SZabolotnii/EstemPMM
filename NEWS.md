@@ -1,5 +1,9 @@
 # EstemPMM News
 
+## EstemPMM 0.3.1.9002 (development)
+
+- `pmm_fp()`: replaced scaffold single-candidate loop with a full exhaustive BIC/AIC sweep over all subsets of size 1..`max_terms`; both IC columns now populated for every candidate.
+
 ## EstemPMM 0.3.1.9001 (development)
 
 - Initial scaffold for `pmm_fp()` (fractional polynomial PMM estimator) — see PMM-FP article (Zabolotnii 2026).

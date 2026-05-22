@@ -39,9 +39,10 @@ an S4 object of class \code{PMM_FP_fit} inheriting from \code{PMM2fit}.
 }
 \description{
 Fits a fractional-polynomial regression model with PMM2 (or PMM3, future)
-estimation of the coefficients. The procedure enumerates subsets of an
-FP basis (Royston-Altman 1994), refits each candidate with \code{\link[=lm_pmm2]{lm_pmm2()}},
-and selects the minimiser of the chosen information criterion.
+estimation of the coefficients. The procedure exhaustively enumerates all
+non-empty subsets of the FP basis up to size \code{max_terms} (Royston-Altman
+1994), refits each candidate with \code{\link[=lm_pmm2]{lm_pmm2()}}, and selects the minimiser
+of the chosen information criterion (BIC or AIC).
 }
 \details{
 Two basis tracks are supported (see Zabolotnii 2026, PMM-FP article,
@@ -52,11 +53,6 @@ requires \code{E[xi^4] < inf}.
 \item \code{track = "full"} — \verb{P_b = \{-2, -1, -0.5, 0, 0.5, 1, 2, 3\}} (K = 16),
 additionally requires bounded density at zero and \verb{E[|xi|^-2] < inf}.
 }
-
-The current implementation is a scaffold: it generates candidate models
-and the design matrix, but only the first candidate is refit with PMM2.
-Full PMM2 sweep and information-criterion comparison are planned for the
-next iteration (see TODO markers in source).
 }
 \examples{
 \dontrun{

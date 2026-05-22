@@ -5,11 +5,6 @@
 # (`lm_pmm2`). See:
 #   /Users/serhiizabolotnii/Science/PMM-FP/Spec_PMM_FP.md  (sections 3.2, 4.3)
 #   /Users/serhiizabolotnii/Science/PMM-FP/paper/decisions.md  (D1v2, D2)
-#
-# NOTE (scaffold v0.3.1.9001): the candidate-model search loop currently
-# returns the OLS-FP design with a PMM2 refit only for the first candidate.
-# A full sweep over all 2^K - 1 subsets with size <= max_terms and an
-# information-criterion comparison is still TODO (see in-line markers).
 
 
 # ---------------------------------------------------------------------------
@@ -90,9 +85,10 @@
 #' Polynomial Maximization Method with Fractional Polynomial basis
 #'
 #' Fits a fractional-polynomial regression model with PMM2 (or PMM3, future)
-#' estimation of the coefficients. The procedure enumerates subsets of an
-#' FP basis (Royston-Altman 1994), refits each candidate with [lm_pmm2()],
-#' and selects the minimiser of the chosen information criterion.
+#' estimation of the coefficients. The procedure exhaustively enumerates all
+#' non-empty subsets of the FP basis up to size `max_terms` (Royston-Altman
+#' 1994), refits each candidate with [lm_pmm2()], and selects the minimiser
+#' of the chosen information criterion (BIC or AIC).
 #'
 #' Two basis tracks are supported (see Zabolotnii 2026, PMM-FP article,
 #' frozen decision D1v2):
@@ -101,11 +97,6 @@
 #'   requires `E[xi^4] < inf`.
 #' * `track = "full"` — `P_b = {-2, -1, -0.5, 0, 0.5, 1, 2, 3}` (K = 16),
 #'   additionally requires bounded density at zero and `E[|xi|^-2] < inf`.
-#'
-#' The current implementation is a scaffold: it generates candidate models
-#' and the design matrix, but only the first candidate is refit with PMM2.
-#' Full PMM2 sweep and information-criterion comparison are planned for the
-#' next iteration (see TODO markers in source).
 #'
 #' @param formula a two-sided formula of the form `y ~ x` with exactly one
 #'   numeric predictor on the right-hand side. The intercept is added
@@ -209,10 +200,9 @@ pmm_fp <- function(formula,
     candidates <- .enumerate_fp_models(powers, max_terms)
 
     # --- fit candidates ------------------------------------------------------
-    # TODO: full pmm2 fit per candidate. Current scaffold fits only the first
-    #       candidate and records IC = NA for the rest. Replace the inner
-    #       branch with `lm_pmm2(y ~ ., data = df)` for every candidate and
-    #       pick the IC minimiser.
+    # Exhaustive BIC/AIC sweep: every non-empty subset of size <= max_terms.
+    # Candidates that fail to fit (e.g. collinear design) are skipped and
+    # recorded with IC = Inf so they are never selected.
     ic_records <- data.frame(
         index   = seq_along(candidates),
         powers  = vapply(candidates,
@@ -236,34 +226,33 @@ pmm_fp <- function(formula,
         colnames(design) <- paste0("fp", seq_along(p_vec))
         df <- data.frame(y = y, design)
 
-        # TODO: drop this `if` once full sweep is implemented
-        if (i == 1L) {
-            fit <- tryCatch(
-                lm_pmm2(stats::as.formula(
-                    paste("y ~", paste(colnames(design), collapse = " + "))),
-                    data = df),
-                error = function(e) NULL
-            )
-            if (is.null(fit)) next
-            ic_val <- .fp_ic(fit, n, criterion)
-            ic_records$BIC[i] <- if (criterion == "BIC") ic_val else NA_real_
-            ic_records$AIC[i] <- if (criterion == "AIC") ic_val else NA_real_
+        fit <- tryCatch(
+            lm_pmm2(stats::as.formula(
+                paste("y ~", paste(colnames(design), collapse = " + "))),
+                data = df),
+            error = function(e) NULL
+        )
+        if (is.null(fit)) {
+            ic_records$BIC[i] <- Inf
+            ic_records$AIC[i] <- Inf
+            next
+        }
+        bic_val <- .fp_ic(fit, n, "BIC")
+        aic_val <- .fp_ic(fit, n, "AIC")
+        ic_records$BIC[i] <- bic_val
+        ic_records$AIC[i] <- aic_val
+        ic_val <- if (criterion == "BIC") bic_val else aic_val
 
-            if (ic_val < best_ic) {
-                best_fit    <- fit
-                best_powers <- p_vec
-                best_ic     <- ic_val
-            }
+        if (ic_val < best_ic) {
+            best_fit    <- fit
+            best_powers <- p_vec
+            best_ic     <- ic_val
         }
     }
 
     if (is.null(best_fit)) {
         stop("pmm_fp(): no candidate model could be fitted")
     }
-
-    warning("pmm_fp(): scaffold implementation - only the first candidate ",
-            "model was refit with PMM2. Full FP search is TODO.",
-            call. = FALSE)
 
     # --- assemble PMM_FP_fit object ------------------------------------------
     new("PMM_FP_fit",
