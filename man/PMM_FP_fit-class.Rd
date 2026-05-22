@@ -6,7 +6,8 @@
 \title{S4 class for storing PMM-FP (Fractional Polynomial) model results}
 \description{
 Inherits from \code{PMM2fit}. Adds slots specific to the fractional-polynomial
-basis search (Royston-Altman 1994; Zabolotnii 2026, PMM-FP article).
+basis search (Royston-Altman 1994; Zabolotnii 2026, PMM-FP article) and
+the four numerical safeguards applied to the Newton refit (paper §3.3-3.5).
 }
 \section{Slots}{
 
@@ -25,5 +26,15 @@ powers, BIC and AIC values; used for diagnostics}
 
 \item{\code{shift_eps}}{numeric shift applied to \code{x} when non-positive values were
 present (0 if no shift was needed)}
+
+\item{\code{nr_diagnostics}}{named numeric vector with Newton-Raphson convergence
+diagnostics for the selected model: \code{k_star} (iterations at convergence),
+\code{max_step} (largest parameter change), \code{final_grad_norm} (||nabla L||),
+\code{kappa_F} (condition number of last Hessian/correlant), and flags
+\code{flag_step_halving}, \code{flag_tikhonov}, \code{flag_reinit}, \code{flag_fallback}
+(each 0 or 1 indicating whether the respective safeguard was activated)}
+
+\item{\code{nr_diverged}}{logical: \code{TRUE} when both the primary Newton run and the
+reinitialised run failed to converge, so the OLS-FP fallback was used}
 }}
 

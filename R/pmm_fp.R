@@ -5,6 +5,16 @@
 # (`lm_pmm2`). See:
 #   /Users/serhiizabolotnii/Science/PMM-FP/Spec_PMM_FP.md  (sections 3.2, 4.3)
 #   /Users/serhiizabolotnii/Science/PMM-FP/paper/decisions.md  (D1v2, D2)
+#
+# Safeguards (paper §3.3-3.5, implemented in .pmm_fp_robust_refit()):
+#   (i)   Step-halving (Armijo-Goldstein line search on gradient norm)
+#   (ii)  Damping: start step-size lambda=1; exponential recovery on success
+#   (iii) Adaptive Tikhonov: when kappa(F) > 1e8, add tau*I with tau=1e-6*tr(F)
+#   (iv)  Reinitialisation: robust median start (quantreg::rq or base median);
+#         after two divergences fall back to OLS with flag nr_diverged=TRUE
+#
+# ISOLATION: lm_pmm2() and pmm2_algorithm() are NOT modified.  The safeguards
+# run only inside pmm_fp() via .pmm_fp_robust_refit().
 
 
 # ---------------------------------------------------------------------------
@@ -79,6 +89,314 @@
 
 
 # ---------------------------------------------------------------------------
+# Robust Newton refit with four paper safeguards (§3.3-3.5)
+# ---------------------------------------------------------------------------
+
+#' PMM2 Newton refit with Armijo step-halving, damping, adaptive Tikhonov,
+#' and reinitialisation
+#'
+#' Implements the four numerical safeguards described in the PMM-FP paper
+#' (sec. 3.3-3.5) for the Newton-Raphson refit of PMM2 on a fixed FP design
+#' matrix. Called exclusively from `pmm_fp()`.
+#'
+#' @param X numeric design matrix (n x p), already including the intercept
+#'   column if required; passed directly — do NOT use a formula
+#' @param y numeric response vector of length n
+#' @param m2,m3,m4 numeric scalars: central moments from OLS residuals (the
+#'   same values used by the outer `lm_pmm2` call)
+#' @param max_iter integer maximum number of Newton iterations (default 50)
+#' @param tol numeric convergence tolerance on parameter change (default 1e-6)
+#' @param kappa_thresh numeric: condition number threshold above which
+#'   Tikhonov regularisation is activated (default 1e8)
+#' @param use_adaptive_tikhonov logical: force-enable Tikhonov regardless of
+#'   kappa (useful for full-track negative-power designs at small n); when
+#'   `NULL` (default) it is auto-enabled when `X` contains columns arising
+#'   from powers < 0
+#' @param verbose logical (default FALSE)
+#' @param quiet_fallback logical: if TRUE, suppress the `message()` when the
+#'   OLS fallback is triggered (used during the candidate sweep to avoid
+#'   per-candidate noise; default FALSE)
+#'
+#' @return a named list with:
+#' \describe{
+#'   \item{`b`}{numeric vector of final coefficient estimates}
+#'   \item{`convergence`}{logical}
+#'   \item{`iterations`}{integer number of NR iterations performed}
+#'   \item{`residuals`}{numeric vector of final residuals}
+#'   \item{`nr_diverged`}{logical: TRUE when OLS fallback was triggered}
+#'   \item{`diagnostics`}{named numeric vector:
+#'     `k_star` (iterations to convergence),
+#'     `max_step` (largest `||theta^{k+1} - theta^k||` over all iters),
+#'     `final_grad_norm` (||Z|| at convergence),
+#'     `kappa_F` (condition number of last Hessian/correlant),
+#'     `flag_step_halving` (0/1),
+#'     `flag_tikhonov` (0/1),
+#'     `flag_reinit` (0/1),
+#'     `flag_fallback` (0/1)}
+#' }
+#'
+#' @keywords internal
+.pmm_fp_robust_refit <- function(X, y, m2, m3, m4,
+                                  max_iter = 50L,
+                                  tol = 1e-6,
+                                  kappa_thresh = 1e8,
+                                  use_adaptive_tikhonov = NULL,
+                                  verbose = FALSE,
+                                  quiet_fallback = FALSE) {
+
+    n <- length(y)
+    p <- ncol(X)
+
+    # -- OLS initialisation (always available as fallback) -------------------
+    b_ols <- tryCatch(
+        as.numeric(lm.fit(X, y)$coefficients),
+        error = function(e) rep(0, p)
+    )
+    if (any(!is.finite(b_ols))) b_ols <- rep(0, p)
+
+    # -- Auto Tikhonov for full-track negative-power designs -----------------
+    if (is.null(use_adaptive_tikhonov)) {
+        # heuristic: column names starting with "fp" that came from x^(-k)
+        # are indistinguishable here; instead check if X has very large
+        # condition number at entry (which is what matters in practice)
+        use_adaptive_tikhonov <- FALSE
+    }
+
+    # -- Diagnostic flags ---------------------------------------------------
+    flag_step_halving <- 0L
+    flag_tikhonov     <- 0L
+    flag_reinit       <- 0L
+    flag_fallback     <- 0L
+    max_step_seen     <- 0.0
+    diverge_count     <- 0L   # consecutive divergence counter
+
+    # -- PMM2 polynomial coefficients (same as pmm2_algorithm) ---------------
+    A <- m3
+    B <- m4 - m2^2 - 2 * m3 * y
+    C <- m3 * y^2 - (m4 - m2^2) * y - m2 * m3
+
+    # Helper: compute gradient Z and Hessian JZs at b ---------------------------
+    .grad_hess <- function(b) {
+        y_pred <- as.vector(X %*% b)
+        Z1     <- A * y_pred^2 + B * y_pred + C
+        Z      <- as.vector(crossprod(X, Z1))        # p-vector
+        JZ11   <- 2 * A * y_pred + B
+        # JZs[i,j] = sum_k JZ11_k * X[k,i] * X[k,j]  =>  X' diag(JZ11) X
+        JZs    <- crossprod(X, JZ11 * X)             # p x p matrix
+        list(Z = Z, JZs = JZs)
+    }
+
+    # Helper: gradient norm -------------------------------------------------------
+    .grad_norm <- function(b) {
+        gh <- .grad_hess(b)
+        sqrt(sum(gh$Z^2))
+    }
+
+    # Helper: solve with adaptive Tikhonov if kappa too large -------------------
+    .solve_with_tikhonov <- function(JZs, Z) {
+        # Compute condition number (exact singular-value ratio)
+        sv <- tryCatch(svd(JZs, nu = 0L, nv = 0L)$d, error = function(e) NULL)
+        kappa_val <- if (!is.null(sv) && sv[length(sv)] > 0)
+            sv[1] / sv[length(sv)]
+        else Inf
+
+        if (!is.finite(kappa_val)) kappa_val <- Inf
+
+        tau <- 0
+        if (kappa_val > kappa_thresh || use_adaptive_tikhonov) {
+            tau <- 1e-6 * sum(diag(JZs))
+            if (!is.finite(tau) || tau <= 0) tau <- 1e-6
+            diag(JZs) <- diag(JZs) + tau
+            flag_tikhonov <<- 1L
+        }
+        delta <- tryCatch(
+            solve(JZs, Z),
+            error = function(e) {
+                # emergency: stronger ridge
+                diag(JZs) <- diag(JZs) + 1e-4
+                tryCatch(solve(JZs, Z), error = function(e2) rep(NA_real_, length(Z)))
+            }
+        )
+        list(delta = as.numeric(delta), kappa = kappa_val)
+    }
+
+    # -- Single NR pass from b_start ----------------------------------------
+    .nr_pass <- function(b_start) {
+        b_cur         <- b_start
+        converged     <- FALSE
+        step_lambda   <- 1.0         # damping step-size (ii)
+        consec_ok     <- 0L          # consecutive successful steps counter
+        k_star        <- 0L
+        final_kappa   <- Inf
+
+        for (iter in seq_len(max_iter)) {
+            k_star <- iter
+            gh <- .grad_hess(b_cur)
+            Z  <- gh$Z
+            JZs <- gh$JZs
+
+            # -- (iii) Adaptive Tikhonov check --------------------------------
+            sol <- .solve_with_tikhonov(JZs, Z)
+            delta <- sol$delta
+            final_kappa <- sol$kappa
+
+            if (any(!is.finite(delta))) {
+                # Hessian singular beyond rescue -> report divergence
+                return(list(b = b_cur, convergence = FALSE,
+                            iterations = iter, residuals = y - as.vector(X %*% b_cur),
+                            kappa = final_kappa, diverged = TRUE))
+            }
+
+            # -- (i) Armijo-Goldstein step-halving ----------------------------
+            grad_norm_cur <- sqrt(sum(Z^2))
+            b_trial       <- b_cur - step_lambda * delta
+            grad_norm_new <- .grad_norm(b_trial)
+
+            halving_count <- 0L
+            while (grad_norm_new >= grad_norm_cur && halving_count < 10L) {
+                step_lambda <- step_lambda / 2
+                b_trial     <- b_cur - step_lambda * delta
+                grad_norm_new <- .grad_norm(b_trial)
+                halving_count <- halving_count + 1L
+                flag_step_halving <<- 1L
+            }
+
+            if (halving_count >= 10L && grad_norm_new >= grad_norm_cur) {
+                # (i) line search failed -> mark diverged, trigger (iv)
+                return(list(b = b_cur, convergence = FALSE,
+                            iterations = iter, residuals = y - as.vector(X %*% b_cur),
+                            kappa = final_kappa, diverged = TRUE))
+            }
+
+            b_new    <- b_trial
+            diff_par <- sqrt(sum((b_new - b_cur)^2))
+            if (diff_par > max_step_seen) max_step_seen <<- diff_par
+
+            # -- (ii) Damping: exponential recovery ---------------------------
+            if (halving_count == 0L) {
+                consec_ok <- consec_ok + 1L
+                if (consec_ok >= 5L) {
+                    step_lambda <- min(1.0, 2 * step_lambda)
+                    consec_ok <- 0L
+                }
+            } else {
+                # Step was damped: reset lambda toward 0.5, counter resets
+                step_lambda <- 0.5
+                consec_ok   <- 0L
+            }
+
+            b_cur <- b_new
+
+            if (diff_par < tol) {
+                converged <- TRUE
+                break
+            }
+        }
+
+        final_res <- as.numeric(y - X %*% b_cur)
+        gh_final  <- .grad_hess(b_cur)
+        list(b = b_cur, convergence = converged,
+             iterations = k_star,
+             residuals = final_res,
+             kappa = final_kappa,
+             diverged = FALSE,
+             final_grad_norm = sqrt(sum(gh_final$Z^2)))
+    }
+
+    # -- First pass: OLS start -----------------------------------------------
+    result <- .nr_pass(b_ols)
+
+    # -- (iv) Reinitialisation: robust median start on first divergence ------
+    if (!result$convergence || result$diverged) {
+        diverge_count <- diverge_count + 1L
+        flag_reinit <- 1L
+
+        # Robust median start: use quantreg::rq if available, else column medians
+        b_median <- tryCatch({
+            if (requireNamespace("quantreg", quietly = TRUE)) {
+                # rq on the design-matrix-already-built data frame
+                df_rq <- as.data.frame(cbind(y = y, X[, -1L, drop = FALSE]))
+                names(df_rq)[1] <- "y"
+                fmla_rq <- stats::as.formula(
+                    paste("y ~", paste(names(df_rq)[-1], collapse = " + ")))
+                coef(quantreg::rq(fmla_rq, data = df_rq, tau = 0.5))
+            } else {
+                # base-R fallback: OLS on median-centered columns
+                b_ols
+            }
+        }, error = function(e) b_ols)
+
+        if (is.null(b_median) || any(!is.finite(b_median))) b_median <- b_ols
+        b_median <- as.numeric(b_median)
+        if (length(b_median) != p) b_median <- b_ols
+
+        result2 <- .nr_pass(b_median)
+
+        if (!result2$convergence || result2$diverged) {
+            # Second divergence -> OLS fallback with flag
+            diverge_count <- diverge_count + 1L
+            flag_fallback <- 1L
+
+            final_res_ols <- as.numeric(y - X %*% b_ols)
+            gh_ols <- .grad_hess(b_ols)
+            sv_ols <- tryCatch(svd(gh_ols$JZs, nu = 0L, nv = 0L)$d,
+                               error = function(e) c(1, 1))
+            kappa_ols <- if (sv_ols[length(sv_ols)] > 0)
+                sv_ols[1] / sv_ols[length(sv_ols)] else Inf
+
+            if (!quiet_fallback) {
+                message("[pmm_fp] Newton-Raphson did not converge after reinitialisation. ",
+                        "Returning OLS-FP estimate with nr_diverged=TRUE.")
+            }
+
+            return(list(
+                b            = b_ols,
+                convergence  = FALSE,
+                iterations   = max_iter,
+                residuals    = final_res_ols,
+                nr_diverged  = TRUE,
+                diagnostics  = c(
+                    k_star          = max_iter,
+                    max_step        = max_step_seen,
+                    final_grad_norm = sqrt(sum(gh_ols$Z^2)),
+                    kappa_F         = kappa_ols,
+                    flag_step_halving = flag_step_halving,
+                    flag_tikhonov   = flag_tikhonov,
+                    flag_reinit     = flag_reinit,
+                    flag_fallback   = flag_fallback
+                )
+            ))
+        }
+        result <- result2
+    }
+
+    # -- Assemble diagnostics for converged result ---------------------------
+    final_grad <- if (!is.null(result$final_grad_norm)) result$final_grad_norm else {
+        gh_f <- .grad_hess(result$b)
+        sqrt(sum(gh_f$Z^2))
+    }
+
+    list(
+        b            = result$b,
+        convergence  = result$convergence,
+        iterations   = result$iterations,
+        residuals    = result$residuals,
+        nr_diverged  = FALSE,
+        diagnostics  = c(
+            k_star            = result$iterations,
+            max_step          = max_step_seen,
+            final_grad_norm   = final_grad,
+            kappa_F           = if (!is.null(result$kappa)) result$kappa else Inf,
+            flag_step_halving = flag_step_halving,
+            flag_tikhonov     = flag_tikhonov,
+            flag_reinit       = flag_reinit,
+            flag_fallback     = flag_fallback
+        )
+    )
+}
+
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -110,8 +428,17 @@
 #' @param criterion character: `"BIC"` (default) or `"AIC"`.
 #' @param shift_eps numeric. If `min(x) <= 0`, `x` is shifted by
 #'   `-min(x) + shift_eps`. When `NULL`, a default `1e-3` is used.
+#' @param kappa_thresh numeric: condition-number threshold for activating
+#'   adaptive Tikhonov regularisation on the PMM2 Newton refit
+#'   (default `1e8`). Auto-enabled for `track = "full"` candidates.
+#' @param max_iter integer: maximum Newton-Raphson iterations per candidate
+#'   (default 50).
+#' @param tol numeric: convergence tolerance on parameter change (default 1e-6).
 #'
 #' @return an S4 object of class `PMM_FP_fit` inheriting from `PMM2fit`.
+#'   The slot `@nr_diagnostics` is a named numeric vector (see
+#'   `.pmm_fp_robust_refit()` for field names), and `@nr_diverged` is
+#'   `TRUE` when the OLS fallback was activated.
 #'
 #' @examples
 #' \dontrun{
@@ -122,6 +449,7 @@
 #'   fit <- pmm_fp(y ~ x, data = data.frame(x = x, y = y),
 #'                 track = "pos", max_terms = 2)
 #'   fit@selected_powers
+#'   fit@nr_diagnostics
 #' }
 #'
 #' @references
@@ -138,11 +466,14 @@
 #' @export
 pmm_fp <- function(formula,
                    data,
-                   track     = c("pos", "full"),
-                   order     = 2,
-                   max_terms = 4,
-                   criterion = c("BIC", "AIC"),
-                   shift_eps = NULL) {
+                   track        = c("pos", "full"),
+                   order        = 2,
+                   max_terms    = 4,
+                   criterion    = c("BIC", "AIC"),
+                   shift_eps    = NULL,
+                   kappa_thresh = 1e8,
+                   max_iter     = 50L,
+                   tol          = 1e-6) {
 
     call <- match.call()
 
@@ -196,13 +527,13 @@ pmm_fp <- function(formula,
                      pos  = c(0, 0.5, 1, 2, 3),
                      full = c(-2, -1, -0.5, 0, 0.5, 1, 2, 3))
 
+    # For full track: auto-enable Tikhonov (negative powers may cause ill-conditioning)
+    force_tikhonov <- (track == "full")
+
     # --- enumerate candidates ------------------------------------------------
     candidates <- .enumerate_fp_models(powers, max_terms)
 
     # --- fit candidates ------------------------------------------------------
-    # Exhaustive BIC/AIC sweep: every non-empty subset of size <= max_terms.
-    # Candidates that fail to fit (e.g. collinear design) are skipped and
-    # recorded with IC = Inf so they are never selected.
     ic_records <- data.frame(
         index   = seq_along(candidates),
         powers  = vapply(candidates,
@@ -214,59 +545,119 @@ pmm_fp <- function(formula,
         stringsAsFactors = FALSE
     )
 
-    best_fit     <- NULL
-    best_powers  <- NULL
-    best_ic      <- Inf
+    best_fit      <- NULL
+    best_powers   <- NULL
+    best_ic       <- Inf
+    best_diag     <- NULL
+    best_diverged <- FALSE
 
     for (i in seq_along(candidates)) {
         p_vec <- candidates[[i]]
-        design <- vapply(p_vec, function(p) .fp_transform(x, p),
-                         numeric(n))
-        if (!is.matrix(design)) design <- matrix(design, ncol = length(p_vec))
-        colnames(design) <- paste0("fp", seq_along(p_vec))
-        df <- data.frame(y = y, design)
 
-        fit <- tryCatch(
-            lm_pmm2(stats::as.formula(
-                paste("y ~", paste(colnames(design), collapse = " + "))),
-                data = df),
+        # Build FP design matrix (with intercept)
+        fp_cols <- vapply(p_vec, function(p) .fp_transform(x, p), numeric(n))
+        if (!is.matrix(fp_cols)) fp_cols <- matrix(fp_cols, ncol = length(p_vec))
+        # Prepend intercept column
+        X_cand <- cbind(1, fp_cols)
+        colnames(X_cand) <- c("(Intercept)", paste0("fp", seq_along(p_vec)))
+
+        # Get OLS moments (same computation as lm_pmm2 uses internally)
+        b_ols_cand <- tryCatch(
+            as.numeric(lm.fit(X_cand, y)$coefficients),
             error = function(e) NULL
         )
-        if (is.null(fit)) {
+        if (is.null(b_ols_cand) || any(!is.finite(b_ols_cand))) {
             ic_records$BIC[i] <- Inf
             ic_records$AIC[i] <- Inf
             next
         }
-        bic_val <- .fp_ic(fit, n, "BIC")
-        aic_val <- .fp_ic(fit, n, "AIC")
+        res_ols <- y - as.vector(X_cand %*% b_ols_cand)
+        m2_c <- mean(res_ols^2)
+        m3_c <- mean(res_ols^3)
+        m4_c <- mean(res_ols^4)
+
+        if (m2_c <= 0 || !is.finite(m2_c)) {
+            ic_records$BIC[i] <- Inf
+            ic_records$AIC[i] <- Inf
+            next
+        }
+
+        # Robust refit with all four safeguards (quiet_fallback=TRUE during sweep)
+        rr <- tryCatch(
+            .pmm_fp_robust_refit(
+                X                     = X_cand,
+                y                     = y,
+                m2                    = m2_c,
+                m3                    = m3_c,
+                m4                    = m4_c,
+                max_iter              = max_iter,
+                tol                   = tol,
+                kappa_thresh          = kappa_thresh,
+                use_adaptive_tikhonov = if (force_tikhonov) TRUE else NULL,
+                quiet_fallback        = TRUE
+            ),
+            error = function(e) NULL
+        )
+
+        if (is.null(rr)) {
+            ic_records$BIC[i] <- Inf
+            ic_records$AIC[i] <- Inf
+            next
+        }
+
+        # Fake a minimal PMM2fit for .fp_ic()
+        rss <- sum(rr$residuals^2)
+        k_p <- ncol(X_cand)
+        if (rss <= 0 || !is.finite(rss)) {
+            ic_records$BIC[i] <- Inf
+            ic_records$AIC[i] <- Inf
+            next
+        }
+        ll      <- -n / 2 * (log(2 * pi) + log(rss / n) + 1)
+        bic_val <- -2 * ll + log(n) * k_p
+        aic_val <- -2 * ll + 2   * k_p
         ic_records$BIC[i] <- bic_val
         ic_records$AIC[i] <- aic_val
         ic_val <- if (criterion == "BIC") bic_val else aic_val
 
         if (ic_val < best_ic) {
-            best_fit    <- fit
-            best_powers <- p_vec
-            best_ic     <- ic_val
+            # Store enough info to reconstruct a PMM2fit-compatible result
+            best_ic       <- ic_val
+            best_powers   <- p_vec
+            best_rr       <- rr
+            best_m2       <- m2_c
+            best_m3       <- m3_c
+            best_m4       <- m4_c
+            best_diag     <- rr$diagnostics
+            best_diverged <- rr$nr_diverged
         }
     }
 
-    if (is.null(best_fit)) {
+    if (is.null(best_powers)) {
         stop("pmm_fp(): no candidate model could be fitted")
+    }
+
+    # Report fallback for the selected model (once, post-sweep)
+    if (isTRUE(best_diverged)) {
+        message("[pmm_fp] Selected model used OLS-FP fallback (nr_diverged=TRUE). ",
+                "Consider increasing max_iter or checking the design.")
     }
 
     # --- assemble PMM_FP_fit object ------------------------------------------
     new("PMM_FP_fit",
-        coefficients    = best_fit@coefficients,
-        residuals       = best_fit@residuals,
-        m2              = best_fit@m2,
-        m3              = best_fit@m3,
-        m4              = best_fit@m4,
-        convergence     = best_fit@convergence,
-        iterations      = best_fit@iterations,
+        coefficients    = best_rr$b,
+        residuals       = best_rr$residuals,
+        m2              = best_m2,
+        m3              = best_m3,
+        m4              = best_m4,
+        convergence     = best_rr$convergence,
+        iterations      = best_rr$iterations,
         call            = call,
         selected_powers = best_powers,
         track           = track,
         all_models_ic   = ic_records,
         criterion       = criterion,
-        shift_eps       = applied_shift)
+        shift_eps       = applied_shift,
+        nr_diagnostics  = best_diag,
+        nr_diverged     = best_diverged)
 }

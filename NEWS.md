@@ -1,5 +1,25 @@
 # EstemPMM News
 
+## EstemPMM 0.3.1.9003 (development)
+
+- `pmm_fp()`: added four numerical safeguards to the Newton-Raphson refit
+  (paper §3.3–3.5), implemented in the new internal helper
+  `.pmm_fp_robust_refit()`:
+  (i)  **Step-halving (Armijo–Goldstein):** accept a Newton step only if the
+       gradient norm decreases; halve step-size up to 10 times on failure.
+  (ii) **Damping:** start step-size lambda=1; restart at 0.5 on divergence
+       and recover lambda → 1 exponentially after 5 consecutive successes.
+  (iii) **Adaptive Tikhonov:** when kappa(F) > 1e8 (exact SVD ratio), replace
+       F by F + tau*I with tau = 1e-6 * tr(F); auto-enabled for `track="full"`.
+  (iv) **Reinitialisation:** on first divergence, retry from a robust median
+       start (via `quantreg::rq` if available, else OLS fallback); after two
+       consecutive divergences, return OLS-FP estimate with `nr_diverged=TRUE`.
+- `PMM_FP_fit` S4 class: new slots `nr_diagnostics` (convergence vector: k*,
+  max step, final grad norm, kappa_F, four safeguard flags) and `nr_diverged`.
+- `quantreg` added to `Suggests` (used by `.pmm_fp_robust_refit()`).
+- **Isolation guarantee:** `lm_pmm2()` and `pmm2_algorithm()` are NOT modified;
+  safeguards are active only inside `pmm_fp()`.
+
 ## EstemPMM 0.3.1.9002 (development)
 
 - `pmm_fp()`: replaced scaffold single-candidate loop with a full exhaustive BIC/AIC sweep over all subsets of size 1..`max_terms`; both IC columns now populated for every candidate.

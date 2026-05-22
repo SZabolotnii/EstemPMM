@@ -11,7 +11,10 @@ pmm_fp(
   order = 2,
   max_terms = 4,
   criterion = c("BIC", "AIC"),
-  shift_eps = NULL
+  shift_eps = NULL,
+  kappa_thresh = 1e+08,
+  max_iter = 50L,
+  tol = 1e-06
 )
 }
 \arguments{
@@ -33,9 +36,21 @@ automatically through the FP design.}
 
 \item{shift_eps}{numeric. If \code{min(x) <= 0}, \code{x} is shifted by
 \code{-min(x) + shift_eps}. When \code{NULL}, a default \code{1e-3} is used.}
+
+\item{kappa_thresh}{numeric: condition-number threshold for activating
+adaptive Tikhonov regularisation on the PMM2 Newton refit
+(default \code{1e8}). Auto-enabled for \code{track = "full"} candidates.}
+
+\item{max_iter}{integer: maximum Newton-Raphson iterations per candidate
+(default 50).}
+
+\item{tol}{numeric: convergence tolerance on parameter change (default 1e-6).}
 }
 \value{
 an S4 object of class \code{PMM_FP_fit} inheriting from \code{PMM2fit}.
+The slot \verb{@nr_diagnostics} is a named numeric vector (see
+\code{.pmm_fp_robust_refit()} for field names), and \verb{@nr_diverged} is
+\code{TRUE} when the OLS fallback was activated.
 }
 \description{
 Fits a fractional-polynomial regression model with PMM2 (or PMM3, future)
@@ -63,6 +78,7 @@ additionally requires bounded density at zero and \verb{E[|xi|^-2] < inf}.
   fit <- pmm_fp(y ~ x, data = data.frame(x = x, y = y),
                 track = "pos", max_terms = 2)
   fit@selected_powers
+  fit@nr_diagnostics
 }
 
 }

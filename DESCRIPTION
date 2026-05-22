@@ -1,8 +1,8 @@
 Package: EstemPMM
 Type: Package
 Title: Polynomial Maximization Method for Non-Gaussian Regression
-Version: 0.3.1.9002
-Date: 2026-05-11
+Version: 0.3.1.9003
+Date: 2026-05-22
 Authors@R:
     person("Serhii", "Zabolotnii",
            email = "zabolotniua@gmail.com",
@@ -35,7 +35,8 @@ Suggests:
     rmarkdown,
     knitr,
     MASS,
-    numDeriv
+    numDeriv,
+    quantreg
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
