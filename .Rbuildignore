@@ -62,3 +62,4 @@
 ^CLAUDE\.md$
 ^EstemPMM_.*\.tar\.gz$
 ^vignettes/\.build\.timestamp$
+^notes$
