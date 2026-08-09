@@ -9,7 +9,7 @@ ma_pmm2(
   order = 1,
   method = "pmm2",
   pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
-  ma_method = c("linearized", "recursive"),
+  ma_solver = c("linearized", "recursive"),
   max_iter = 50,
   tol = 1e-06,
   include.mean = TRUE,
@@ -38,7 +38,7 @@ Options: \code{"unified_global"} (default, one-step correction),
 \code{"unified_iterative"} (full Newton-Raphson), or
 \code{"linearized"} (specialized for MA/SMA models, \strong{recommended for MA}).}
 
-\item{ma_method}{String: how the moving-average recursion is treated,
+\item{ma_solver}{String: how the moving-average recursion is treated,
 \code{"linearized"} (default) or \code{"recursive"}. Has no effect when the
 MA order is zero. See Details.}
 

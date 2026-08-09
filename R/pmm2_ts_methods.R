@@ -994,7 +994,7 @@ setMethod("nobs", "TS2fit",
 #' lagged design matrix.
 #'
 #' For non-seasonal MA/ARMA/ARIMA models fitted with
-#' \code{ma_method = "recursive"} the same expression applies with X replaced by
+#' \code{ma_solver = "recursive"} the same expression applies with X replaced by
 #' the exact score regressors
 #' \eqn{x_t = -\partial \varepsilon_t / \partial \beta}, rebuilt by
 #' \code{pmm2_recursive_design()}. This is the closed-form sandwich
@@ -1005,7 +1005,7 @@ setMethod("nobs", "TS2fit",
 #' required and no numerical Jacobian is needed. Note
 #' \eqn{\Delta / a = \mu_2 g_2}, i.e. the AR and MA branches share one formula.
 #'
-#' For fits produced with the (default) \code{ma_method = "linearized"} the
+#' For fits produced with the (default) \code{ma_solver = "linearized"} the
 #' frozen CSS design matrix is not the derivative of the criterion, the sandwich
 #' above does not apply, and \code{vcov()} still refuses; use
 #' \code{\link{ts_pmm2_inference}} for bootstrap standard errors.
@@ -1030,12 +1030,12 @@ setMethod("vcov", "TS2fit",
           function(object, ...) {
             mt <- object@model_type
             recursive_ok <- mt %in% c("ma", "arma", "arima") &&
-              length(object@ma_method) == 1L &&
-              identical(object@ma_method, "recursive")
+              length(object@ma_solver) == 1L &&
+              identical(object@ma_solver, "recursive")
 
             if (mt != "ar" && !recursive_ok)
               stop("vcov() is available for AR models, and for non-seasonal ",
-                   "MA/ARMA/ARIMA models fitted with ma_method = \"recursive\".\n",
+                   "MA/ARMA/ARIMA models fitted with ma_solver = \"recursive\".\n",
                    "  Otherwise use ts_pmm2_inference() for bootstrap standard errors.")
 
             if (mt == "ar") {
@@ -1081,11 +1081,11 @@ setMethod("confint", "TS2fit",
           function(object, parm, level = 0.95, ...) {
             mt <- object@model_type
             recursive_ok <- mt %in% c("ma", "arma", "arima") &&
-              length(object@ma_method) == 1L &&
-              identical(object@ma_method, "recursive")
+              length(object@ma_solver) == 1L &&
+              identical(object@ma_solver, "recursive")
             if (mt != "ar" && !recursive_ok)
               stop("confint() is available for AR models, and for non-seasonal ",
-                   "MA/ARMA/ARIMA models fitted with ma_method = \"recursive\".\n",
+                   "MA/ARMA/ARIMA models fitted with ma_solver = \"recursive\".\n",
                    "  Otherwise use ts_pmm2_inference() for bootstrap confidence intervals.")
             V   <- vcov(object)
             nms <- colnames(V)

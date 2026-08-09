@@ -10,7 +10,7 @@
 #'        - For ARIMA models: vector c(p, d, q) (AR, differencing, and MA orders)
 #' @param model_type String specifying the model type: "ar", "ma", "arma", or "arima"
 #' @param method String: estimation method, one of "pmm2" (default), "css", "ml", "yw", "ols"
-#' @param ma_method String: how the moving-average recursion is treated,
+#' @param ma_solver String: how the moving-average recursion is treated,
 #'   \code{"linearized"} (default) or \code{"recursive"}. Has no effect when the
 #'   MA order is zero. See Details.
 #' @param max_iter Integer: maximum number of iterations for the algorithm
@@ -30,7 +30,7 @@
 #' 3. Uses these moments with a specialized solver (pmm2_algorithm) to find
 #'    robust parameter estimates
 #'
-#' \strong{Treatment of the MA recursion (\code{ma_method}).}
+#' \strong{Treatment of the MA recursion (\code{ma_solver}).}
 #' \itemize{
 #'   \item \code{"linearized"} (default, historical behaviour): the design
 #'     matrix is built once from the CSS residuals and held fixed. For AR
@@ -50,21 +50,22 @@
 #'     (lognormal) and 1.35 to 1.73 (chi-squared).
 #' }
 #' The default is \code{"linearized"} for backward compatibility only; it will
-#' change in a future major release. \code{ma_method} is supported for
+#' change in a future major release. \code{ma_solver} is supported for
 #' \code{model_type} \code{"ma"}, \code{"arma"} and \code{"arima"} with
 #' \eqn{q \ge 1} and any \eqn{p \ge 0}. Seasonal models
 #' (\code{\link{sarima_pmm2}} and friends) always use the linearised path.
 #'
-#' Note that \code{\link{sarima_pmm2}} has an unrelated argument also named
-#' \code{ma_method}, taking \code{"mle"}/\code{"pmm2"}; the two are not
-#' interchangeable.
+#' Not to be confused with the unrelated \code{ma_method} argument of
+#' \code{\link{sarima_pmm2}}, which takes \code{"mle"}/\code{"pmm2"} and
+#' selects how the seasonal MA terms are estimated. The two control different
+#' things and are not interchangeable.
 #'
 #' @return An S4 object \code{TS2fit} of the corresponding subclass
 #' @export
 ts_pmm2 <- function(x, order,
                     model_type = c("ar", "ma", "arma", "arima"),
                     method = "pmm2",
-                    ma_method = c("linearized", "recursive"),
+                    ma_solver = c("linearized", "recursive"),
                     max_iter = 50,
                     tol = 1e-6,
                     include.mean = TRUE,
@@ -74,7 +75,7 @@ ts_pmm2 <- function(x, order,
                     reg_lambda = 1e-8,
                     verbose = FALSE) {
   model_type <- match.arg(model_type)
-  ma_method <- match.arg(ma_method)
+  ma_solver <- match.arg(ma_solver)
   cl <- match.call()
 
   if (!is.null(na.action)) {
@@ -103,11 +104,11 @@ ts_pmm2 <- function(x, order,
         intercept       = if (include.mean) as.numeric(css_fit$intercept) else 0,
         original_series = as.numeric(model_params$original_x),
         order           = list(ar = 0L, ma = q, d = 0L),
-        ma_method       = ma_method
+        ma_solver       = ma_solver
       ))
     }
 
-    pmm2_fit <- if (ma_method == "recursive") {
+    pmm2_fit <- if (ma_solver == "recursive") {
       ma_pmm2_fit_recursive(model_params$original_x, q, css_fit,
         include.mean = include.mean,
         max_iter = max_iter, tol = tol,
@@ -134,7 +135,7 @@ ts_pmm2 <- function(x, order,
       intercept       = if (include.mean) as.numeric(pmm2_fit$intercept) else 0,
       original_series = as.numeric(model_params$original_x),
       order           = list(ar = 0L, ma = q, d = 0L),
-      ma_method       = ma_method
+      ma_solver       = ma_solver
     ))
   }
 
@@ -199,14 +200,14 @@ ts_pmm2 <- function(x, order,
         intercept       = if (include_intercept_diff) intercept_css else 0,
         original_series = as.numeric(model_params$original_x),
         order           = list(ar = p, ma = q, d = d),
-        ma_method       = ma_method
+        ma_solver       = ma_solver
       ))
     }
 
     moments <- compute_moments(res_diff[is.finite(res_diff)])
     b_init <- c(if (include_intercept_diff) 0 else NULL, ar_css, ma_css)
 
-    if (q > 0 && ma_method == "recursive") {
+    if (q > 0 && ma_solver == "recursive") {
       w_rec <- x_diff - if (include_intercept_diff) intercept_css else 0
       algo_res <- pmm2_recursive_solve(
         w = w_rec,
@@ -291,7 +292,7 @@ ts_pmm2 <- function(x, order,
       intercept       = if (include_intercept_diff) as.numeric(intercept_hat) else 0,
       original_series = as.numeric(model_params$original_x),
       order           = list(ar = p, ma = q, d = d),
-      ma_method       = ma_method
+      ma_solver       = ma_solver
     ))
   }
 
@@ -336,7 +337,7 @@ ts_pmm2 <- function(x, order,
       verbose = verbose
     )
 
-    if (model_params$ma_order > 0 && ma_method == "recursive") {
+    if (model_params$ma_order > 0 && ma_solver == "recursive") {
       result <- pmm2_recursive_solve(
         w = x_centered,
         par_init = b_init,
@@ -411,7 +412,7 @@ ts_pmm2 <- function(x, order,
       ma = model_params$ma_order,
       d = model_params$d
     ),
-    ma_method = ma_method
+    ma_solver = ma_solver
   )
 }
 
@@ -569,7 +570,7 @@ ar_pmm2 <- function(x, order = 1, method = "pmm2",
 #' @export
 ma_pmm2 <- function(x, order = 1, method = "pmm2", 
                     pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
-                    ma_method = c("linearized", "recursive"),
+                    ma_solver = c("linearized", "recursive"),
                     max_iter = 50, tol = 1e-6,
                     include.mean = TRUE, initial = NULL, na.action = na.fail,
                     regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
@@ -580,7 +581,7 @@ ma_pmm2 <- function(x, order = 1, method = "pmm2",
   # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "ma", method = method,
-    ma_method = match.arg(ma_method),
+    ma_solver = match.arg(ma_solver),
     max_iter = max_iter, tol = tol,
     include.mean = include.mean, initial = initial,
     na.action = na.action, regularize = regularize,
@@ -648,7 +649,7 @@ ma_pmm2 <- function(x, order = 1, method = "pmm2",
 #' @export
 arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2",
                       pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
-                      ma_method = c("linearized", "recursive"),
+                      ma_solver = c("linearized", "recursive"),
                       max_iter = 50, tol = 1e-6,
                       include.mean = TRUE, initial = NULL, na.action = na.fail,
                       regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
@@ -659,7 +660,7 @@ arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2",
   # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "arma", method = method,
-    ma_method = match.arg(ma_method),
+    ma_solver = match.arg(ma_solver),
     max_iter = max_iter, tol = tol,
     include.mean = include.mean, initial = initial,
     na.action = na.action, regularize = regularize,
@@ -736,7 +737,7 @@ arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2",
 #' @export
 arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2",
                        pmm2_variant = c("unified_global", "unified_iterative", "linearized"),
-                       ma_method = c("linearized", "recursive"),
+                       ma_solver = c("linearized", "recursive"),
                        max_iter = 50, tol = 1e-6,
                        include.mean = TRUE, initial = NULL, na.action = na.fail,
                        regularize = TRUE, reg_lambda = 1e-8, verbose = FALSE) {
@@ -747,7 +748,7 @@ arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2",
   # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "arima", method = method,
-    ma_method = match.arg(ma_method),
+    ma_solver = match.arg(ma_solver),
     max_iter = max_iter, tol = tol,
     include.mean = include.mean, initial = initial,
     na.action = na.action, regularize = regularize,

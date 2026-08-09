@@ -9,7 +9,7 @@ ts_pmm2(
   order,
   model_type = c("ar", "ma", "arma", "arima"),
   method = "pmm2",
-  ma_method = c("linearized", "recursive"),
+  ma_solver = c("linearized", "recursive"),
   max_iter = 50,
   tol = 1e-06,
   include.mean = TRUE,
@@ -35,7 +35,7 @@ ts_pmm2(
 
 \item{method}{String: estimation method, one of "pmm2" (default), "css", "ml", "yw", "ols"}
 
-\item{ma_method}{String: how the moving-average recursion is treated,
+\item{ma_solver}{String: how the moving-average recursion is treated,
 \code{"linearized"} (default) or \code{"recursive"}. Has no effect when the
 MA order is zero. See Details.}
 
@@ -70,7 +70,7 @@ The PMM2 algorithm works as follows:
 robust parameter estimates
 }
 
-\strong{Treatment of the MA recursion (\code{ma_method}).}
+\strong{Treatment of the MA recursion (\code{ma_solver}).}
 \itemize{
 \item \code{"linearized"} (default, historical behaviour): the design
 matrix is built once from the CSS residuals and held fixed. For AR
@@ -90,12 +90,13 @@ from 0.77 to 0.98 (Gaussian), 1.30 to 1.72 (Gamma), 1.33 to 1.81
 (lognormal) and 1.35 to 1.73 (chi-squared).
 }
 The default is \code{"linearized"} for backward compatibility only; it will
-change in a future major release. \code{ma_method} is supported for
+change in a future major release. \code{ma_solver} is supported for
 \code{model_type} \code{"ma"}, \code{"arma"} and \code{"arima"} with
 \eqn{q \ge 1} and any \eqn{p \ge 0}. Seasonal models
 (\code{\link{sarima_pmm2}} and friends) always use the linearised path.
 
-Note that \code{\link{sarima_pmm2}} has an unrelated argument also named
-\code{ma_method}, taking \code{"mle"}/\code{"pmm2"}; the two are not
-interchangeable.
+Not to be confused with the unrelated \code{ma_method} argument of
+\code{\link{sarima_pmm2}}, which takes \code{"mle"}/\code{"pmm2"} and
+selects how the seasonal MA terms are estimated. The two control different
+things and are not interchangeable.
 }

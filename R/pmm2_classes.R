@@ -49,7 +49,7 @@ setClass("PMM2fit",
 #' inheritance resolves at \code{\linkS4class{PMMfit}}, which both
 #' branches share as their virtual root.
 #'
-#' @slot ma_method character, which treatment of the moving-average recursion
+#' @slot ma_solver character, which treatment of the moving-average recursion
 #'   produced the fit: \code{"linearized"} (design matrix frozen at the CSS
 #'   residuals) or \code{"recursive"} (innovation recursion recomputed at every
 #'   candidate parameter). Pure AR fits are unaffected by the distinction and
@@ -58,8 +58,8 @@ setClass("PMM2fit",
 #' @exportClass TS2fit
 setClass("TS2fit",
          contains = c("BasePMM2", "PMMtsfit"),
-         slots = c(ma_method = "character"),
-         prototype = prototype(ma_method = "linearized"))
+         slots = c(ma_solver = "character"),
+         prototype = prototype(ma_solver = "linearized"))
 
 #' S4 class for storing PMM2 AR model results
 #'

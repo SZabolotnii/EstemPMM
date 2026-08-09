@@ -19,7 +19,7 @@ Base class for storing results of time series model estimation using PMM2
 \section{Slots}{
 
 \describe{
-\item{\code{ma_method}}{character, which treatment of the moving-average recursion
+\item{\code{ma_solver}}{character, which treatment of the moving-average recursion
 produced the fit: \code{"linearized"} (design matrix frozen at the CSS
 residuals) or \code{"recursive"} (innovation recursion recomputed at every
 candidate parameter). Pure AR fits are unaffected by the distinction and

@@ -15,10 +15,10 @@ asymptotic variance relative to CSS. The penalty does *not* shrink as
 the sample grows: on ARIMA(0,1,1) it stayed near -30% of variance for
 `T` = 100, 200, 500 and 1000 alike.
 
-#### New: `ma_method = c("linearized", "recursive")`
+#### New: `ma_solver = c("linearized", "recursive")`
 
 `ts_pmm2()`, `ma_pmm2()`, `arma_pmm2()` and `arima_pmm2()` gained an
-`ma_method` argument. With `"recursive"` the innovations
+`ma_solver` argument. With `"recursive"` the innovations
 `eps_t(beta)` and the score regressors
 `x_t(beta) = -d eps_t / d beta` are recomputed by the exact recursion at
 **every** candidate parameter, so there is no linearisation. When
@@ -59,7 +59,7 @@ interchangeable.
 
 Pure AR models are unaffected: with `q = 0` the recursion is the
 identity map and reproduces the fixed lag design bit-for-bit, so
-`ma_method` is ignored and the estimates are unchanged.
+`ma_solver` is ignored and the estimates are unchanged.
 
 #### New: robust solver
 
@@ -96,7 +96,7 @@ Sigma = (Delta / a) * M^{-1},
 -- the same expression already used for AR models, with `X` replaced by
 the exact score regressors. `vcov()` and `confint()` therefore now work
 for non-seasonal `ma` / `arma` / `arima` fits produced with
-`ma_method = "recursive"`; no numerical Jacobian and no HAC correction
+`ma_solver = "recursive"`; no numerical Jacobian and no HAC correction
 are involved. Agreement with an empirical numerical sandwich is within
 5%.
 
@@ -119,7 +119,7 @@ skewness.
 
 #### Other
 
-- New S4 slot `TS2fit@ma_method` records which treatment produced the
+- New S4 slot `TS2fit@ma_solver` records which treatment produced the
   fit. Objects created before 0.5.0 and every seasonal fit default to
   `"linearized"` via the class prototype.
 - New internal functions: `arma_recursion()`, `pmm2_recursive_score()`,
@@ -385,7 +385,7 @@ arima_pmm2(y, order = c(1,0,1), pmm2_variant = "unified_global")  # Default
   - `estpmm_style_ma()` - PMM2 estimator for pure MA(q) models using CSS residuals as fixed regressors
   - `estpmm_style_sma()` - PMM2 estimator for pure SMA(Q) models
   - **`estpmm_style_ma_sma()` - PMM2 estimator for mixed MA+SMA models** ⭐ NEW
-  - Full support for MA(q)+SMA(Q) combinations in `sarima_pmm2()` with `ma_method="pmm2"`
+  - Full support for MA(q)+SMA(Q) combinations in `sarima_pmm2()` with `ma_solver="pmm2"`
   - Expected 20-45% MSE reduction for MA/SMA parameters under asymmetric innovation distributions
   - Implemented in `R/pmm2_ma_estimator.R` module with complete helper functions
   - Comprehensive unit tests (35 total) in `tests/testthat/test-ma-pmm2.R`
@@ -479,7 +479,7 @@ arima_pmm2(y, order = c(1,0,1), pmm2_variant = "unified_global")  # Default
 - `pmm2_inference()` - Bootstrap inference for linear models
 - `ts_pmm2_inference()` - Bootstrap inference for time series models
 - Statistical utilities: `pmm_skewness()`, `pmm_kurtosis()`, `compute_moments()`
-- Comparison functions: `compare_with_ols()`, `compare_ts_methods()`, `compare_ar_methods()`, `compare_ma_methods()`, `compare_arma_methods()`, `compare_arima_methods()`
+- Comparison functions: `compare_with_ols()`, `compare_ts_methods()`, `compare_ar_methods()`, `compare_ma_solvers()`, `compare_arma_solvers()`, `compare_arima_solvers()`
 
 **S4 Classes:**
 - `PMM2fit` - Results container for linear regression models

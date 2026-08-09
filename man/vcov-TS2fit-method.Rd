@@ -20,7 +20,7 @@ lagged design matrix.
 }
 \details{
 For non-seasonal MA/ARMA/ARIMA models fitted with
-\code{ma_method = "recursive"} the same expression applies with X replaced by
+\code{ma_solver = "recursive"} the same expression applies with X replaced by
 the exact score regressors
 \eqn{x_t = -\partial \varepsilon_t / \partial \beta}, rebuilt by
 \code{pmm2_recursive_design()}. This is the closed-form sandwich
@@ -31,7 +31,7 @@ difference sequence at the true parameter, so no long-run (HAC) correction is
 required and no numerical Jacobian is needed. Note
 \eqn{\Delta / a = \mu_2 g_2}, i.e. the AR and MA branches share one formula.
 
-For fits produced with the (default) \code{ma_method = "linearized"} the
+For fits produced with the (default) \code{ma_solver = "linearized"} the
 frozen CSS design matrix is not the derivative of the criterion, the sandwich
 above does not apply, and \code{vcov()} still refuses; use
 \code{\link{ts_pmm2_inference}} for bootstrap standard errors.

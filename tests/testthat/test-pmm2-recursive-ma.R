@@ -223,23 +223,23 @@ test_that("recursive solver never returns NA from an inadmissible start", {
 
 # ---- integration through the user-facing API -------------------------------
 
-test_that("ma_method is plumbed through and recorded on the fit", {
+test_that("ma_solver is plumbed through and recorded on the fit", {
   set.seed(31)
   w <- sim_ma1(300, theta = 0.6, gen = function(n) rgamma(n, 2, 1),
                m = 2, s = sqrt(2))
   f_lin <- ma_pmm2(w, order = 1)
-  f_rec <- ma_pmm2(w, order = 1, ma_method = "recursive")
-  expect_identical(f_lin@ma_method, "linearized")
-  expect_identical(f_rec@ma_method, "recursive")
+  f_rec <- ma_pmm2(w, order = 1, ma_solver = "recursive")
+  expect_identical(f_lin@ma_solver, "linearized")
+  expect_identical(f_rec@ma_solver, "recursive")
   expect_false(isTRUE(all.equal(coef(f_lin), coef(f_rec))))
 })
 
 test_that("the default remains the linearised branch", {
   set.seed(32)
   w <- sim_ma1(200, theta = 0.5)
-  expect_identical(ma_pmm2(w, order = 1)@ma_method, "linearized")
-  expect_identical(arma_pmm2(w, order = c(1, 1))@ma_method, "linearized")
-  expect_identical(arima_pmm2(cumsum(w), order = c(0, 1, 1))@ma_method,
+  expect_identical(ma_pmm2(w, order = 1)@ma_solver, "linearized")
+  expect_identical(arma_pmm2(w, order = c(1, 1))@ma_solver, "linearized")
+  expect_identical(arima_pmm2(cumsum(w), order = c(0, 1, 1))@ma_solver,
                    "linearized")
 })
 
@@ -247,28 +247,28 @@ test_that("pure AR fits are bit-identical under both settings", {
   set.seed(33)
   x <- as.numeric(stats::arima.sim(n = 300, list(ar = c(0.5, -0.2))))
   a1 <- ts_pmm2(x, order = 2, model_type = "ar")
-  a2 <- ts_pmm2(x, order = 2, model_type = "ar", ma_method = "recursive")
+  a2 <- ts_pmm2(x, order = 2, model_type = "ar", ma_solver = "recursive")
   expect_identical(coef(a1), coef(a2))
   b1 <- arima_pmm2(cumsum(x), order = c(2, 1, 0))
-  b2 <- arima_pmm2(cumsum(x), order = c(2, 1, 0), ma_method = "recursive")
+  b2 <- arima_pmm2(cumsum(x), order = c(2, 1, 0), ma_solver = "recursive")
   expect_identical(coef(b1), coef(b2))
 })
 
 test_that("recursive branch handles q > 1 and mixed ARIMA(p, d, q)", {
   set.seed(34)
   x2 <- as.numeric(stats::arima.sim(n = 600, list(ma = c(0.5, -0.3))))
-  f2 <- ma_pmm2(x2, order = 2, ma_method = "recursive")
+  f2 <- ma_pmm2(x2, order = 2, ma_solver = "recursive")
   expect_length(f2@coefficients, 2L)
   expect_true(all(is.finite(f2@coefficients)))
   expect_true(EstemPMM:::arma_admissible(theta = f2@coefficients))
 
   x3 <- as.numeric(stats::arima.sim(n = 800,
                                     list(ar = c(0.5, -0.3), ma = c(0.4, 0.2))))
-  f3 <- arma_pmm2(x3, order = c(2, 2), ma_method = "recursive")
+  f3 <- arma_pmm2(x3, order = c(2, 2), ma_solver = "recursive")
   expect_length(f3@coefficients, 4L)
   expect_true(all(is.finite(f3@coefficients)))
 
-  f4 <- arima_pmm2(cumsum(x3), order = c(1, 1, 1), ma_method = "recursive")
+  f4 <- arima_pmm2(cumsum(x3), order = c(1, 1, 1), ma_solver = "recursive")
   expect_length(f4@coefficients, 2L)
   expect_true(all(is.finite(f4@coefficients)))
 })
@@ -279,7 +279,7 @@ test_that("vcov()/confint() work for recursive MA fits and refuse otherwise", {
   set.seed(35)
   w <- sim_ma1(600, theta = 0.6, gen = function(n) rgamma(n, 2, 1),
                m = 2, s = sqrt(2))
-  f_rec <- ma_pmm2(w, order = 1, ma_method = "recursive", include.mean = FALSE)
+  f_rec <- ma_pmm2(w, order = 1, ma_solver = "recursive", include.mean = FALSE)
   V <- vcov(f_rec)
   expect_equal(dim(V), c(1L, 1L))
   expect_true(is.finite(V[1, 1]) && V[1, 1] > 0)
@@ -288,15 +288,15 @@ test_that("vcov()/confint() work for recursive MA fits and refuse otherwise", {
   expect_true(ci[1, 1] < coef(f_rec)[1] && coef(f_rec)[1] < ci[1, 2])
 
   f_lin <- ma_pmm2(w, order = 1, include.mean = FALSE)
-  expect_error(vcov(f_lin), "ma_method")
-  expect_error(confint(f_lin), "ma_method")
+  expect_error(vcov(f_lin), "ma_solver")
+  expect_error(confint(f_lin), "ma_solver")
 })
 
 test_that("closed-form sandwich agrees with the numerical Jacobian sandwich", {
   set.seed(36)
   w <- sim_ma1(1000, theta = -0.5, gen = function(n) rgamma(n, 2, 1),
                m = 2, s = sqrt(2))
-  f <- ma_pmm2(w, order = 1, ma_method = "recursive", include.mean = FALSE)
+  f <- ma_pmm2(w, order = 1, ma_solver = "recursive", include.mean = FALSE)
   V_closed <- vcov(f)[1, 1]
 
   # Numerical sandwich A^{-1} B A^{-T} built from the empirical psi_t.
