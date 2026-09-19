@@ -26,11 +26,14 @@ that goes with it.
 
 | Platform                   | R version | Result                     |
 | -------------------------- | --------- | -------------------------- |
-| macOS 26.5.2 (arm64)       | 4.5.3     | 0 ERROR, 0 WARNING, 1 NOTE |
+| macOS 27.0 (arm64)         | 4.5.3     | 0 ERROR, 0 WARNING, 1 NOTE |
+
+Checked on 2026-09-19 against the tarball being submitted.
 
 ## R CMD check results
 
-`R CMD check --as-cran` with `_R_CHECK_CRAN_INCOMING_=true`:
+`R CMD check --as-cran` with `_R_CHECK_CRAN_INCOMING_=true` and
+`_R_CHECK_CRAN_INCOMING_REMOTE_=true`:
 
 ```
 Status: 1 NOTE
