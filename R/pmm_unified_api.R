@@ -4,8 +4,11 @@
 # `arima_pmm3()` functions into a single dispatcher per model class,
 # selecting the polynomial order via a `method` argument.
 #
-# Introduced in EstemPMM 0.4.0. The old names remain available with
-# soft deprecation messages and are scheduled for removal in 0.5.0.
+# Introduced in EstemPMM 0.4.0. As of 0.5.0 the old names are still
+# exported and emit no deprecation message; they are documented as the
+# lower-level fitters these wrappers call. The 0.4.0 NEWS entry that
+# scheduled warnings for 0.4.1 and removal for 0.5.0 was not acted on,
+# and the JSS manuscript's examples call them directly.
 
 #' Fit a linear model with the polynomial maximization method
 #'
