@@ -29,7 +29,7 @@ ma_pmm2_fit_recursive(
 }
 \value{
 List with \code{coefficients}, \code{intercept}, \code{innovations},
-\code{convergence} and \code{iterations}.
+\code{convergence}, \code{iterations} and \code{fallback}.
 }
 \description{
 Drop-in replacement for the linearised \code{ma_pmm2_fit()} that recomputes

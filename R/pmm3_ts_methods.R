@@ -296,6 +296,11 @@ setMethod("predict", "TS3fit",
 #' standard errors via \code{\link{ts_pmm2_inference}} on an analogous
 #' PMM2 fit, or refit with \code{\link{ar_pmm3}} on the residual series.
 #'
+#' When the PMM3 iteration fell back to the initial estimate, or was skipped
+#' because the innovations are near-Gaussian (\code{attr(object, "fallback")}),
+#' the factor \eqn{g_3} is dropped and \eqn{\sigma^2 (X^\top X)^{-1}} is
+#' returned.
+#'
 #' @param object TS3fit (or subclass) object
 #' @param ... Additional arguments (not used)
 #'
@@ -311,7 +316,7 @@ setMethod("vcov", "TS3fit",
             xc  <- x - object@intercept
             X   <- create_ar_matrix(xc, p)
             vm  <- pmm3_variance_matrices(X, object@m2, object@m4, object@m6)
-            V   <- vm$pmm3
+            V   <- if (isTRUE(attr(object, "fallback"))) vm$ols else vm$pmm3
             nms <- paste0("ar", seq_len(p))
             rownames(V) <- nms
             colnames(V) <- nms

@@ -74,6 +74,15 @@ start, and scaling by `g` would understate that estimate's variance.
 z values and p-values from `vcov()`. Bootstrap inference still needs
 `formula =` and `data =`.
 
+The same applies to time series. `ts_pmm2()`, `ts_pmm3()` and their
+wrappers set `"fallback"` when the PMM iteration returned its start, when
+PMM3 skipped the iteration on near-Gaussian innovations, and for
+`method = "css"` or another non-PMM method. `vcov()` (AR fits, and
+recursive MA/ARMA/ARIMA fits) then returns `m2 * (X'X)^{-1}` without `g2`
+or `g3`. Before, an AR(3) PMM2 fit at n = 30 that fell back reported a
+variance 0.34 times the classical one. AR(5) PMM3 at n = 30 with Laplace
+innovations falls back in 26 of 400 series.
+
 `dev_scripts/check_pmm2_se.R` ran 1000 replications under chi-squared(3),
 Gamma(2), exponential, lognormal and Gaussian errors. At n >= 200 the
 95% interval covers 0.93-0.95. At n = 30-50 it covers 0.88-0.94, because

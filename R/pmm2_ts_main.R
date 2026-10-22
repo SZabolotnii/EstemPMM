@@ -14,6 +14,13 @@
   invisible(NULL)
 }
 
+# Record whether the coefficients are the classical (CSS/OLS) start rather
+# than a PMM2 root, so that vcov() does not apply g2 to a classical estimate.
+.mark_fallback <- function(fit, fallback) {
+  attr(fit, "fallback") <- isTRUE(fallback)
+  fit
+}
+
 #' Fit a time series model using the PMM2 method
 #'
 #' @param x Numeric vector of time series data
@@ -113,7 +120,7 @@ ts_pmm2 <- function(x, order,
 
     if (method == "css") {
       moments <- compute_moments(css_fit$residuals)
-      return(new("MAPMM2",
+      return(.mark_fallback(new("MAPMM2",
         coefficients    = as.numeric(css_fit$coefficients),
         residuals       = as.numeric(css_fit$residuals),
         m2              = as.numeric(moments$m2),
@@ -127,7 +134,7 @@ ts_pmm2 <- function(x, order,
         original_series = as.numeric(model_params$original_x),
         order           = list(ar = 0L, ma = q, d = 0L),
         ma_solver       = ma_solver
-      ))
+      ), TRUE))
     }
 
     pmm2_fit <- if (ma_solver == "recursive") {
@@ -144,7 +151,7 @@ ts_pmm2 <- function(x, order,
     }
     moments <- compute_moments(pmm2_fit$innovations)
 
-    return(new("MAPMM2",
+    return(.mark_fallback(new("MAPMM2",
       coefficients    = as.numeric(pmm2_fit$coefficients),
       residuals       = as.numeric(pmm2_fit$innovations),
       m2              = as.numeric(moments$m2),
@@ -158,7 +165,7 @@ ts_pmm2 <- function(x, order,
       original_series = as.numeric(model_params$original_x),
       order           = list(ar = 0L, ma = q, d = 0L),
       ma_solver       = ma_solver
-    ))
+    ), pmm2_fit$fallback))
   }
 
   if (model_params$model_type == "arima") {
@@ -209,7 +216,7 @@ ts_pmm2 <- function(x, order,
     if (method == "css") {
       res_clean <- res_diff[is.finite(res_diff)]
       moments <- compute_moments(res_clean)
-      return(new("ARIMAPMM2",
+      return(.mark_fallback(new("ARIMAPMM2",
         coefficients    = as.numeric(c(ar_css, ma_css)),
         residuals       = as.numeric(residuals_css),
         m2              = as.numeric(moments$m2),
@@ -223,7 +230,7 @@ ts_pmm2 <- function(x, order,
         original_series = as.numeric(model_params$original_x),
         order           = list(ar = p, ma = q, d = d),
         ma_solver       = ma_solver
-      ))
+      ), TRUE))
     }
 
     moments <- compute_moments(res_diff[is.finite(res_diff)])
@@ -301,7 +308,7 @@ ts_pmm2 <- function(x, order,
     res_clean <- final_res[is.finite(final_res)]
     moments_final <- compute_moments(res_clean)
 
-    return(new("ARIMAPMM2",
+    return(.mark_fallback(new("ARIMAPMM2",
       coefficients    = as.numeric(final_coef),
       residuals       = as.numeric(final_res),
       m2              = as.numeric(moments_final$m2),
@@ -315,7 +322,7 @@ ts_pmm2 <- function(x, order,
       original_series = as.numeric(model_params$original_x),
       order           = list(ar = p, ma = q, d = d),
       ma_solver       = ma_solver
-    ))
+    ), algo_res$fallback))
   }
 
   # 2) Obtain initial estimates
@@ -392,6 +399,7 @@ ts_pmm2 <- function(x, order,
     final_coef <- result$b
     converged <- result$convergence
     iterations <- result$iterations
+    fallback <- result$fallback
 
     # Compute final residuals
     final_res <- compute_ts_residuals(final_coef, model_info)
@@ -400,6 +408,7 @@ ts_pmm2 <- function(x, order,
     final_coef <- b_init
     converged <- TRUE
     iterations <- 0
+    fallback <- TRUE
     final_res <- innovations
   }
 
@@ -417,7 +426,7 @@ ts_pmm2 <- function(x, order,
   }
 
   # Create and return the object of the appropriate class
-  new(result_class,
+  .mark_fallback(new(result_class,
     coefficients = as.numeric(final_coef),
     residuals = as.numeric(final_res),
     m2 = as.numeric(m2),
@@ -435,7 +444,7 @@ ts_pmm2 <- function(x, order,
       d = model_params$d
     ),
     ma_solver = ma_solver
-  )
+  ), fallback)
 }
 
 #' Fit an AR model using PMM2 (wrapper)

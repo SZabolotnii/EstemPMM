@@ -457,7 +457,7 @@ pmm2_recursive_design <- function(object) {
 #' @param verbose Print progress.
 #'
 #' @return List with \code{coefficients}, \code{intercept}, \code{innovations},
-#'   \code{convergence} and \code{iterations}.
+#'   \code{convergence}, \code{iterations} and \code{fallback}.
 #' @keywords internal
 ma_pmm2_fit_recursive <- function(x, q, css_fit, include.mean = TRUE,
                                   max_iter = 50, tol = 1e-8, verbose = FALSE) {
@@ -485,6 +485,7 @@ ma_pmm2_fit_recursive <- function(x, q, css_fit, include.mean = TRUE,
     intercept = intercept,
     innovations = innovations,
     convergence = res$convergence,
-    iterations = res$iterations
+    iterations = res$iterations,
+    fallback = res$fallback
   )
 }

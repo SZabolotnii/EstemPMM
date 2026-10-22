@@ -135,6 +135,8 @@ ts_pmm3 <- function(x, order,
   final_coef <- nr$B
   converged  <- nr$converged
   iterations <- nr$iter
+  # The initial estimate was returned: no PMM3 step, no g3 gain
+  fallback   <- isTRUE(nr$fallback) || isTRUE(nr$near_gaussian)
 
   # 6) Compute final residuals
   model_info <- list(
@@ -168,7 +170,7 @@ ts_pmm3 <- function(x, order,
     "TS3fit"
   )
 
-  new(result_class,
+  fit <- new(result_class,
     coefficients    = as.numeric(final_coef),
     residuals       = as.numeric(final_res),
     m2              = as.numeric(mom$m2),
@@ -190,6 +192,8 @@ ts_pmm3 <- function(x, order,
       d  = model_params$d
     )
   )
+  attr(fit, "fallback") <- fallback
+  fit
 }
 
 

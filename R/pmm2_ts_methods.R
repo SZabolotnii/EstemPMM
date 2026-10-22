@@ -1010,6 +1010,11 @@ setMethod("nobs", "TS2fit",
 #' above does not apply, and \code{vcov()} still refuses; use
 #' \code{\link{ts_pmm2_inference}} for bootstrap standard errors.
 #'
+#' When the fit holds the classical start instead of a PMM2 root
+#' (\code{method = "css"} or another non-PMM method, or a PMM2 iteration that
+#' failed, \code{attr(object, "fallback")}), the factor \eqn{g_2} is dropped
+#' and \eqn{\sigma^2 (X^\top X)^{-1}} is returned.
+#'
 #' @section Known limitation (intercept):
 #' Neyman orthogonality with respect to the plug-in moments holds if and only if
 #' \eqn{\mu_3 E[x_t] = 0}. All slope regressors have \eqn{E[x_t] = 0}, so
@@ -1058,7 +1063,7 @@ setMethod("vcov", "TS2fit",
             }
 
             vm  <- pmm2_variance_matrices(X, object@m2, object@m3, object@m4)
-            V   <- vm$pmm2
+            V   <- if (isTRUE(attr(object, "fallback"))) vm$ols else vm$pmm2
             rownames(V) <- nms
             colnames(V) <- nms
             V

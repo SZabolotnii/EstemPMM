@@ -24,3 +24,9 @@ covariance requires the full Fisher information matrix; use bootstrap
 standard errors via \code{\link{ts_pmm2_inference}} on an analogous
 PMM2 fit, or refit with \code{\link{ar_pmm3}} on the residual series.
 }
+\details{
+When the PMM3 iteration fell back to the initial estimate, or was skipped
+because the innovations are near-Gaussian (\code{attr(object, "fallback")}),
+the factor \eqn{g_3} is dropped and \eqn{\sigma^2 (X^\top X)^{-1}} is
+returned.
+}

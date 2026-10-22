@@ -35,6 +35,11 @@ For fits produced with the (default) \code{ma_solver = "linearized"} the
 frozen CSS design matrix is not the derivative of the criterion, the sandwich
 above does not apply, and \code{vcov()} still refuses; use
 \code{\link{ts_pmm2_inference}} for bootstrap standard errors.
+
+When the fit holds the classical start instead of a PMM2 root
+(\code{method = "css"} or another non-PMM method, or a PMM2 iteration that
+failed, \code{attr(object, "fallback")}), the factor \eqn{g_2} is dropped
+and \eqn{\sigma^2 (X^\top X)^{-1}} is returned.
 }
 \section{Known limitation (intercept)}{
 
