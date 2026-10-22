@@ -67,6 +67,9 @@ test_that("general PMM3 falls back to OLS when the iteration fails", {
   b_ols <- unname(coef(lm(y ~ x, data = d)))
   if (!fit@convergence) {
     expect_equal(unname(coef(fit)), b_ols)
+    expect_true(attr(fit, "fallback"))
+    X <- cbind(1, d$x)
+    expect_equal(unname(vcov(fit)), unname(fit@m2 * solve(crossprod(X))))
   } else {
     expect_true(all(is.finite(coef(fit))))
   }

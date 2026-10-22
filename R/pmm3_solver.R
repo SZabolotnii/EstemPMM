@@ -15,7 +15,8 @@
 #' @param max_iter  Maximum NR iterations (default 100)
 #' @param step_max  Maximum step size (default 5.0)
 #'
-#' @return List: B (estimates), converged, iter, kappa, near_gaussian
+#' @return List: B (estimates), converged, iter, kappa, near_gaussian,
+#'   fallback (TRUE when the divergence guard returned the OLS values)
 #' @keywords internal
 .pmm3_nr_solver <- function(B_ols, X, Y, kappa,
                              adaptive = FALSE,
@@ -80,13 +81,14 @@
   }
 
   # Divergence guard: revert to OLS if too far
-  if (sqrt(sum((B - B_ols)^2)) > 10 || anyNA(B)) {
+  fallback <- sqrt(sum((B - B_ols)^2)) > 10 || anyNA(B)
+  if (fallback) {
     B         <- B_ols
     converged <- FALSE
   }
 
   list(B = B, converged = converged, iter = iter,
-       kappa = kappa, near_gaussian = FALSE)
+       kappa = kappa, near_gaussian = FALSE, fallback = fallback)
 }
 
 
@@ -132,7 +134,8 @@
 #' @param tol      convergence tolerance on the Newton step norm.
 #' @param max_iter maximum number of iterations.
 #'
-#' @return List: B, converged, iter, h, alpha, jacobian_min_eigen.
+#' @return List: B, converged, iter, h, alpha, jacobian_min_eigen, fallback
+#'   (TRUE when the starting values were returned).
 #' @keywords internal
 .pmm3_general_solver <- function(B_ols, X, Y, alpha, adaptive = FALSE,
                                  tol = 1e-6, max_iter = 100) {
@@ -145,7 +148,7 @@
   if (is.null(h)) {
     warning("PMM3 normal system is singular; returning the initial estimate.")
     return(list(B = B_ols, converged = FALSE, iter = 0L, h = rep(NA_real_, 3),
-                alpha = alpha, jacobian_min_eigen = NA_real_))
+                alpha = alpha, jacobian_min_eigen = NA_real_, fallback = TRUE))
   }
 
   B <- B_ols
@@ -197,7 +200,7 @@
   if (!is.null(failed)) {
     warning("PMM3 iteration failed (", failed, "); returning the initial estimate.")
     return(list(B = B_ols, converged = FALSE, iter = iter, h = h, alpha = alpha,
-                jacobian_min_eigen = NA_real_))
+                jacobian_min_eigen = NA_real_, fallback = TRUE))
   }
   if (!converged) {
     warning("PMM3 algorithm did not converge after ", max_iter, " iterations.")
@@ -210,7 +213,7 @@
             "it may not be the consistent root.")
   }
   list(B = B, converged = converged, iter = iter, h = h, alpha = alpha,
-       jacobian_min_eigen = min_eig)
+       jacobian_min_eigen = min_eig, fallback = FALSE)
 }
 
 

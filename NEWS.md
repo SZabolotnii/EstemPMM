@@ -5,6 +5,24 @@
 Not on CRAN. CRAN 0.5.0 stays the reference for published work and for
 the JSS manuscript until the next release.
 
+### Standard errors after an OLS fall-back; `summary()` of PMM2 fits
+
+`vcov()` for `PMM2fit` and `PMM3fit` (available since 0.3.2) returns
+`g * m2 * (X'X)^{-1}`. When the iteration fails, the fit returns the OLS
+start, and scaling by `g` would understate that estimate's variance.
+`lm_pmm2()` and `lm_pmm3()` now record the fall-back in the attribute
+`"fallback"`, and `vcov()` then returns the OLS covariance
+`m2 * (X'X)^{-1}`. `summary()` of a `PMM2fit` prints standard errors,
+z values and p-values from `vcov()`. Bootstrap inference still needs
+`formula =` and `data =`.
+
+`dev_scripts/check_pmm2_se.R` ran 1000 replications under chi-squared(3),
+Gamma(2), exponential, lognormal and Gaussian errors. At n >= 200 the
+95% interval covers 0.93-0.95. At n = 30-50 it covers 0.88-0.94, because
+the plug-in standard error is 8-28% too small. At n = 30 with five
+regressors, `lm_pmm2()` falls back to OLS in 14-28% of the replications
+on skewed laws. Its MSE is still 1.2-1.6 times lower than OLS there.
+
 ### New: general degree-3 PMM, `lm_pmm3(symmetric = FALSE)`
 
 `lm_pmm3()` fits the symmetric estimator, which assumes

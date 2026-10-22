@@ -193,6 +193,7 @@ lm_pmm3 <- function(formula, data,
   attr(ans, "model_frame")  <- mf
   attr(ans, "response")     <- as.numeric(y)
   attr(ans, "data")         <- data
+  attr(ans, "fallback")     <- isTRUE(nr$fallback)
 
   return(ans)
 }
@@ -234,6 +235,7 @@ lm_pmm3 <- function(formula, data,
   attr(ans, "data")         <- data
   attr(ans, "moments")      <- alpha
   attr(ans, "jacobian_min_eigen") <- sol$jacobian_min_eigen
+  attr(ans, "fallback")     <- isTRUE(sol$fallback)
   ans
 }
 
@@ -420,6 +422,9 @@ setMethod("nobs", "PMM3fit",
 #' maximization method, s = 3 specialised to symmetric platykurtic
 #' errors; see \code{\link{pmm3_variance_matrices}}). Under Gaussian
 #' errors \eqn{g_3 = 1} and the result equals the OLS covariance.
+#' For \code{lm_pmm3(symmetric = FALSE)}, \eqn{g_3} is the general factor
+#' \eqn{1 / (\alpha_2\, b^\top F^{-1} b)}. When the iteration failed and
+#' the OLS estimate was returned, the OLS covariance is returned.
 #'
 #' @param object PMM3fit object
 #' @param ... Additional arguments (not used)
@@ -431,7 +436,9 @@ setMethod("vcov", "PMM3fit",
             X <- attr(object, "model_matrix")
             if (is.null(X))
               stop("model_matrix not found; refit the model with lm_pmm3()")
-            if (methods::.hasSlot(object, "symmetric") && !isTRUE(object@symmetric)) {
+            if (isTRUE(attr(object, "fallback"))) {
+              V <- object@m2 * solve(crossprod(X))
+            } else if (methods::.hasSlot(object, "symmetric") && !isTRUE(object@symmetric)) {
               V <- object@g_coefficient * object@m2 * solve(crossprod(X))
             } else {
               V <- pmm3_variance_matrices(X, object@m2, object@m4, object@m6)$pmm3

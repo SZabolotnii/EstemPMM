@@ -156,6 +156,8 @@ lm_pmm2 <- function(formula, data,
   attr(ans, "model_frame") <- mf
   attr(ans, "response") <- as.numeric(y)
   attr(ans, "data") <- data
+  attr(ans, "fallback") <- isTRUE(out$fallback)
+  attr(ans, "jacobian_min_eigen") <- out$jacobian_min_eigen
 
   return(ans)
 }
@@ -241,6 +243,9 @@ setMethod("nobs", "PMM2fit",
 #' Returns the asymptotic covariance matrix \eqn{\sigma^2 g_2 (X^\top X)^{-1}},
 #' where \eqn{g_2 = 1 - c_3^2 / (2 + c_4)} is the PMM2 variance reduction factor.
 #' Under Gaussian errors \eqn{g_2 = 1} and the result equals the OLS covariance matrix.
+#' When the PMM2 iteration failed and \code{lm_pmm2} returned the OLS
+#' estimate, the OLS covariance \eqn{\sigma^2 (X^\top X)^{-1}} is returned
+#' instead, since the reduction by \eqn{g_2} does not apply to that estimate.
 #'
 #' @param object PMM2fit object
 #' @param ... Additional arguments (not used)
@@ -253,7 +258,7 @@ setMethod("vcov", "PMM2fit",
             if (is.null(X))
               stop("model_matrix not found; refit the model with lm_pmm2()")
             vm <- pmm2_variance_matrices(X, object@m2, object@m3, object@m4)
-            V  <- vm$pmm2
+            V  <- if (isTRUE(attr(object, "fallback"))) vm$ols else vm$pmm2
             nms <- names(object@coefficients)
             if (!is.null(nms) && length(nms) == nrow(V)) {
               rownames(V) <- nms

@@ -18,4 +18,7 @@ Numeric matrix of the same dimension as the number of coefficients
 Returns the asymptotic covariance matrix \eqn{\sigma^2 g_2 (X^\top X)^{-1}},
 where \eqn{g_2 = 1 - c_3^2 / (2 + c_4)} is the PMM2 variance reduction factor.
 Under Gaussian errors \eqn{g_2 = 1} and the result equals the OLS covariance matrix.
+When the PMM2 iteration failed and \code{lm_pmm2} returned the OLS
+estimate, the OLS covariance \eqn{\sigma^2 (X^\top X)^{-1}} is returned
+instead, since the reduction by \eqn{g_2} does not apply to that estimate.
 }

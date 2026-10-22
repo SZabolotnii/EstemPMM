@@ -22,4 +22,7 @@ is the PMM3 variance reduction factor (Kunchenko's polynomial
 maximization method, s = 3 specialised to symmetric platykurtic
 errors; see \code{\link{pmm3_variance_matrices}}). Under Gaussian
 errors \eqn{g_3 = 1} and the result equals the OLS covariance.
+For \code{lm_pmm3(symmetric = FALSE)}, \eqn{g_3} is the general factor
+\eqn{1 / (\alpha_2\, b^\top F^{-1} b)}. When the iteration failed and
+the OLS estimate was returned, the OLS covariance is returned.
 }

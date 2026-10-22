@@ -33,7 +33,8 @@
 \item{step_max}{Maximum step size (default 5.0)}
 }
 \value{
-List: B (estimates), converged, iter, kappa, near_gaussian
+List: B (estimates), converged, iter, kappa, near_gaussian,
+fallback (TRUE when the divergence guard returned the OLS values)
 }
 \description{
 Solves the PMM3 score equations using Newton-Raphson iteration.

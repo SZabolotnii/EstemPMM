@@ -40,4 +40,9 @@ test_that("a stalled PMM2 iteration returns the OLS start and says so", {
   expect_false(fit@convergence)
   ols <- stats::coef(stats::lm(cs$formula, data = cs$data))
   expect_equal(unname(fit@coefficients), unname(ols), tolerance = 1e-10)
+  # The returned estimate is OLS, so its covariance is the OLS one, not g2 times it
+  expect_true(attr(fit, "fallback"))
+  X <- attr(fit, "model_matrix")
+  expect_equal(unname(vcov(fit)), unname(fit@m2 * solve(crossprod(X))))
+  expect_output(summary(fit), "OLS fall-back")
 })

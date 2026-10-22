@@ -32,7 +32,8 @@ residuals at every iteration.}
 \item{max_iter}{maximum number of iterations.}
 }
 \value{
-List: B, converged, iter, h, alpha, jacobian_min_eigen.
+List: B, converged, iter, h, alpha, jacobian_min_eigen, fallback
+(TRUE when the starting values were returned).
 }
 \description{
 Solves \eqn{\sum_i x_i \psi(\varepsilon_i) = 0} with

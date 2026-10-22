@@ -315,8 +315,23 @@ setMethod("summary", "PMM2fit",
               cat("\n")
             }
 
-            cat("Coefficients:\n")
-            print(object@coefficients)
+            se <- tryCatch(sqrt(diag(vcov(object))), error = function(e) NULL)
+            if (is.null(se) || any(!is.finite(se))) {
+              cat("Coefficients:\n")
+              print(object@coefficients)
+            } else {
+              z <- object@coefficients / se
+              tab <- cbind(Estimate     = object@coefficients,
+                           `Std. Error` = se,
+                           `z value`    = z,
+                           `Pr(>|z|)`   = 2 * stats::pnorm(-abs(z)))
+              if (isTRUE(attr(object, "fallback"))) {
+                cat("Coefficients (OLS fall-back; OLS standard errors):\n")
+              } else {
+                cat("Coefficients (asymptotic standard errors, g * m2 * (X'X)^-1):\n")
+              }
+              stats::printCoefmat(tab, P.values = TRUE, has.Pvalue = TRUE)
+            }
 
             cat("\nCentral moments of initial residuals:\n")
             cat("  m2 =", object@m2, "\n")
@@ -345,7 +360,7 @@ setMethod("summary", "PMM2fit",
               inf_tab <- pmm2_inference(object, formula, data, B=B)
               print(inf_tab)
             } else {
-              cat("To view p-values, provide formula= and data=\n")
+              cat("For bootstrap inference, provide formula= and data=\n")
             }
             invisible(object)
           }

@@ -11,6 +11,17 @@ test_that("summary method runs without error", {
   expect_error(summary(fit), NA)
 })
 
+test_that("summary reports the asymptotic standard errors from vcov", {
+  fit <- lm_pmm2(y ~ x, data = test_data)
+  expect_false(attr(fit, "fallback"))
+  out <- capture.output(summary(fit))
+  expect_true(any(grepl("Std. Error", out, fixed = TRUE)))
+  se <- sqrt(diag(vcov(fit)))
+  vf <- pmm2_variance_factor(fit@m2, fit@m3, fit@m4)
+  ols_se <- sqrt(diag(fit@m2 * solve(crossprod(cbind(1, x)))))
+  expect_equal(unname(se), unname(sqrt(vf$g) * ols_se))
+})
+
 test_that("coef method extracts coefficients", {
   fit <- lm_pmm2(y ~ x, data = test_data)
 

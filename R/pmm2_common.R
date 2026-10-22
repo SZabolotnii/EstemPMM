@@ -157,7 +157,8 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
 
   # A stalled line search or a non-finite iterate has no estimate to offer:
   # return the initial (consistent) estimate, as the PMM3 solver does.
-  if (stalled || !all(is.finite(b_cur))) {
+  fallback <- stalled || !all(is.finite(b_cur))
+  if (fallback) {
     warning("PMM2 iteration failed (",
             if (stalled) "line search stalled" else "non-finite estimate",
             "); returning the initial estimate.", call. = FALSE)
@@ -202,6 +203,7 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     convergence = converged,
     iterations = iterations,
     residuals = final_res,
-    jacobian_min_eigen = min_eig
+    jacobian_min_eigen = min_eig,
+    fallback = fallback
   )
 }
