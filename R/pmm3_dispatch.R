@@ -69,10 +69,13 @@
 #' }
 #' The defaults of \code{clear_asymmetry_z}, \code{g3_threshold} and
 #' \code{n_leptokurtic} come from a Monte Carlo calibration over 20 error
-#' laws and \eqn{n} from 30 to 1000 (\code{dev_scripts/calibrate_dispatch.R}
-#' in the source repository). Against the 0.5.0 rule they halve the mean
-#' efficiency loss relative to the best of OLS, PMM2 and PMM3 and cut the
-#' worst case from 2.7 to 1.2. Steps 2 and 5 can be switched off with
+#' laws, \eqn{n} from 30 to 1000 and 1, 5 or 10 regressors
+#' (\code{dev_scripts/calibrate_dispatch.R} and
+#' \code{calibrate_dispatch_p.R} in the source repository). Against the 0.5.0
+#' rule they halve the mean efficiency loss relative to the best of OLS, PMM2
+#' and PMM3 and cut the worst case from 2.7 to 1.2. Neither \eqn{n - p}
+#' instead of \eqn{n} nor a minimum \eqn{n/p} improved the rule, so it uses
+#' the residuals alone. Steps 2 and 5 can be switched off with
 #' \code{clear_asymmetry_z = 0} and \code{g3_threshold = 0}, which
 #' reproduces the 0.5.0 rule.
 #'

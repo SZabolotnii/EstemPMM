@@ -15,7 +15,8 @@ roots of the cubic estimating equation. In `dev_scripts/check_pmm3_solver.R`
 t3 and t5 at n = 30 with p = 6-12, 7.3 for Laplace at n = 100 with p = 10,
 and 9.3 for Gamma(2). The dispatcher sends symmetric heavy-tailed residuals
 with n >= 100 to PMM3, and its calibration used a single regressor, so it did
-not see this.
+not see this. The calibration has since been repeated with up to 10
+regressors; see the `pmm_dispatch()` section below.
 
 The solver now halves a step until the norm of the estimating function
 decreases, as the PMM2 solver does since this development cycle. When the
@@ -192,8 +193,19 @@ bootstrap shows PMM3 and OLS variances within 1-3% of each other there,
 because the errors are heteroscedastic and the predicted gain assumes
 i.i.d. errors. The vignette now says so.
 
-**Not covered.** The calibration used linear regression with one Gaussian
-regressor; the thresholds have not been checked on time-series models. The
+**Several regressors.** The calibration was repeated with 5 and 10
+regressors (`dev_scripts/calibrate_dispatch_p.R`, `analyze_dispatch_p.R`,
+360 cells of 2000 replications, run after the PMM3 line search). The rule
+carries over unchanged. Its held-out mean log regret is 0.029, 0.029 and
+0.025 for 1, 5 and 10 regressors, against 0.064, 0.053 and 0.043 for the
+0.5.0 rule. Its worst held-out regret is 1.18, against 2.46 for the 0.5.0
+rule. None of 48 variants improved on it, including thresholds on n - p
+instead of n and a minimum n/p before the heavy-tail PMM3 arm. The
+remaining losses, up to 1.18 times the OLS MSE, are near-Gaussian laws at
+n <= 50, and the 0.5.0 rule has the same losses there.
+
+**Not covered.** The calibration used linear regression with Gaussian
+regressors; the thresholds have not been checked on time-series models. The
 symmetry threshold stays at a fixed `|gamma3| = 0.3`. Sample skewness of
 heavy-tailed errors is noisy even at large n (0.335 on one Laplace sample of
 2000), and such residuals then go to OLS rather than PMM3.
