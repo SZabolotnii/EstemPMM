@@ -32,7 +32,7 @@ Ordinary Least Squares (OLS) is the workhorse of regression analysis, providing 
 
 Consider scenarios where non-normal errors are common:
 
-- **Financial data**: Asset returns often have heavy tails and skewness
+- **Financial data**: Asset returns often have heavy tails and skewness (PMM2 uses the skewness)
 - **Environmental measurements**: Contamination levels, precipitation
 - **Biomedical applications**: Biological markers with asymmetric distributions
 - **Engineering**: Measurement errors from physical processes
@@ -191,7 +191,7 @@ x3 <- rexp(n, rate = 0.5)
 
 # True model
 beta <- c(5, 1.2, -0.8, 2.0)  # Intercept, x1, x2, x3
-errors <- rt(n, df = 4)  # t-distribution with heavy tails
+errors <- rgamma(n, shape = 2) - 2  # skewed gamma errors (gamma3 ~ 1.41)
 
 y <- beta[1] + beta[2]*x1 + beta[3]*x2 + beta[4]*x3 + errors
 
@@ -277,17 +277,58 @@ These ratios **less than 1.0** confirm that PMM2 achieves **lower Mean Squared E
 
 **Use PMM2 when:**
 
-- Error distributions exhibit **skewness** or **heavy tails**
+- Error distributions exhibit **skewness** (PMM2 draws its gain from $\gamma_3$)
 - You need **more precise estimates** than OLS provides
 - Working with **financial, environmental, or biomedical data** where non-normality is common
 - Sample sizes are **moderate to large** (n ≥ 100 recommended)
 
+**Do not use PMM2 when:**
+
+- Errors are **symmetric**, however heavy their tails: then $g_2 = 1$ (see
+  below). Use PMM3 (`lm_pmm3()`) or, for outliers, `lm_wpmm3()`.
+
 **Stick with OLS when:**
 
 - Errors are approximately **Gaussian**
-- Sample sizes are **very small** (n < 50)
+- Sample sizes are **very small** relative to the number of regressors: at
+  n = 30 with five regressors, `lm_pmm2()` returns the OLS start in 14-28%
+  of samples with skewed errors
 - Computational simplicity is paramount
 - You need unbiased estimates regardless of efficiency
+
+---
+
+## Theoretical Limits
+
+**Symmetric errors: degree 2 gains nothing.** With $\gamma_3 = 0$ the
+factor $g_2 = 1 - \gamma_3^2 / (2 + \gamma_4)$ equals 1 exactly,
+whatever $\gamma_4$ is. The same holds for every estimator built on linear and
+quadratic functions of the residuals (second-order least squares, the
+linear-plus-quadratic optimal estimating function). On symmetric laws all of
+the reserve lies at degree 3: `lm_pmm3()`. If PMM2 beats OLS on symmetric
+errors in a small sample, the gain comes from noise in the sample
+skewness. It shrinks as $n$ grows: in the calibration study of
+`pmm_dispatch()`, the PMM2/OLS MSE ratio for Laplace errors stays between
+0.94 and 0.99, and it approaches 1 as $n$ grows.
+
+**Symmetric heavy tails: expect a tie with robust estimators.** On
+symmetric laws, robust estimators (Huber) and rank estimators
+(Wilcoxon / Hodges-Lehmann) are already close to efficient. PMM3 and the
+weak-moment estimators `lm_wpmm3()` can therefore match them but rarely beat
+them. PMM's clear advantages are skewed errors and platykurtic or bimodal
+symmetric errors, where those estimators do not help.
+
+**PMM and GMM.** PMM2 solves the Godambe-optimal estimating equation built
+from the moment conditions $E[\varepsilon^k] = \alpha_k$, $k \le S$. Its
+asymptotic variance equals that of GMM on the same conditions with the
+optimal weight matrix. The two are the same estimator only asymptotically.
+In a finite sample PMM takes a root of the estimating equation, GMM takes a
+minimum of a quadratic form, and the PMM root need not minimise the GMM
+criterion. The estimating equation can also have several roots. The
+consistent one is the root reached by Newton iteration from a
+$\sqrt{n}$-consistent start. `lm_pmm2()` starts from OLS, damps steps that
+do not reduce the estimating function, and warns when the Jacobian at the
+root is not positive definite.
 
 ---
 
@@ -305,8 +346,9 @@ These ratios **less than 1.0** confirm that PMM2 achieves **lower Mean Squared E
 
 To learn more about EstemPMM:
 
-- **Time Series Applications**: See `vignette("02-pmm2-time-series")` for AR, MA, ARMA, and ARIMA models
-- **Bootstrap Inference**: See `vignette("03-bootstrap-inference")` for detailed statistical inference procedures
+- **Time Series Applications**: See `vignette("pmm2_time_series")` for AR, MA, ARMA, and ARIMA models
+- **Bootstrap Inference**: See `vignette("bootstrap_inference")` for detailed statistical inference procedures
+- **Symmetric Errors**: See `vignette("pmm3_symmetric_errors")` for PMM3
 - **Theoretical Background**: Refer to Zabolotnii et al. (2018) cited in package documentation
 
 ---

@@ -24,7 +24,9 @@
 #'   \code{"wpmm2"} or \code{"wpmm3"}.
 #'   \code{"auto"} consults \code{\link{pmm_dispatch}} and falls back to
 #'   PMM2 when the dispatcher recommends OLS, so the return value is
-#'   always a \code{\linkS4class{PMMfit}} object. It never selects the
+#'   always a \code{\linkS4class{PMMfit}} object. In that case a message
+#'   says so. The dispatcher's decision is stored in the attribute
+#'   \code{"dispatch"} of the fit. \code{"auto"} never selects the
 #'   weak-moment estimators.
 #' @param ... Additional arguments forwarded to the underlying fitter
 #'   (\code{\link{lm_pmm2}}, \code{\link{lm_pmm3}}, \code{\link{lm_wpmm2}}
@@ -52,11 +54,17 @@ pmm_lm <- function(formula, data,
                    ...) {
   method <- match.arg(method)
   outer_call <- match.call()
+  dec <- NULL
   if (method == "auto") {
     ols    <- stats::lm(formula, data = data)
     dec    <- pmm_dispatch(stats::residuals(ols), verbose = FALSE)
     chosen <- tolower(dec$method)
     method <- if (chosen == "pmm3") "pmm3" else "pmm2"
+    if (chosen == "ols") {
+      message("pmm_dispatch() recommends OLS (", dec$reasoning,
+              "); fitting PMM2 as in earlier versions. The decision is in ",
+              "attr(fit, \"dispatch\").")
+    }
   }
   fit <- switch(method,
     pmm2 = lm_pmm2(formula = formula, data = data, ...),
@@ -67,6 +75,7 @@ pmm_lm <- function(formula, data,
   # Overwrite the inner call so that predict()/show() see the formula the
   # user actually wrote, not the symbol "formula" forwarded by this wrapper.
   fit@call <- outer_call
+  if (!is.null(dec)) attr(fit, "dispatch") <- dec
   fit
 }
 

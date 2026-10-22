@@ -89,8 +89,10 @@ exactly rather than asymptotically. Measured on ARIMA(0,1,1) with
 from 0.77 to 0.98 (Gaussian), 1.30 to 1.72 (Gamma), 1.33 to 1.81
 (lognormal) and 1.35 to 1.73 (chi-squared).
 }
-The default is \code{"linearized"} for backward compatibility only; it will
-change in a future major release. \code{ma_solver} is supported for
+The default is \code{"linearized"} for backward compatibility only. It will
+change to \code{"recursive"} in EstemPMM 1.0.0. Until then, the first fit
+per session with \eqn{q \ge 1} and \code{ma_solver} unset prints a message
+saying so. \code{ma_solver} is supported for
 \code{model_type} \code{"ma"}, \code{"arma"} and \code{"arima"} with
 \eqn{q \ge 1} and any \eqn{p \ge 0}. Seasonal models
 (\code{\link{sarima_pmm2}} and friends) always use the linearised path.

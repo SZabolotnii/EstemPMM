@@ -27,7 +27,7 @@ Many real-world time series exhibit **seasonal patterns**: monthly sales with an
 This vignette demonstrates how **PMM2 estimation** for seasonal models provides:
 
 1. **More efficient parameter estimates** when innovations are non-Gaussian
-2. **Robust performance** with asymmetric and heavy-tailed errors
+2. **Robust performance** with asymmetric errors
 3. **Variance reductions of 20-50%** compared to classical methods
 4. **Comprehensive tools** for model fitting, diagnostics, and comparison
 
@@ -171,7 +171,8 @@ cat("  Theoretical variance reduction:",
     round((1 - g_result$g) * 100, 2), "%\n")
 
 # For Gaussian innovations, g ≈ 1 (no improvement)
-# For skewed/heavy-tailed innovations, g < 1 (PMM2 more efficient)
+# For skewed innovations, g < 1 (PMM2 more efficient); for symmetric
+# innovations g = 1 however heavy the tails
 ```
 
 ### Residual Diagnostics
@@ -715,7 +716,8 @@ legend("topleft", legend = c("Observed", "Forecast"),
 **Use PMM2 when:**
 
 - Innovations are **non-Gaussian** (check residuals from classical fit)
-- Data shows **asymmetry or heavy tails**
+- Innovations are **skewed** (for symmetric innovations PMM2 has $g = 1$,
+  however heavy the tails)
 - **Sample size ≥ 200** for reliable moment estimation
 - **Precision matters** more than speed
 

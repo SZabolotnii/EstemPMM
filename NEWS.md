@@ -5,6 +5,63 @@
 Not on CRAN. CRAN 0.5.0 stays the reference for published work and for
 the JSS manuscript until the next release.
 
+### Safeguarded symmetric PMM3 iteration
+
+The symmetric PMM3 Newton solver behind `lm_pmm3()` and `ar/ma/arma_pmm3()`
+limited the step length but did not check that a step improved the fit. With
+several regressors and leptokurtic or skewed errors, it converged to other
+roots of the cubic estimating equation. In `dev_scripts/check_pmm3_solver.R`
+(500 replications) the slope MSE relative to OLS reached 5.3-7.6 for Laplace,
+t3 and t5 at n = 30 with p = 6-12, 7.3 for Laplace at n = 100 with p = 10,
+and 9.3 for Gamma(2). The dispatcher sends symmetric heavy-tailed residuals
+with n >= 100 to PMM3, and its calibration used a single regressor, so it did
+not see this.
+
+The solver now halves a step until the norm of the estimating function
+decreases, as the PMM2 solver does since this development cycle. When the
+line search stalls away from a root, it returns OLS with
+`convergence = FALSE` and sets `attr(fit, "fallback")`. On the same grid the
+worst MSE ratio is now 1.14 (Gaussian, n = 30, p = 2, unchanged). Fits on
+well-conditioned data are unchanged: wherever the full step reduces the norm
+it is taken, and at n = 100 with p = 2 every replication was identical to the
+earlier solver. The price is more fall-backs at small n/p: 10-31% at n = 30
+with p = 12. A converged root whose Jacobian is indefinite now raises a
+warning. It is not rejected, because at n = 30 with p = 12 up to 19% of the
+good roots fail the same test.
+
+### `pmm_lm(method = "auto")` records the dispatch decision
+
+The `pmm_dispatch()` result is stored in `attr(fit, "dispatch")`. When the
+dispatcher recommends OLS, a message says so. `pmm_lm()` still fits PMM2 in
+that case; returning an OLS fit is planned for 1.0.0.
+
+### `ma_solver`: announcing the change of default
+
+`ts_pmm2()`, `ma_pmm2()`, `arma_pmm2()` and `arima_pmm2()` print a message,
+once per session, when a model with MA terms is fitted and `ma_solver` was
+not set. The default changes from `"linearized"` to `"recursive"` in 1.0.0.
+Results are unchanged. `ts_pmm2_inference()` refitted every bootstrap
+replication with the default solver; it now uses the solver of the original
+fit, so bootstrap intervals for `ma_solver = "recursive"` fits come from the
+recursive estimator.
+
+### Documentation
+
+The PMM2 vignette gains a "Theoretical Limits" section:
+
+- Symmetric errors give `g2 = 1` exactly for every degree-2 scheme, however
+  heavy the tails.
+- On symmetric heavy tails, PMM3 and the weak-moment estimators can match
+  robust and rank estimators, but rarely beat them.
+- PMM and optimally weighted GMM are the same estimator only
+  asymptotically: the PMM root need not minimise the GMM criterion, and only
+  the root reached from a consistent start is consistent.
+
+Example 2 used Student-t errors, for which PMM2 gains nothing; it now uses
+skewed errors. "Use PMM2 when errors are skewed or heavy-tailed" now reads
+"skewed" in the PMM2 and seasonal vignettes, and the vignette
+cross-references point to the existing vignette names.
+
 ### Standard errors after an OLS fall-back; `summary()` of PMM2 fits
 
 `vcov()` for `PMM2fit` and `PMM3fit` (available since 0.3.2) returns

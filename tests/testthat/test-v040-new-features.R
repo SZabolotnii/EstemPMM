@@ -53,6 +53,22 @@ test_that("pmm_lm(method='auto') dispatches to PMM3 for platykurtic data", {
   expect_s4_class(fit, "PMM3fit")
 })
 
+test_that("pmm_lm(method='auto') records the dispatch decision", {
+  fit <- pmm_lm(y ~ x, data = dat, method = "auto")
+  dec <- attr(fit, "dispatch")
+  expect_equal(dec$method, "PMM2")
+  expect_null(attr(pmm_lm(y ~ x, data = dat, method = "pmm2"), "dispatch"))
+
+  # OLS recommendation: PMM2 is still fitted, and a message says so
+  set.seed(77)
+  dg <- data.frame(x = rnorm(200))
+  dg$y <- 1 + dg$x + rnorm(200)
+  expect_message(fg <- pmm_lm(y ~ x, data = dg, method = "auto"),
+                 "recommends OLS")
+  expect_s4_class(fg, "PMM2fit")
+  expect_equal(attr(fg, "dispatch")$method, "OLS")
+})
+
 test_that("pmm_lm preserves the outer call so show() and predict() work", {
   fit <- pmm_lm(y ~ x, data = dat, method = "pmm2")
   # The call slot must reference pmm_lm, not lm_pmm2, so that

@@ -132,3 +132,34 @@ test_that("summary method runs without error for PMM3fit", {
   fit <- lm_pmm3(y ~ x, data = test_data)
   expect_output(summary(fit), "PMM3 estimation results")
 })
+
+test_that("line search keeps symmetric PMM3 off wrong roots at small n/p", {
+  # Laplace errors, n = 30, five regressors: without the line search the
+  # undamped Newton iteration reached other roots of the cubic estimating
+  # equation, and the slope MSE was 6.1 times that of OLS on these samples
+  set.seed(2026)
+  se <- c(pmm3 = 0, ols = 0)
+  for (i in 1:200) {
+    X <- matrix(rnorm(30 * 5), 30)
+    d <- data.frame(y = 1 + 2 * X[, 1] + rexp(30) * sample(c(-1, 1), 30, TRUE), X)
+    fit <- suppressWarnings(lm_pmm3(y ~ ., data = d))
+    se <- se + c((coef(fit)[2] - 2)^2, (coef(lm(y ~ ., data = d))[2] - 2)^2)
+  }
+  expect_lt(unname(se["pmm3"] / se["ols"]), 1.2)
+})
+
+test_that("a stalled symmetric PMM3 iteration returns OLS and says so", {
+  set.seed(2026)
+  found <- FALSE
+  for (i in 1:200) {
+    X <- matrix(rnorm(30 * 5), 30)
+    d <- data.frame(y = 1 + 2 * X[, 1] + rexp(30) * sample(c(-1, 1), 30, TRUE), X)
+    fit <- suppressWarnings(lm_pmm3(y ~ ., data = d))
+    if (isTRUE(attr(fit, "fallback"))) { found <- TRUE; break }
+  }
+  expect_true(found)
+  expect_false(fit@convergence)
+  expect_equal(unname(coef(fit)), unname(coef(lm(y ~ ., data = d))))
+  Xm <- attr(fit, "model_matrix")
+  expect_equal(unname(vcov(fit)), unname(fit@m2 * solve(crossprod(Xm))))
+})

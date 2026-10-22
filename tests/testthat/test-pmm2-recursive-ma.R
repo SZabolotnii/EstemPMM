@@ -313,3 +313,34 @@ test_that("closed-form sandwich agrees with the numerical Jacobian sandwich", {
   V_num <- B_hat / (A_hat^2) / n
   expect_equal(V_closed, V_num, tolerance = 0.05)
 })
+
+# ---- default-change notice and bootstrap refits ----------------------------
+
+test_that("an unset ma_solver is announced once per session", {
+  set.seed(5)
+  w <- sim_ma1(200, 0.5)
+  notices <- EstemPMM:::.estem_notices
+  old <- notices$ma_solver
+  on.exit(notices$ma_solver <- old)
+  notices$ma_solver <- NULL
+  expect_message(ma_pmm2(w, order = 1), "ma_solver")
+  expect_no_message(ma_pmm2(w, order = 1))
+  notices$ma_solver <- NULL
+  expect_no_message(ma_pmm2(w, order = 1, ma_solver = "linearized"))
+  expect_no_message(ar_pmm2(w, order = 1))
+  expect_message(arima_pmm2(cumsum(w), order = c(0, 1, 1)), "1.0.0")
+})
+
+test_that("ts_pmm2_inference refits with the MA solver of the original fit", {
+  set.seed(6)
+  w <- sim_ma1(200, 0.5)
+  fit <- ma_pmm2(w, order = 1, ma_solver = "recursive")
+  seen <- character(0)
+  testthat::local_mocked_bindings(ts_pmm2 = function(...) {
+    seen <<- c(seen, list(...)$ma_solver)
+    stop("stop after recording")
+  })
+  suppressWarnings(try(ts_pmm2_inference(fit, B = 3, seed = 1), silent = TRUE))
+  expect_true(length(seen) > 0)
+  expect_true(all(seen == "recursive"))
+})

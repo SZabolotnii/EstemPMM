@@ -34,11 +34,15 @@
 }
 \value{
 List: B (estimates), converged, iter, kappa, near_gaussian,
-fallback (TRUE when the divergence guard returned the OLS values)
+fallback (TRUE when the OLS values were returned: stalled line search,
+divergence or a non-finite iterate)
 }
 \description{
 Solves the PMM3 score equations using Newton-Raphson iteration.
 The score is \eqn{Z = X'(\varepsilon(\kappa - \varepsilon^2))} and the
 Jacobian is \eqn{J = X' \mathrm{diag}(3\varepsilon^2 - \kappa) X}.
+Each step is limited to \code{step_max} and then halved until the norm of
+the score decreases. If the line search stalls away from a root, the OLS
+values are returned.
 }
 \keyword{internal}

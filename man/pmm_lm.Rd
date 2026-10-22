@@ -20,7 +20,9 @@ pmm_lm(
 \code{"wpmm2"} or \code{"wpmm3"}.
 \code{"auto"} consults \code{\link{pmm_dispatch}} and falls back to
 PMM2 when the dispatcher recommends OLS, so the return value is
-always a \code{\linkS4class{PMMfit}} object. It never selects the
+always a \code{\linkS4class{PMMfit}} object. In that case a message
+says so. The dispatcher's decision is stored in the attribute
+\code{"dispatch"} of the fit. \code{"auto"} never selects the
 weak-moment estimators.}
 
 \item{...}{Additional arguments forwarded to the underlying fitter

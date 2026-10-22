@@ -5,6 +5,9 @@
 #' Solves the PMM3 score equations using Newton-Raphson iteration.
 #' The score is \eqn{Z = X'(\varepsilon(\kappa - \varepsilon^2))} and the
 #' Jacobian is \eqn{J = X' \mathrm{diag}(3\varepsilon^2 - \kappa) X}.
+#' Each step is limited to \code{step_max} and then halved until the norm of
+#' the score decreases. If the line search stalls away from a root, the OLS
+#' values are returned.
 #'
 #' @param B_ols     OLS starting values (length P)
 #' @param X         Design matrix (n x P)
@@ -16,7 +19,8 @@
 #' @param step_max  Maximum step size (default 5.0)
 #'
 #' @return List: B (estimates), converged, iter, kappa, near_gaussian,
-#'   fallback (TRUE when the divergence guard returned the OLS values)
+#'   fallback (TRUE when the OLS values were returned: stalled line search,
+#'   divergence or a non-finite iterate)
 #' @keywords internal
 .pmm3_nr_solver <- function(B_ols, X, Y, kappa,
                              adaptive = FALSE,
@@ -34,7 +38,13 @@
   }
 
   converged <- FALSE
+  stalled   <- FALSE
   iter      <- 0L
+  norm_init <- NA_real_
+  score_norm <- function(B, kappa) {
+    e <- as.numeric(Y - X %*% B)
+    sqrt(sum(crossprod(X, e * (kappa - e^2))^2))
+  }
 
   for (i in seq_len(max_iter)) {
     iter <- as.integer(i)
@@ -72,7 +82,27 @@
     step_norm <- sqrt(sum(delta^2))
     if (step_norm > step_max) delta <- delta * step_max / step_norm
 
-    B <- B - delta
+    # Backtracking on ||Z||: the full step is kept whenever it reduces the
+    # norm of the estimating function, so well-behaved fits are unchanged
+    norm_cur <- sqrt(sum(Z^2))
+    if (i == 1) norm_init <- norm_cur
+    t_step <- 1
+    B_new <- B - delta
+    if (step_norm >= tol) {
+      repeat {
+        norm_new <- score_norm(B_new, kappa)
+        if (all(is.finite(B_new)) && is.finite(norm_new) &&
+            norm_new <= (1 - 1e-4 * t_step) * norm_cur) break
+        t_step <- t_step / 2
+        if (t_step < 2^-30) break
+        B_new <- B - t_step * delta
+      }
+    }
+    if (t_step < 2^-30) {
+      if (norm_cur <= 1e-10 * norm_init) converged <- TRUE else stalled <- TRUE
+      break
+    }
+    B <- B_new
 
     if (step_norm < tol) {
       converged <- TRUE
@@ -80,11 +110,26 @@
     }
   }
 
-  # Divergence guard: revert to OLS if too far
-  fallback <- sqrt(sum((B - B_ols)^2)) > 10 || anyNA(B)
+  # Divergence guard: revert to OLS if too far, or if the line search stalled
+  fallback <- stalled || sqrt(sum((B - B_ols)^2)) > 10 || anyNA(B)
   if (fallback) {
     B         <- B_ols
     converged <- FALSE
+  }
+
+  # Root check. At the consistent root X' diag(3 eps^2 - kappa) X / n tends to
+  # (3 m2 - kappa) E[x x'], a definite matrix; a root where it is indefinite
+  # is usually another branch. Small samples fail the test at good roots too,
+  # so it is reported, not acted on.
+  if (converged) {
+    eps <- as.numeric(Y - X %*% B)
+    ev <- tryCatch(eigen(crossprod(X * (3 * eps^2 - kappa), X) / length(eps),
+                         symmetric = TRUE, only.values = TRUE)$values,
+                   error = function(e) NA_real_)
+    if (all(is.finite(ev)) && min(ev) < 0 && max(ev) > 0) {
+      warning("PMM3 root has an indefinite Jacobian; it may not be the ",
+              "consistent root. Compare with the OLS fit.", call. = FALSE)
+    }
   }
 
   list(B = B, converged = converged, iter = iter,

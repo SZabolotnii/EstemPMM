@@ -381,6 +381,9 @@ ts_pmm2_inference <- function(object, x = NULL, B = 200, seed = NULL,
 
   # Extract model parameters
   model_type <- object@model_type
+  # Refit every replication with the MA solver of the original fit
+  ma_solver <- if (methods::.hasSlot(object, "ma_solver") &&
+                   length(object@ma_solver) == 1L) object@ma_solver else "linearized"
   ar_order <- object@order$ar
   ma_order <- object@order$ma
   d <- object@order$d
@@ -476,6 +479,7 @@ ts_pmm2_inference <- function(object, x = NULL, B = 200, seed = NULL,
       fit_b <- tryCatch({
         ts_pmm2(x_b, order = boot_order,
                 model_type = model_type,
+                ma_solver = ma_solver,
                 include.mean = include_mean)
       }, error = function(e) {
         warning("Bootstrap replication ", b, " failed: ", e$message)
@@ -589,6 +593,7 @@ ts_pmm2_inference <- function(object, x = NULL, B = 200, seed = NULL,
       fit_b <- tryCatch({
         ts_pmm2(x_b, order = boot_order,
                 model_type = model_type,
+                ma_solver = ma_solver,
                 include.mean = include_mean)
       }, error = function(e) {
         warning("Bootstrap replication ", b, " failed: ", e$message)

@@ -1,5 +1,19 @@
 # pmm2_ts_main.R - Unified module for time series models with PMM2
 
+# Session state for one-time notices.
+.estem_notices <- new.env(parent = emptyenv())
+
+# Announce once per session that the ma_solver default will change.
+.ma_solver_default_notice <- function() {
+  if (isTRUE(.estem_notices$ma_solver)) return(invisible(NULL))
+  .estem_notices$ma_solver <- TRUE
+  message("Note: MA terms are fitted with ma_solver = \"linearized\", the ",
+          "current default. It will change to \"recursive\" in EstemPMM 1.0.0 ",
+          "(see ?ts_pmm2). Set ma_solver explicitly to keep a fixed choice ",
+          "and silence this note.")
+  invisible(NULL)
+}
+
 #' Fit a time series model using the PMM2 method
 #'
 #' @param x Numeric vector of time series data
@@ -49,8 +63,10 @@
 #'     from 0.77 to 0.98 (Gaussian), 1.30 to 1.72 (Gamma), 1.33 to 1.81
 #'     (lognormal) and 1.35 to 1.73 (chi-squared).
 #' }
-#' The default is \code{"linearized"} for backward compatibility only; it will
-#' change in a future major release. \code{ma_solver} is supported for
+#' The default is \code{"linearized"} for backward compatibility only. It will
+#' change to \code{"recursive"} in EstemPMM 1.0.0. Until then, the first fit
+#' per session with \eqn{q \ge 1} and \code{ma_solver} unset prints a message
+#' saying so. \code{ma_solver} is supported for
 #' \code{model_type} \code{"ma"}, \code{"arma"} and \code{"arima"} with
 #' \eqn{q \ge 1} and any \eqn{p \ge 0}. Seasonal models
 #' (\code{\link{sarima_pmm2}} and friends) always use the linearised path.
@@ -75,6 +91,9 @@ ts_pmm2 <- function(x, order,
                     reg_lambda = 1e-8,
                     verbose = FALSE) {
   model_type <- match.arg(model_type)
+  # NULL comes from the ar/ma/arma/arima wrappers when the user left
+  # ma_solver unset; match.arg() then picks the default, "linearized"
+  ma_solver_default <- missing(ma_solver) || is.null(ma_solver)
   ma_solver <- match.arg(ma_solver)
   cl <- match.call()
 
@@ -84,6 +103,9 @@ ts_pmm2 <- function(x, order,
 
   # 1) Validate input data
   model_params <- validate_ts_parameters(x, order, model_type, include.mean)
+  if (ma_solver_default && method != "css" && isTRUE(model_params$ma_order > 0)) {
+    .ma_solver_default_notice()
+  }
 
   if (model_params$model_type == "ma") {
     q <- model_params$ma_order
@@ -581,7 +603,7 @@ ma_pmm2 <- function(x, order = 1, method = "pmm2",
   # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "ma", method = method,
-    ma_solver = match.arg(ma_solver),
+    ma_solver = if (missing(ma_solver)) NULL else match.arg(ma_solver),
     max_iter = max_iter, tol = tol,
     include.mean = include.mean, initial = initial,
     na.action = na.action, regularize = regularize,
@@ -660,7 +682,7 @@ arma_pmm2 <- function(x, order = c(1, 1), method = "pmm2",
   # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "arma", method = method,
-    ma_solver = match.arg(ma_solver),
+    ma_solver = if (missing(ma_solver)) NULL else match.arg(ma_solver),
     max_iter = max_iter, tol = tol,
     include.mean = include.mean, initial = initial,
     na.action = na.action, regularize = regularize,
@@ -748,7 +770,7 @@ arima_pmm2 <- function(x, order = c(1, 1, 1), method = "pmm2",
   # TODO: Integrate unified_pmm2_wrapper when fully tested
   ts_pmm2(x,
     order = order, model_type = "arima", method = method,
-    ma_solver = match.arg(ma_solver),
+    ma_solver = if (missing(ma_solver)) NULL else match.arg(ma_solver),
     max_iter = max_iter, tol = tol,
     include.mean = include.mean, initial = initial,
     na.action = na.action, regularize = regularize,
