@@ -20,16 +20,19 @@
 #'
 #' @param formula R formula for the model.
 #' @param data data.frame containing the variables in \code{formula}.
-#' @param method One of \code{"auto"}, \code{"pmm2"}, or \code{"pmm3"}.
+#' @param method One of \code{"auto"}, \code{"pmm2"}, \code{"pmm3"},
+#'   \code{"wpmm2"} or \code{"wpmm3"}.
 #'   \code{"auto"} consults \code{\link{pmm_dispatch}} and falls back to
 #'   PMM2 when the dispatcher recommends OLS, so the return value is
-#'   always a \code{\linkS4class{PMMfit}} object.
+#'   always a \code{\linkS4class{PMMfit}} object. It never selects the
+#'   weak-moment estimators.
 #' @param ... Additional arguments forwarded to the underlying fitter
-#'   (\code{\link{lm_pmm2}} or \code{\link{lm_pmm3}}).
+#'   (\code{\link{lm_pmm2}}, \code{\link{lm_pmm3}}, \code{\link{lm_wpmm2}}
+#'   or \code{\link{lm_wpmm3}}).
 #'
-#' @return An S4 object of class \code{\linkS4class{PMM2fit}} or
-#'   \code{\linkS4class{PMM3fit}}, both inheriting from
-#'   \code{\linkS4class{PMMfit}}.
+#' @return An S4 object of class \code{\linkS4class{PMM2fit}},
+#'   \code{\linkS4class{PMM3fit}} or \code{\linkS4class{WPMMfit}}, all
+#'   inheriting from \code{\linkS4class{PMMfit}}.
 #'
 #' @seealso \code{\link{pmm_dispatch}}, \code{\link{pmm_arima}},
 #'   \code{\link{lm_pmm2}}, \code{\link{lm_pmm3}}.
@@ -45,7 +48,7 @@
 #'
 #' @export
 pmm_lm <- function(formula, data,
-                   method = c("auto", "pmm2", "pmm3"),
+                   method = c("auto", "pmm2", "pmm3", "wpmm2", "wpmm3"),
                    ...) {
   method <- match.arg(method)
   outer_call <- match.call()
@@ -57,7 +60,9 @@ pmm_lm <- function(formula, data,
   }
   fit <- switch(method,
     pmm2 = lm_pmm2(formula = formula, data = data, ...),
-    pmm3 = lm_pmm3(formula = formula, data = data, ...)
+    pmm3 = lm_pmm3(formula = formula, data = data, ...),
+    wpmm2 = lm_wpmm2(formula = formula, data = data, ...),
+    wpmm3 = lm_wpmm3(formula = formula, data = data, ...)
   )
   # Overwrite the inner call so that predict()/show() see the formula the
   # user actually wrote, not the symbol "formula" forwarded by this wrapper.

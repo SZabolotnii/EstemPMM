@@ -5,6 +5,45 @@
 Not on CRAN. CRAN 0.5.0 stays the reference for published work and for
 the JSS manuscript until the next release.
 
+### New: weak-moment PMM, `lm_wpmm2()` and `lm_wpmm3()`
+
+Formula-interface versions of the windowed (weak-moment) PMM2 and PMM3
+estimators from gmdhpmm (EstemPMM-GMDH, `R/weak_pmm.R`). The raw residual
+moments are replaced by moments under a Gaussian window centred on the
+residual median, with width `sigma_mult` times the MAD (default 2.5). The
+fit is computed by IRLS with clipped, redescending weights. The new class
+`WPMMfit` inherits from `PMMfit` and has `coef`, `residuals`, `fitted`,
+`predict`, `nobs`, `vcov`, `confint`, `summary` and `show` methods.
+`pmm_lm()` accepts `method = "wpmm2"` and `"wpmm3"`, but `method = "auto"`
+never selects them.
+
+- On ten KG-2 designs the estimates match gmdhpmm 0.2.0 within 2e-9; the gap
+  comes from the 1e-8 ridge penalty gmdhpmm adds
+  (`tests/testthat/fixtures/reference_gmdhpmm.rds`,
+  `dev_scripts/make_reference_gmdhpmm.R`).
+- `vcov()` is the M-estimator sandwich. Its bread keeps the window slope
+  `w'(r)`, which does not vanish under symmetric errors. In
+  `dev_scripts/check_wpmm_se.R` (y = 1 + 2x + e, 1000 replications,
+  n = 100 and 400, errors t3, Laplace, Gaussian, centred exponential, 10%
+  contamination and Cauchy) the mean sandwich standard error of the slope
+  is within 5% of the empirical SD, and the 95% intervals cover 0.926-0.955.
+- Slope MSE relative to OLS at n = 400:
+
+  | Errors | WPMM2 | WPMM3 |
+  |---|---|---|
+  | t3 | 0.55 | 0.54 |
+  | Laplace | 0.75 | 0.73 |
+  | Centred exponential | 0.31 | 0.52 |
+  | 10% contamination | 0.11 | 0.11 |
+  | Gaussian | 1.03 | 1.04 |
+
+  The Gaussian row is the cost of the weak estimators; at n = 100 it rises
+  to 1.08 for WPMM2 and 1.12 for WPMM3.
+- The documented limitations: under skewed errors the intercept estimates a
+  location that depends on the window width, not the error mean, while the
+  slopes are unaffected. `kappa^w` in WPMM3 is the coefficient of the
+  windowed law, not the variance-minimising one.
+
 ### `pmm_dispatch()`: calibrated rule
 
 The 0.5.0 thresholds (0.3 / 1.0 / -0.7 / 0.95) had never been calibrated.

@@ -109,6 +109,7 @@ fit_arima_pmm3 <- arima_pmm3(y_int, order = c(1, 1, 1))
 |----------|-------------|
 | `lm_pmm2()` | PMM2 linear regression (asymmetric errors) |
 | `lm_pmm3()` | PMM3 linear regression (symmetric platykurtic errors) |
+| `lm_wpmm2()`, `lm_wpmm3()` | Weak-moment (windowed) PMM2/PMM3: heavy tails, outliers (development version) |
 | `pmm_dispatch()` | Automatic OLS / PMM2 / PMM3 selection |
 | `compare_with_ols()` | Side-by-side comparison with OLS |
 | `pmm2_inference()` | Bootstrap inference for linear PMM2 models |

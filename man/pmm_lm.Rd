@@ -4,25 +4,33 @@
 \alias{pmm_lm}
 \title{Fit a linear model with the polynomial maximization method}
 \usage{
-pmm_lm(formula, data, method = c("auto", "pmm2", "pmm3"), ...)
+pmm_lm(
+  formula,
+  data,
+  method = c("auto", "pmm2", "pmm3", "wpmm2", "wpmm3"),
+  ...
+)
 }
 \arguments{
 \item{formula}{R formula for the model.}
 
 \item{data}{data.frame containing the variables in \code{formula}.}
 
-\item{method}{One of \code{"auto"}, \code{"pmm2"}, or \code{"pmm3"}.
+\item{method}{One of \code{"auto"}, \code{"pmm2"}, \code{"pmm3"},
+\code{"wpmm2"} or \code{"wpmm3"}.
 \code{"auto"} consults \code{\link{pmm_dispatch}} and falls back to
 PMM2 when the dispatcher recommends OLS, so the return value is
-always a \code{\linkS4class{PMMfit}} object.}
+always a \code{\linkS4class{PMMfit}} object. It never selects the
+weak-moment estimators.}
 
 \item{...}{Additional arguments forwarded to the underlying fitter
-(\code{\link{lm_pmm2}} or \code{\link{lm_pmm3}}).}
+(\code{\link{lm_pmm2}}, \code{\link{lm_pmm3}}, \code{\link{lm_wpmm2}}
+or \code{\link{lm_wpmm3}}).}
 }
 \value{
-An S4 object of class \code{\linkS4class{PMM2fit}} or
-\code{\linkS4class{PMM3fit}}, both inheriting from
-\code{\linkS4class{PMMfit}}.
+An S4 object of class \code{\linkS4class{PMM2fit}},
+\code{\linkS4class{PMM3fit}} or \code{\linkS4class{WPMMfit}}, all
+inheriting from \code{\linkS4class{PMMfit}}.
 }
 \description{
 Unified entry point for PMM2 and PMM3 linear regression. Dispatches

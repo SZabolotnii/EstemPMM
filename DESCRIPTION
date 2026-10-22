@@ -73,3 +73,4 @@ Collate:
     'pmm_show_methods.R'
     'pmm_unified_api.R'
     'sarimax_wrapper.R'
+    'wpmm_main.R'
