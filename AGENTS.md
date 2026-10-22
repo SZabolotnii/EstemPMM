@@ -11,81 +11,83 @@ EstemPMM is an R package implementing the Polynomial Maximization Method (PMM) f
 
 `pmm_dispatch()` auto-selects between OLS, PMM2, and PMM3 based on residual cumulants.
 
+This package is the portfolio's reference PMM engine: downstream projects (`EstemPMM-GMDH`, `PMM2-ARIMA`, `PMM3_vs_MLE-TN`, `sdr-kunchenko` via rpy2) depend on it, and the `JSS` software paper calls the exported functions directly. Treat exported names, argument names and defaults as a public API.
+
+## Release state
+
+Version 0.5.0 was submitted to CRAN (see `cran-comments.md`, `NEWS.md`). Do not upload to CRAN without explicit authorization. Release tarballs `EstemPMM_*.tar.gz` are kept in the repo root and are build-ignored.
+
 ## Build & Test Commands
 
 ```bash
-# Check package (R CMD check equivalent)
-R CMD check .
-
-# Build tarball
-R CMD build .
+# Check package (CRAN-level check is run against the built tarball)
+R CMD build . && R CMD check --as-cran EstemPMM_<version>.tar.gz
 
 # Install from source
 R CMD INSTALL .
 
-# Run all tests
-Rscript -e 'testthat::test_check("EstemPMM")'
+# Run all tests against the source tree
+Rscript -e 'devtools::test()'
 
 # Run a single test file
-Rscript -e 'testthat::test_file("tests/testthat/test-pmm2_linear.R")'
+Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-pmm2_linear.R")'
 
-# Regenerate roxygen docs and NAMESPACE
+# Regenerate roxygen docs and NAMESPACE (NAMESPACE and man/ are generated: never hand-edit)
 Rscript -e 'roxygen2::roxygenise()'
-
-# Load package for interactive dev (without installing)
-Rscript -e 'devtools::load_all()'
 ```
+
+CI: `.github/workflows/R-CMD-check.yaml` runs R CMD check on macOS/Windows/Ubuntu (release, devel, oldrel-1).
+
+**`DESCRIPTION` has an explicit `Collate:` field.** A new file in `R/` must be added there, or it is not loaded. Class files declare ordering via roxygen `@include`.
 
 ## Architecture
 
-### R source organization (`R/`)
+### Two API layers
 
-The code splits into three layers: **PMM2**, **PMM3**, and **shared infrastructure**.
+- **Unified API** (`pmm_unified_api.R`, since 0.4.0): `pmm_lm()`, `pmm_ar()`, `pmm_ma()`, `pmm_arma()`, `pmm_arima()`, `pmm_sarima()`. These are thin wrappers that choose the order through a `method` argument. `pmm_lm(method = "auto")` consults `pmm_dispatch()`.
+- **Low-level fitters**: `lm_pmm2/3()`, `ar_/ma_/arma_/arima_pmm2/3()`, `ts_pmm2()`, and the seasonal `sar_/sma_/sarma_/sarima_pmm2()` (`sarimax_wrapper.R`). They are still exported, emit no deprecation warning, and the JSS manuscript uses them. Do not deprecate or remove them without flagging it.
 
-**PMM2 layer:**
-- `pmm2_main.R` — `lm_pmm2()` linear regression entry point
-- `pmm2_ts_main.R` — Time series entry points: `ar_pmm2()`, `ma_pmm2()`, `arma_pmm2()`, `arima_pmm2()`, `ts_pmm2()`
-- `pmm2_common.R` — Core PMM2 math: moment computation, variance factor `g2`, coefficient adjustment
-- `pmm2_classes.R` — S4 classes: `PMM2fit`, `BasePMM2`, `ARPMM2`, `MAPMM2`, `ARMAPMM2`, `ARIMAPMM2`
-- `pmm2_ts_methods.R` — S4 method implementations (`summary`, `coef`, `residuals`, `plot`, `predict`, `AIC`) for time series PMM2 classes
-- `pmm2_inference.R` — Bootstrap-based inference (`pmm2_inference()`, `ts_pmm2_inference()`)
-- `pmm2_unified.R` — Unified interface for PMM2 nonlinear estimators
-- `sarimax_wrapper.R` — Seasonal models: `sar_pmm2()`, `sma_pmm2()`, `sarma_pmm2()`, `sarima_pmm2()`
+### Source layout (`R/`)
 
-**PMM3 layer:**
-- `pmm3_main.R` — `lm_pmm3()` linear regression entry point
-- `pmm3_ts_main.R` — Time series entry points: `ar_pmm3()`, `ma_pmm3()`, `arma_pmm3()`, `arima_pmm3()`
-- `pmm3_solver.R` — Core PMM3 math: 6th-order cumulant computation, variance factor `g3`
-- `pmm3_utils.R` — `pmm3_variance_factor()`, `pmm_gamma6()`, `pmm_kurtosis()`
-- `pmm3_classes.R` / `pmm3_ts_classes.R` — S4 classes: `PMM3fit`, `TS3fit` and subclasses
-- `pmm3_ts_methods.R` — S4 methods for PMM3 time series classes
+Files split into PMM2 (`pmm2_*`), PMM3 (`pmm3_*`) and shared (`pmm_*`) code. Non-obvious points:
+- Core math: `pmm2_common.R` (PMM2 Newton iteration, `g2`) and `pmm3_solver.R` (6th-order cumulants, `g3`).
+- `pmm3_dispatch.R` holds the shared `pmm_dispatch()` (S3 class `PMMdispatch`), despite its `pmm3_` prefix.
+- TS design matrices: `pmm2_ts_design.R`. The MA innovation recursion: `pmm2_ma_estimator.R` and `pmm2_ts_recursive.R`.
+- Inference: `pmm2_inference.R` (bootstrap), plus S4 `vcov`/`confint`/`logLik`/`nobs` methods. The PMM3 vcov derivation is in `inst/notes/pmm3_vcov_derivation.md`.
+- `pmm2_unified.R`: generic nonlinear PMM2 (iterative and one-step), which needs `numDeriv`. `optimized_direct_pmm2.R` is **deprecated**: it lost badly in Monte Carlo, so do not revive it.
 
-**Shared:**
-- `pmm3_dispatch.R` — `pmm_dispatch()` auto-selector; computes cumulants, g2/g3 factors, recommends method
-- `pmm2_utils.R` — `compute_moments()`, `pmm_skewness()`, `pmm_kurtosis()`, `test_symmetry()`
-- `pmm2_monte_carlo.R` — `pmm2_monte_carlo_compare()` for simulation studies
-- `data.R` — Bundled dataset documentation (`auto_mpg`)
+### MA solver (0.5.0)
 
-### S4 class hierarchy
+`ts_pmm2()`, `ma_pmm2()`, `arma_pmm2()` and `arima_pmm2()` accept `ma_solver = c("linearized", "recursive")`.
+- `"linearized"` (the **default**, kept so 0.4.x results reproduce bit-for-bit) builds the MA design matrix once from the CSS residuals. That costs a factor of `1 - theta^2` in asymptotic variance.
+- `"recursive"` recomputes the innovations and score regressors by the exact ARMA recursion at every candidate parameter. It has a closed-form sandwich `vcov`/`confint`.
+- The seasonal family silently keeps the linearised path. `sarima_pmm2()` has an **unrelated** `ma_method` argument (`"mle"`/`"pmm2"`). Do not confuse it with `ma_solver`.
 
-All model fits use S4 classes with standard generics (`summary`, `coef`, `residuals`, `fitted`, `plot`, `predict`, `AIC`):
-- Linear: `PMM2fit`, `PMM3fit`
-- Time series PMM2: `BasePMM2` -> `ARPMM2`, `MAPMM2`, `ARMAPMM2`, `ARIMAPMM2` (also `SARPMM2`, `SMAPMM2`, `SARMAPMM2`, `SARIMAPMM2`)
-- Time series PMM3: `TS3fit` -> `ARPMM3`, `MAPMM3`, `ARMAPMM3`, `ARIMAPMM3`
+### S4 class hierarchy (`pmm_base_classes.R`)
+
+```
+PMMfit (virtual root: coefficients, residuals, convergence, iterations, call)
+├── BasePMM2 (virtual; m2, m3, m4)  ── PMM2fit (linear)
+├── BasePMM3 (virtual; m2, m4, m6, gamma4, gamma6, g_coefficient, kappa) ── PMM3fit
+└── PMMtsfit (virtual; model_type, intercept, original_series, order)
+    TS2fit ⊂ {BasePMM2, PMMtsfit} → ARPMM2, MAPMM2, ARMAPMM2, ARIMAPMM2
+                                    (+ SARPMM2, SMAPMM2, SARMAPMM2, SARIMAPMM2)
+    TS3fit ⊂ {BasePMM3, PMMtsfit} → ARPMM3, MAPMM3, ARMAPMM3, ARIMAPMM3
+```
+
+`show` methods are defined once in `pmm_show_methods.R` and inherited by every subclass. This hierarchy is Figure 1 of the JSS paper, so changes must stay in sync with it.
 
 ### Key mathematical pattern
 
 Both PMM2 and PMM3 follow the same workflow:
-1. Fit initial OLS/MLE model
-2. Compute residual cumulants (skewness for PMM2, kurtosis+6th-order for PMM3)
-3. Calculate efficiency factor (g2 or g3); if >= 1, fall back to OLS
-4. Adjust coefficients using the PMM correction formula
-5. Return fit object with both OLS and PMM estimates
+1. Fit an initial OLS model (or CSS/MLE for time series).
+2. Compute the residual cumulants: skewness for PMM2; kurtosis and 6th-order for PMM3.
+3. Calculate the efficiency factor (`g2` or `g3`). If it is >= 1, fall back to OLS.
+4. Adjust the coefficients using the PMM correction (Newton iteration).
+5. Return a fit object with both the initial and the PMM estimates.
 
-### Tests
+### Tests, data, dev scripts
 
-Tests use `testthat` (edition 3). Key test files mirror the source structure: `test-pmm2_linear.R`, `test-pmm2_ts.R`, `test-pmm3_linear.R`, `test-pmm3_ts.R`, `test-pmm3_dispatch.R`, `test-seasonal-models.R`.
-
-### Dev scripts
-
-`dev_scripts/` contains Monte Carlo simulation runners and diagnostic tools (not part of the package).
+- Tests use `testthat` edition 3 (`tests/testthat/`). The `test-coverage-boost*.R` files are coverage fillers. `test-v040-new-features.R` covers the unified API, `show` and `PMMdispatch`.
+- Bundled datasets: `auto_mpg`, `djia2002` and `DCOILWTICO` (`data/`, documented in `R/data.R`). `data/DCOILWTICO.csv` must be a regular file, not a symlink, or a clean checkout will not build.
+- `dev_scripts/`, `mc_results_*`, `test_results/`, `articles/`, `docs/` and `notes/` are build-ignored research and Monte Carlo material, not part of the package. When you add a top-level file that must not ship, also add it to `.Rbuildignore`.
