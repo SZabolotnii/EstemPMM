@@ -14,6 +14,10 @@
 #' @param step_max numeric: maximum NR step size (default 5.0)
 #' @param na.action function for handling missing values (default na.fail)
 #' @param verbose logical: print progress information (default FALSE)
+#' @param symmetric logical: \code{TRUE} (default) fits the symmetric PMM3
+#'   estimator described below; \code{FALSE} fits the general degree-3
+#'   estimator, which also uses the odd moments and is valid for skewed
+#'   errors.
 #'
 #' @details
 #' The PMM3 algorithm works as follows:
@@ -28,6 +32,23 @@
 #' platykurtic (gamma4 < 0), with theoretical efficiency
 #' g3 = 1 - gamma4^2 / (6 + 9*gamma4 + gamma6).
 #'
+#' The symmetric estimator assumes \eqn{\gamma_3 = \gamma_5 = 0}. On skewed
+#' errors it remains consistent for the slopes but loses most of its gain.
+#' With chi-squared(3), gamma, exponential and lognormal errors its OLS-to-PMM3
+#' MSE ratio is 1.1 to 1.5, against 1.7 to 2.4 for PMM2 and 2.1 to 3.8 for the
+#' general estimator (\code{dev_scripts/check_pmm3_general.R}). With
+#' \code{symmetric = FALSE} the polynomial is
+#' \eqn{\psi(e) = \sum_{k=1}^{3} h_k (e^k - \alpha_k)}, where \eqn{\alpha_k}
+#' are the central moments of the OLS residuals and \eqn{h = F^{-1} b} solves
+#' the full Kunchenko normal system with \eqn{F_{pq} = \alpha_{p+q} - \alpha_p
+#' \alpha_q} and \eqn{b_k = k \alpha_{k-1}}. Its variance-reduction factor
+#' is \eqn{g_3 = 1 / (\alpha_2\, b^\top F^{-1} b)}. This factor never
+#' exceeds the PMM2 factor \eqn{g_2}, and it equals the symmetric
+#' \eqn{g_3} when the odd moments vanish. The Newton iteration uses
+#' backtracking on the score norm and falls back to OLS with a warning when
+#' it fails. \code{adaptive = TRUE} re-estimates the moments and \eqn{h}
+#' at every iteration.
+#'
 #' @return S4 object of class \code{PMM3fit}
 #' @export
 #'
@@ -40,11 +61,17 @@
 #'
 #' fit <- lm_pmm3(y ~ x, data = dat)
 #' summary(fit)
+#'
+#' # Skewed errors: the general degree-3 estimator
+#' dat$y2 <- 2 + 3 * x + rgamma(n, 2, 1) - 2
+#' fit_g <- lm_pmm3(y2 ~ x, data = dat, symmetric = FALSE)
+#' coef(fit_g)
 lm_pmm3 <- function(formula, data,
                      max_iter = 100, tol = 1e-6,
                      adaptive = FALSE, step_max = 5.0,
                      na.action = na.fail,
-                     verbose = FALSE) {
+                     verbose = FALSE,
+                     symmetric = TRUE) {
   # Capture call
   call <- match.call()
 
@@ -107,10 +134,16 @@ lm_pmm3 <- function(formula, data,
     warning("Second central moment (m2) is not positive. Results may be unreliable.")
   }
 
+  if (!isTRUE(symmetric)) {
+    return(.lm_pmm3_general(X, y, b_ols, res_ols, adaptive = adaptive,
+                            tol = tol, max_iter = max_iter, call = call,
+                            mf = mf, data = data))
+  }
+
   # Symmetry warning
   if (abs(moments$gamma3) > 0.3) {
     warning(sprintf(
-      "Residuals appear asymmetric (|gamma3| = %.3f > 0.3). Consider using PMM2 (lm_pmm2) instead.",
+      "Residuals appear asymmetric (|gamma3| = %.3f > 0.3). Consider lm_pmm2() or lm_pmm3(symmetric = FALSE) instead.",
       abs(moments$gamma3)
     ))
   }
@@ -162,6 +195,46 @@ lm_pmm3 <- function(formula, data,
   attr(ans, "data")         <- data
 
   return(ans)
+}
+
+# General (asymmetric) degree-3 branch of lm_pmm3(symmetric = FALSE).
+.lm_pmm3_general <- function(X, y, b_ols, res_ols, adaptive, tol, max_iter,
+                             call, mf, data) {
+  r <- res_ols - mean(res_ols)
+  alpha <- vapply(1:6, function(k) mean(r^k), numeric(1))
+  sol <- .pmm3_general_solver(b_ols, X, y, alpha, adaptive = adaptive,
+                              tol = tol, max_iter = max_iter)
+  b_est <- sol$B
+  names(b_est) <- colnames(X)
+
+  m2 <- alpha[2]
+  gamma3 <- alpha[3] / m2^1.5
+  gamma4 <- alpha[4] / m2^2 - 3
+  gamma6 <- alpha[6] / m2^3 - 15 * alpha[4] / m2^2 - 10 * gamma3^2 + 30
+  g3 <- .pmm_poly_coef(alpha, 3)$g
+
+  ans <- new("PMM3fit",
+             coefficients  = b_est,
+             residuals     = as.numeric(y - X %*% b_est),
+             m2            = m2,
+             m4            = alpha[4],
+             m6            = alpha[6],
+             gamma4        = gamma4,
+             gamma6        = gamma6,
+             g_coefficient = if (is.finite(g3)) g3 else 1.0,
+             kappa         = NA_real_,
+             convergence   = sol$converged,
+             iterations    = as.numeric(sol$iter),
+             call          = call,
+             symmetric     = FALSE,
+             poly_coef     = sol$h)
+  attr(ans, "model_matrix") <- X
+  attr(ans, "model_frame")  <- mf
+  attr(ans, "response")     <- as.numeric(y)
+  attr(ans, "data")         <- data
+  attr(ans, "moments")      <- alpha
+  attr(ans, "jacobian_min_eigen") <- sol$jacobian_min_eigen
+  ans
 }
 
 # =============================================================================
@@ -259,7 +332,12 @@ setMethod("predict", "PMM3fit",
 #' @export
 setMethod("summary", "PMM3fit",
           function(object, ...) {
-            cat("PMM3 estimation results (S = 3, symmetric errors)\n")
+            general <- methods::.hasSlot(object, "symmetric") && !isTRUE(object@symmetric)
+            if (general) {
+              cat("PMM3 estimation results (S = 3, general polynomial)\n")
+            } else {
+              cat("PMM3 estimation results (S = 3, symmetric errors)\n")
+            }
             if (!is.null(object@call)) {
               cat("Call:\n")
               print(object@call)
@@ -281,6 +359,9 @@ setMethod("summary", "PMM3fit",
                 " (expected ratio Var[PMM3]/Var[OLS])\n")
             if (!is.na(object@kappa)) {
               cat("  kappa  =", object@kappa, "\n")
+            }
+            if (general) {
+              cat("  h      =", format(object@poly_coef, digits = 4), "\n")
             }
             cat("\n")
 
@@ -350,8 +431,11 @@ setMethod("vcov", "PMM3fit",
             X <- attr(object, "model_matrix")
             if (is.null(X))
               stop("model_matrix not found; refit the model with lm_pmm3()")
-            vm <- pmm3_variance_matrices(X, object@m2, object@m4, object@m6)
-            V  <- vm$pmm3
+            if (methods::.hasSlot(object, "symmetric") && !isTRUE(object@symmetric)) {
+              V <- object@g_coefficient * object@m2 * solve(crossprod(X))
+            } else {
+              V <- pmm3_variance_matrices(X, object@m2, object@m4, object@m6)$pmm3
+            }
             nms <- names(object@coefficients)
             if (!is.null(nms) && length(nms) == nrow(V)) {
               rownames(V) <- nms

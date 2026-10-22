@@ -12,7 +12,8 @@ lm_pmm3(
   adaptive = FALSE,
   step_max = 5,
   na.action = na.fail,
-  verbose = FALSE
+  verbose = FALSE,
+  symmetric = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,11 @@ lm_pmm3(
 \item{na.action}{function for handling missing values (default na.fail)}
 
 \item{verbose}{logical: print progress information (default FALSE)}
+
+\item{symmetric}{logical: \code{TRUE} (default) fits the symmetric PMM3
+estimator described below; \code{FALSE} fits the general degree-3
+estimator, which also uses the odd moments and is valid for skewed
+errors.}
 }
 \value{
 S4 object of class \code{PMM3fit}
@@ -53,6 +59,23 @@ The PMM3 algorithm works as follows:
 PMM3 achieves lower variance than OLS when errors are symmetric and
 platykurtic (gamma4 < 0), with theoretical efficiency
 g3 = 1 - gamma4^2 / (6 + 9*gamma4 + gamma6).
+
+The symmetric estimator assumes \eqn{\gamma_3 = \gamma_5 = 0}. On skewed
+errors it remains consistent for the slopes but loses most of its gain.
+With chi-squared(3), gamma, exponential and lognormal errors its OLS-to-PMM3
+MSE ratio is 1.1 to 1.5, against 1.7 to 2.4 for PMM2 and 2.1 to 3.8 for the
+general estimator (\code{dev_scripts/check_pmm3_general.R}). With
+\code{symmetric = FALSE} the polynomial is
+\eqn{\psi(e) = \sum_{k=1}^{3} h_k (e^k - \alpha_k)}, where \eqn{\alpha_k}
+are the central moments of the OLS residuals and \eqn{h = F^{-1} b} solves
+the full Kunchenko normal system with \eqn{F_{pq} = \alpha_{p+q} - \alpha_p
+\alpha_q} and \eqn{b_k = k \alpha_{k-1}}. Its variance-reduction factor
+is \eqn{g_3 = 1 / (\alpha_2\, b^\top F^{-1} b)}. This factor never
+exceeds the PMM2 factor \eqn{g_2}, and it equals the symmetric
+\eqn{g_3} when the odd moments vanish. The Newton iteration uses
+backtracking on the score norm and falls back to OLS with a warning when
+it fails. \code{adaptive = TRUE} re-estimates the moments and \eqn{h}
+at every iteration.
 }
 \examples{
 set.seed(123)
@@ -63,4 +86,9 @@ dat <- data.frame(y = y, x = x)
 
 fit <- lm_pmm3(y ~ x, data = dat)
 summary(fit)
+
+# Skewed errors: the general degree-3 estimator
+dat$y2 <- 2 + 3 * x + rgamma(n, 2, 1) - 2
+fit_g <- lm_pmm3(y2 ~ x, data = dat, symmetric = FALSE)
+coef(fit_g)
 }

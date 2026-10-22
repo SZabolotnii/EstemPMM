@@ -36,6 +36,16 @@ setClass("BasePMM3",
 #' from \code{\linkS4class{BasePMM3}}, which in turn inherits common
 #' slots from \code{\linkS4class{PMMfit}}.
 #'
+#' @slot symmetric logical: \code{TRUE} for the symmetric estimator
+#'   (cubic polynomial with even-moment coefficients), \code{FALSE} for the
+#'   general degree-3 estimator of \code{lm_pmm3(symmetric = FALSE)}
+#' @slot poly_coef numeric: coefficients \eqn{h_1, h_2, h_3} of the general
+#'   estimator's polynomial; empty for the symmetric estimator
+#'
 #' @exportClass PMM3fit
 setClass("PMM3fit",
-         contains = "BasePMM3")
+         contains = "BasePMM3",
+         slots = c(symmetric = "logical",
+                   poly_coef = "numeric"),
+         prototype = list(symmetric = TRUE,
+                          poly_coef = numeric(0)))

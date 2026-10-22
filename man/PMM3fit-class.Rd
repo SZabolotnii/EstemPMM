@@ -9,3 +9,14 @@ Concrete class returned by \code{\link{lm_pmm3}}. Inherits all slots
 from \code{\linkS4class{BasePMM3}}, which in turn inherits common
 slots from \code{\linkS4class{PMMfit}}.
 }
+\section{Slots}{
+
+\describe{
+\item{\code{symmetric}}{logical: \code{TRUE} for the symmetric estimator
+(cubic polynomial with even-moment coefficients), \code{FALSE} for the
+general degree-3 estimator of \code{lm_pmm3(symmetric = FALSE)}}
+
+\item{\code{poly_coef}}{numeric: coefficients \eqn{h_1, h_2, h_3} of the general
+estimator's polynomial; empty for the symmetric estimator}
+}}
+

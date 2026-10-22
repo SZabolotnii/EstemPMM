@@ -5,6 +5,41 @@
 Not on CRAN. CRAN 0.5.0 stays the reference for published work and for
 the JSS manuscript until the next release.
 
+### New: general degree-3 PMM, `lm_pmm3(symmetric = FALSE)`
+
+`lm_pmm3()` fits the symmetric estimator, which assumes
+`gamma3 = gamma5 = 0`. With `symmetric = FALSE` it fits the general degree-3
+estimator instead. The polynomial is `psi(e) = sum_k h_k (e^k - alpha_k)`,
+with `h` solving the full Kunchenko normal system built from the first six
+central moments of the OLS residuals. Its factor is
+`g3 = 1 / (alpha2 * b' F^{-1} b)`. That factor never exceeds `g2` and equals
+the symmetric `g3` when the odd moments vanish. The Newton iteration is
+safeguarded like PMM2: backtracking on the score norm, and a fall-back to
+OLS with a warning. `PMM3fit` gains the slots `symmetric` (default `TRUE`)
+and `poly_coef`. For the general fit, `vcov()` is `g3 * m2 * (X'X)^{-1}`.
+
+- On 14 data sets it matches the solver of the PMM-SLS-BRIDGE revision
+  (AISM-D-26-00101, `common.R::pmm_reg` with one outer step) within 1.5e-14
+  (`tests/testthat/fixtures/reference_aism_pmm3.rds`,
+  `dev_scripts/make_reference_aism.R`).
+- In `dev_scripts/check_pmm3_general.R` (y = 2 + 1.5x + e, x ~ U(0, 5),
+  1000 replications), the OLS-to-estimator slope MSE ratio at n = 200 is:
+
+  | Errors | PMM2 | PMM3 symmetric | PMM3 general |
+  |---|---|---|---|
+  | chi-squared(3) | 2.05 | 1.30 | 3.16 |
+  | Gamma(2) | 1.69 | 1.17 | 2.22 |
+  | Exponential | 2.21 | 1.37 | 3.78 |
+  | Lognormal(0, 0.5) | 1.73 | 1.25 | 2.24 |
+  | Uniform | 0.99 | 2.82 | 2.83 |
+  | Gaussian | 0.99 | 0.98 | 0.96 |
+
+  The 95% interval from `vcov()` covers 0.93-0.96 at n >= 200 and
+  0.88-0.94 at n = 50. At n = 50 the plug-in standard error underestimates
+  the spread by 10-20%.
+- The symmetric-PMM3 warning for `|gamma3| > 0.3` now names
+  `symmetric = FALSE`.
+
 ### New: weak-moment PMM, `lm_wpmm2()` and `lm_wpmm3()`
 
 Formula-interface versions of the windowed (weak-moment) PMM2 and PMM3

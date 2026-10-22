@@ -90,6 +90,130 @@
 }
 
 
+#' Coefficients of the general degree-S PMM polynomial
+#'
+#' Solves the Kunchenko normal system \eqn{F h = b} with
+#' \eqn{F_{pq} = \alpha_{p+q} - \alpha_p \alpha_q} and
+#' \eqn{b_k = k \alpha_{k-1}} (\eqn{\alpha_0 = 1}), where \eqn{\alpha_k} are
+#' the central moments of the errors, and returns \eqn{h} together with the
+#' variance-reduction factor \eqn{g_S = 1 / (\alpha_2\, b^\top F^{-1} b)}.
+#'
+#' @param alpha central moments \eqn{\alpha_1, \dots, \alpha_{2S}}
+#'   (\eqn{\alpha_1 = 0}).
+#' @param S polynomial degree.
+#'
+#' @return List: h (length S, or NULL if F is singular) and g.
+#' @keywords internal
+.pmm_poly_coef <- function(alpha, S) {
+  a <- function(k) if (k == 0) 1 else alpha[k]
+  i <- seq_len(S)
+  F <- outer(i, i, Vectorize(function(p, q) a(p + q) - a(p) * a(q)))
+  b <- i * vapply(i - 1, a, numeric(1))
+  h <- tryCatch(as.numeric(solve(F, b)), error = function(e) NULL)
+  if (is.null(h) || any(!is.finite(h))) return(list(h = NULL, g = NA_real_))
+  list(h = h, g = 1 / (alpha[2] * sum(b * h)))
+}
+
+#' Newton solver for the general (asymmetric) degree-3 PMM estimator
+#'
+#' Solves \eqn{\sum_i x_i \psi(\varepsilon_i) = 0} with
+#' \eqn{\psi(e) = \sum_{k=1}^{3} h_k (e^k - \alpha_k)}, safeguarded like
+#' \code{pmm2_algorithm()}: backtracking on the score norm, and a return to
+#' the starting values when the line search stalls away from a root or the
+#' iterate is not finite.
+#'
+#' @param B_ols    starting values (OLS).
+#' @param X        design matrix.
+#' @param Y        response vector.
+#' @param alpha    central moments \eqn{\alpha_1..\alpha_6} of the OLS
+#'   residuals.
+#' @param adaptive re-estimate the moments and \eqn{h} from the current
+#'   residuals at every iteration.
+#' @param tol      convergence tolerance on the Newton step norm.
+#' @param max_iter maximum number of iterations.
+#'
+#' @return List: B, converged, iter, h, alpha, jacobian_min_eigen.
+#' @keywords internal
+.pmm3_general_solver <- function(B_ols, X, Y, alpha, adaptive = FALSE,
+                                 tol = 1e-6, max_iter = 100) {
+  central <- function(e) { e <- e - mean(e); vapply(1:6, function(k) mean(e^k), numeric(1)) }
+  psi  <- function(e, h, al) h[1] * (e - al[1]) + h[2] * (e^2 - al[2]) + h[3] * (e^3 - al[3])
+  dpsi <- function(e, h) h[1] + 2 * h[2] * e + 3 * h[3] * e^2
+  score <- function(B, h, al) as.numeric(crossprod(X, psi(as.numeric(Y - X %*% B), h, al)))
+
+  h <- .pmm_poly_coef(alpha, 3)$h
+  if (is.null(h)) {
+    warning("PMM3 normal system is singular; returning the initial estimate.")
+    return(list(B = B_ols, converged = FALSE, iter = 0L, h = rep(NA_real_, 3),
+                alpha = alpha, jacobian_min_eigen = NA_real_))
+  }
+
+  B <- B_ols
+  converged <- FALSE
+  failed <- NULL
+  iter <- 0L
+  norm_init <- NA_real_
+  for (i in seq_len(max_iter)) {
+    iter <- i
+    e <- as.numeric(Y - X %*% B)
+    if (adaptive) {
+      alpha_i <- central(e)
+      h_i <- .pmm_poly_coef(alpha_i, 3)$h
+      if (!is.null(h_i)) { alpha <- alpha_i; h <- h_i }
+    }
+    G <- as.numeric(crossprod(X, psi(e, h, alpha)))
+    J <- crossprod(X * dpsi(e, h), X)
+    delta <- tryCatch(as.numeric(solve(J, G)), error = function(err) NULL)
+    if (is.null(delta) || any(!is.finite(delta))) {
+      failed <- "singular Jacobian"
+      break
+    }
+    norm_cur <- sqrt(sum(G^2))
+    if (i == 1) norm_init <- norm_cur
+    step_norm <- sqrt(sum(delta^2))
+    t_step <- 1
+    B_new <- B + delta
+    if (step_norm >= tol) {
+      repeat {
+        norm_new <- sqrt(sum(score(B_new, h, alpha)^2))
+        if (all(is.finite(B_new)) && is.finite(norm_new) &&
+            norm_new <= (1 - 1e-4 * t_step) * norm_cur) break
+        t_step <- t_step / 2
+        if (t_step < 2^-30) break
+        B_new <- B + t_step * delta
+      }
+    }
+    if (t_step < 2^-30) {
+      if (norm_cur <= 1e-10 * norm_init) converged <- TRUE else failed <- "line search stalled"
+      break
+    }
+    B <- B_new
+    if (step_norm < tol) {
+      converged <- TRUE
+      break
+    }
+  }
+  if (is.null(failed) && any(!is.finite(B))) failed <- "non-finite estimate"
+  if (!is.null(failed)) {
+    warning("PMM3 iteration failed (", failed, "); returning the initial estimate.")
+    return(list(B = B_ols, converged = FALSE, iter = iter, h = h, alpha = alpha,
+                jacobian_min_eigen = NA_real_))
+  }
+  if (!converged) {
+    warning("PMM3 algorithm did not converge after ", max_iter, " iterations.")
+  }
+  e <- as.numeric(Y - X %*% B)
+  J <- crossprod(X * dpsi(e, h), X) / length(e)
+  min_eig <- min(eigen((J + t(J)) / 2, symmetric = TRUE, only.values = TRUE)$values)
+  if (converged && min_eig <= 0) {
+    warning("PMM3 root has a Jacobian that is not positive definite; ",
+            "it may not be the consistent root.")
+  }
+  list(B = B, converged = converged, iter = iter, h = h, alpha = alpha,
+       jacobian_min_eigen = min_eig)
+}
+
+
 #' PMM3 Newton-Raphson solver for nonlinear models
 #'
 #' Uses a residual function and numerical Jacobian (via \code{numDeriv})
