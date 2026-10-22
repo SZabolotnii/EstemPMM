@@ -202,8 +202,11 @@ PMM3's $g_3 \ll 1$ (substantial gain).
 The `auto_mpg` dataset contains fuel consumption data for 398 vehicles. The
 regression of **MPG vs Horsepower** (quadratic model) is a useful practical
 diagnostic case because it is nearly symmetric but has positive, not negative,
-excess kurtosis. The current PMM3 implementation targets symmetric
-platykurtic residuals, so `pmm_dispatch()` should reject PMM3 for this example.
+excess kurtosis. The PMM3 factor $g_3 = 1 - \gamma_4^2/(6 + 9\gamma_4 +
+\gamma_6)$ is below 1 for either sign of $\gamma_4$, and since version 0.5.0.9000
+`pmm_dispatch()` sends symmetric heavy-tailed residuals to PMM3 once
+$n \ge 100$ (`n_leptokurtic`), a branch calibrated by Monte Carlo on logistic,
+Laplace and Student-$t$ errors.
 
 ```{r auto_mpg_load}
 data(auto_mpg)
@@ -239,14 +242,22 @@ dispatch_auto <- pmm_dispatch(res_auto)
 ### Dispatcher Recommendation
 
 ```{r auto_mpg_pmm3}
-# Dispatcher-selected workflow: keep OLS, because gamma4 is positive.
 cat("Dispatcher method:", dispatch_auto$method, "\n")
 cat("Reason:", dispatch_auto$reasoning, "\n")
+
+fit_auto_pmm3 <- lm_pmm3(mpg ~ horsepower + I(horsepower^2),
+                         data = auto_complete)
+rbind(OLS = coef(fit_auto_ols), PMM3 = coef(fit_auto_pmm3))
 ```
 
-This example is intentionally included as a guardrail: near-symmetry alone is
-not sufficient for PMM3. PMM3 is appropriate when the residuals are both
-near-symmetric and platykurtic (negative excess kurtosis).
+The predicted reduction comes from the residual cumulants and assumes
+independent, identically distributed errors. These data are not: the spread
+of MPG changes with horsepower. A pairs bootstrap of this model (1000
+resamples, which keeps that heteroscedasticity) gives PMM3-to-OLS variance
+ratios between 0.99 and 1.03 for the three coefficients. In other words,
+PMM3 costs nothing here, but the predicted gain does not materialise. Treat
+`improvement_pct` as what the i.i.d. theory promises, not as a measured
+result, and check heteroscedasticity before quoting it.
 
 ### Visualize the OLS Fit
 
@@ -466,10 +477,14 @@ pmm3_variance_factor(mom$m2, mom$m4, mom$m6)
 
 **Use PMM3 when:**
 
-- Residuals are **symmetric** ($|\gamma_3| \leq 0.3$)
-- Residuals are **platykurtic** ($\gamma_4 < -0.7$)
-- Error distributions are bounded (uniform, beta-symmetric, truncated normal)
-- Sample size is **moderate to large** ($n \geq 100$, ideally $n \geq 200$)
+- Residuals are **symmetric** ($|\gamma_3| \leq 0.3$) and
+  - **platykurtic** ($\gamma_4 < -0.7$; bounded laws such as uniform,
+    beta-symmetric, truncated normal), at any sample size, or
+  - **heavy-tailed** (logistic, Laplace, Student-$t$) with $g_3 < 0.95$ and
+    $n \geq 100$. Below that, PMM3 is unstable on heavy tails (Monte Carlo:
+    up to twice the OLS variance at $n = 30$).
+- Small-sample platykurtic residuals with an apparent skewness that is within
+  $2\sqrt{6/n}$ of zero (sampling noise)
 
 **Use PMM2 instead when:**
 

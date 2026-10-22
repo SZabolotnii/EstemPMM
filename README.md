@@ -16,7 +16,7 @@ The package provides two complementary estimators:
 | Method | Targets | Key quantity | Typical gain |
 |--------|---------|--------------|-------------|
 | **PMM2** (S=2) | Asymmetric errors ($\|\gamma_3\| > 0.3$) | $g_2 = 1 - \gamma_3^2/(2+\gamma_4)$ | 10–60% variance reduction |
-| **PMM3** (S=3) | Symmetric platykurtic errors ($\gamma_4 < -0.7$) | $g_3 = 1 - \gamma_4^2/(6+9\gamma_4+\gamma_6)$ | 10–40% variance reduction |
+| **PMM3** (S=3) | Symmetric errors: platykurtic ($\gamma_4 < -0.7$), or heavy-tailed when $n \ge 100$ | $g_3 = 1 - \gamma_4^2/(6+9\gamma_4+\gamma_6)$ | 10–40% variance reduction |
 
 Use `pmm_dispatch()` to automatically choose between OLS, PMM2, and PMM3 based on
 residual cumulants.
@@ -49,8 +49,8 @@ pmm_dispatch(residuals(fit_ols))
 
 fit_ols2 <- lm(mpg ~ horsepower + I(horsepower^2), data = na.omit(auto_mpg))
 pmm_dispatch(residuals(fit_ols2))
-# -> Recommends OLS: near-symmetric but positive-kurtosis residuals are not
-#    the symmetric platykurtic regime targeted by PMM3
+# -> Recommends PMM3: near-symmetric, heavy-tailed residuals with n >= 100
+#    (development version; CRAN 0.5.0 recommends OLS here)
 ```
 
 ### PMM2 — Asymmetric Errors

@@ -1,6 +1,58 @@
 # EstemPMM News
 
-## Version 0.5.1 (development)
+## Development version (0.5.0.9000)
+
+Not on CRAN. CRAN 0.5.0 stays the reference for published work and for
+the JSS manuscript until the next release.
+
+### `pmm_dispatch()`: calibrated rule
+
+The 0.5.0 thresholds (0.3 / 1.0 / -0.7 / 0.95) had never been calibrated.
+A Monte Carlo study covered 20 error laws, n from 30 to 1000 and 5000
+replications per cell (`dev_scripts/calibrate_dispatch.R`,
+`dev_scripts/analyze_dispatch.R`; summary in `mc_results_dispatch/README.md`).
+It measured the slope MSE of the dispatcher's choice against the best of
+OLS, PMM2 and PMM3. The study found two systematic losses:
+
+- **Small-sample platykurtic residuals.** Bimodal and uniform residuals at
+  n = 30-50 often show a spurious skewness above 0.3. The arm "asymmetric AND
+  platykurtic -> PMM2" then fired, at up to 2.7 times the best MSE.
+- **Symmetric heavy tails.** With logistic, Laplace and Student-t errors and
+  n >= 100, PMM3 has 0.62 to 0.94 of the OLS variance, but PMM3 was offered
+  only for `gamma4 < -0.7`.
+
+Retuning the existing thresholds does not fix both losses without losing
+PMM2 on skewed laws at n <= 50: at n = 30 a skewed law cannot be told
+reliably from a symmetric one. Two targeted changes do fix them, through new
+arguments:
+
+- `clear_asymmetry_z = 2`: skewed platykurtic residuals go to PMM2 only when
+  `|gamma3| > 2 * sqrt(6/n)`, otherwise to PMM3;
+- `g3_threshold = 0.95`, `n_leptokurtic = 100`: symmetric residuals with
+  `g3 < 0.95` go to PMM3 once `n >= 100`, whatever the sign of `gamma4`.
+
+On held-out replications the mean log efficiency loss falls from 0.061 to
+0.028 and the worst cell from 2.67 to 1.23. 28 of 120 cells improve by more
+than 3% and one gets worse (exponential errors, n = 30: 1.01 -> 1.04).
+`clear_asymmetry_z = 0, g3_threshold = 0` reproduces the 0.5.0 decisions
+exactly; this was checked on 20 000 random samples.
+
+**Changed example.** `mpg ~ horsepower + I(horsepower^2)` on `auto_mpg`
+(n = 392, gamma4 = 1.3) is now sent to PMM3 rather than OLS. A pairs
+bootstrap shows PMM3 and OLS variances within 1-3% of each other there,
+because the errors are heteroscedastic and the predicted gain assumes
+i.i.d. errors. The vignette now says so.
+
+**Not covered.** The calibration used linear regression with one Gaussian
+regressor; the thresholds have not been checked on time-series models. The
+symmetry threshold stays at a fixed `|gamma3| = 0.3`. Sample skewness of
+heavy-tailed errors is noisy even at large n (0.335 on one Laplace sample of
+2000), and such residuals then go to OLS rather than PMM3.
+
+**OPEN_ISSUES D-1.** PMM2 also beats OLS on symmetric heavy-tailed errors:
+MSE ratio 0.72-0.85 on t3 and 0.94-0.99 on Laplace. For Laplace and t5 the
+gain shrinks with n, so it is a finite-sample effect and not a breach of
+`g2 = 1`. t3 has no fourth moment, so the `g2` theorem does not apply to it.
 
 ### Safeguarded PMM2 Newton iteration
 

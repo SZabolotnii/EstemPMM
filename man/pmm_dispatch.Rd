@@ -9,6 +9,9 @@ pmm_dispatch(
   symmetry_threshold = 0.3,
   kurtosis_threshold = -0.7,
   g2_threshold = 0.95,
+  g3_threshold = 0.95,
+  n_leptokurtic = 100,
+  clear_asymmetry_z = 2,
   verbose = TRUE
 )
 }
@@ -20,6 +23,16 @@ pmm_dispatch(
 \item{kurtosis_threshold}{numeric: gamma4 threshold for PMM3 (default -0.7)}
 
 \item{g2_threshold}{numeric: minimum g2 improvement to justify PMM2 (default 0.95)}
+
+\item{g3_threshold}{numeric: symmetric residuals with g3 below this value
+go to PMM3 once \code{n >= n_leptokurtic} (default 0.95)}
+
+\item{n_leptokurtic}{integer: smallest sample size for that PMM3 branch
+(default 100; below it PMM3 is unstable on heavy-tailed errors)}
+
+\item{clear_asymmetry_z}{numeric: multiple of \eqn{\sqrt{6/n}} that
+\eqn{|\gamma_3|} must exceed for skewed platykurtic residuals to go to
+PMM2 rather than PMM3 (default 2)}
 
 \item{verbose}{logical: print decision reasoning (default TRUE)}
 }
@@ -41,7 +54,34 @@ method. Components:
 \description{
 Analyses OLS residual cumulants to recommend the best estimation method:
 OLS (Gaussian errors), PMM2 (asymmetric errors), or PMM3 (symmetric
-platykurtic errors).
+errors with non-zero excess kurtosis).
+}
+\details{
+The rule, in order:
+\enumerate{
+\item \eqn{|\gamma_3| > 1}: PMM2.
+\item \eqn{|\gamma_3|} above \code{symmetry_threshold} and
+\eqn{\gamma_4} below \code{kurtosis_threshold}: PMM2 when the
+skewness is also clear of its sampling noise,
+\eqn{|\gamma_3| > z\sqrt{6/n}} with \code{z = clear_asymmetry_z};
+otherwise PMM3. In small samples platykurtic residuals often show a
+spurious skewness above 0.3.
+\item \eqn{|\gamma_3|} above \code{symmetry_threshold} and
+\eqn{g_2} below \code{g2_threshold}: PMM2.
+\item Symmetric and \eqn{\gamma_4} below \code{kurtosis_threshold}: PMM3.
+\item Symmetric, \eqn{g_3} below \code{g3_threshold} and
+\eqn{n \ge} \code{n_leptokurtic}: PMM3. This covers symmetric
+heavy-tailed errors (logistic, Laplace, Student t).
+\item Otherwise OLS.
+}
+The defaults of \code{clear_asymmetry_z}, \code{g3_threshold} and
+\code{n_leptokurtic} come from a Monte Carlo calibration over 20 error
+laws and \eqn{n} from 30 to 1000 (\code{dev_scripts/calibrate_dispatch.R}
+in the source repository). Against the 0.5.0 rule they halve the mean
+efficiency loss relative to the best of OLS, PMM2 and PMM3 and cut the
+worst case from 2.7 to 1.2. Steps 2 and 5 can be switched off with
+\code{clear_asymmetry_z = 0} and \code{g3_threshold = 0}, which
+reproduces the 0.5.0 rule.
 }
 \examples{
 set.seed(42)

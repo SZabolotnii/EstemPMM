@@ -51,9 +51,12 @@ This vignette demonstrates PMM3 for time series models:
 |----------------------------------|--------------------|
 | Skewed ($|\gamma_3| > 0.3$)      | PMM2 (`ar_pmm2`, `ma_pmm2`, ...) |
 | Symmetric, platykurtic ($\gamma_4 < -0.7$) | **PMM3** (`ar_pmm3`, `ma_pmm3`, ...) |
+| Symmetric, heavy-tailed ($g_3 < 0.95$, $n \geq 100$) | PMM3 |
 | Near-Gaussian                     | MLE / CSS          |
 
 Use `pmm_dispatch()` on residuals from a classical fit to automate this choice.
+Its thresholds were calibrated on linear regression; the heavy-tailed PMM3
+branch has not been checked on time-series models.
 
 ---
 

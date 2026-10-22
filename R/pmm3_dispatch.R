@@ -48,12 +48,45 @@
 #'
 #' Analyses OLS residual cumulants to recommend the best estimation method:
 #' OLS (Gaussian errors), PMM2 (asymmetric errors), or PMM3 (symmetric
-#' platykurtic errors).
+#' errors with non-zero excess kurtosis).
+#'
+#' The rule, in order:
+#' \enumerate{
+#'   \item \eqn{|\gamma_3| > 1}: PMM2.
+#'   \item \eqn{|\gamma_3|} above \code{symmetry_threshold} and
+#'     \eqn{\gamma_4} below \code{kurtosis_threshold}: PMM2 when the
+#'     skewness is also clear of its sampling noise,
+#'     \eqn{|\gamma_3| > z\sqrt{6/n}} with \code{z = clear_asymmetry_z};
+#'     otherwise PMM3. In small samples platykurtic residuals often show a
+#'     spurious skewness above 0.3.
+#'   \item \eqn{|\gamma_3|} above \code{symmetry_threshold} and
+#'     \eqn{g_2} below \code{g2_threshold}: PMM2.
+#'   \item Symmetric and \eqn{\gamma_4} below \code{kurtosis_threshold}: PMM3.
+#'   \item Symmetric, \eqn{g_3} below \code{g3_threshold} and
+#'     \eqn{n \ge} \code{n_leptokurtic}: PMM3. This covers symmetric
+#'     heavy-tailed errors (logistic, Laplace, Student t).
+#'   \item Otherwise OLS.
+#' }
+#' The defaults of \code{clear_asymmetry_z}, \code{g3_threshold} and
+#' \code{n_leptokurtic} come from a Monte Carlo calibration over 20 error
+#' laws and \eqn{n} from 30 to 1000 (\code{dev_scripts/calibrate_dispatch.R}
+#' in the source repository). Against the 0.5.0 rule they halve the mean
+#' efficiency loss relative to the best of OLS, PMM2 and PMM3 and cut the
+#' worst case from 2.7 to 1.2. Steps 2 and 5 can be switched off with
+#' \code{clear_asymmetry_z = 0} and \code{g3_threshold = 0}, which
+#' reproduces the 0.5.0 rule.
 #'
 #' @param residuals numeric vector of OLS residuals
 #' @param symmetry_threshold numeric: |gamma3| threshold for symmetry (default 0.3)
 #' @param kurtosis_threshold numeric: gamma4 threshold for PMM3 (default -0.7)
 #' @param g2_threshold numeric: minimum g2 improvement to justify PMM2 (default 0.95)
+#' @param g3_threshold numeric: symmetric residuals with g3 below this value
+#'   go to PMM3 once \code{n >= n_leptokurtic} (default 0.95)
+#' @param n_leptokurtic integer: smallest sample size for that PMM3 branch
+#'   (default 100; below it PMM3 is unstable on heavy-tailed errors)
+#' @param clear_asymmetry_z numeric: multiple of \eqn{\sqrt{6/n}} that
+#'   \eqn{|\gamma_3|} must exceed for skewed platykurtic residuals to go to
+#'   PMM2 rather than PMM3 (default 2)
 #' @param verbose logical: print decision reasoning (default TRUE)
 #'
 #' @return An object of S3 class \code{"PMMdispatch"}: a list with
@@ -82,19 +115,33 @@ pmm_dispatch <- function(residuals,
                          symmetry_threshold = 0.3,
                          kurtosis_threshold = -0.7,
                          g2_threshold       = 0.95,
+                         g3_threshold       = 0.95,
+                         n_leptokurtic      = 100,
+                         clear_asymmetry_z  = 2,
                          verbose            = TRUE) {
 
   cum <- .residual_cumulants(residuals)
   g2  <- .g2_factor(cum$gamma3, cum$gamma4)
   g3  <- .g3_factor(cum$gamma4, cum$gamma6)
+  n   <- length(residuals)
 
   abs_g3 <- abs(cum$gamma3)
   is_asymmetric          <- abs_g3 > symmetry_threshold
   is_strongly_asymmetric <- abs_g3 > 1.0
   is_platykurtic         <- cum$gamma4 < kurtosis_threshold
+  # Skewness clear of its sampling noise (SE of sample skewness ~ sqrt(6/n))
+  skew_noise             <- clear_asymmetry_z * sqrt(6 / n)
+  is_clearly_asymmetric  <- abs_g3 > skew_noise
 
   # Decision logic
-  if (is_strongly_asymmetric) {
+  if (is_asymmetric && is_platykurtic && !is_clearly_asymmetric) {
+    method <- "PMM3"
+    g      <- g3
+    reason <- sprintf(
+      "gamma4 = %.3f < %.1f (platykurtic); |gamma3| = %.3f is within %.1f*sqrt(6/n) = %.3f of zero, so the skewness is treated as sampling noise. PMM3 expected to reduce variance by %.1f%%.",
+      cum$gamma4, kurtosis_threshold, abs_g3, clear_asymmetry_z, skew_noise, (1 - g3) * 100
+    )
+  } else if (is_strongly_asymmetric) {
     method <- "PMM2"
     g      <- g2
     reason <- sprintf(
@@ -121,6 +168,13 @@ pmm_dispatch <- function(residuals,
     reason <- sprintf(
       "|gamma3| = %.3f (asymmetric) AND gamma4 = %.3f (platykurtic). Asymmetry dominates -- PMM2 (%.1f%% reduction).",
       abs_g3, cum$gamma4, (1 - g2) * 100
+    )
+  } else if (!is_asymmetric && g3 < g3_threshold && n >= n_leptokurtic) {
+    method <- "PMM3"
+    g      <- g3
+    reason <- sprintf(
+      "|gamma3| = %.3f < %.1f (symmetric), gamma4 = %.3f, g3 = %.3f < %.2f with n = %d >= %d. PMM3 expected to reduce variance by %.1f%%.",
+      abs_g3, symmetry_threshold, cum$gamma4, g3, g3_threshold, n, n_leptokurtic, (1 - g3) * 100
     )
   } else {
     method <- "OLS"

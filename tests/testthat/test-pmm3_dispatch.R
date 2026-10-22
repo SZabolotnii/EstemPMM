@@ -75,3 +75,38 @@ test_that("g3 from sample residuals always lies in [0, 1]", {
   # Symmetric two-point law: the boundary, where PMM3 is exact (g3 = 0)
   expect_equal(pmm_dispatch(rep(c(-1, 1), 50), verbose = FALSE)$g3, 0)
 })
+
+test_that("symmetric heavy-tailed residuals go to PMM3 only once n >= n_leptokurtic", {
+  set.seed(11)
+  r <- rexp(1000)
+  r_big <- c(r, -r)[sample(2000)]            # symmetrised Laplace, gamma3 = 0
+  dec <- pmm_dispatch(r_big, verbose = FALSE)
+  expect_equal(dec$method, "PMM3")
+  expect_lt(dec$g3, 0.95)
+  # Same law below the sample-size threshold: the heavy-tailed branch is closed
+  dec_small <- pmm_dispatch(r_big[1:60], verbose = FALSE)
+  expect_false(dec_small$method == "PMM3" && dec_small$gamma4 > -0.7)
+  # Switched off, as in 0.5.0
+  expect_false(pmm_dispatch(r_big, g3_threshold = 0, verbose = FALSE)$method == "PMM3")
+})
+
+test_that("small-sample platykurtic residuals with noisy skewness go to PMM3", {
+  # |gamma3| above 0.3 but within 2*sqrt(6/30) = 0.89 of zero
+  set.seed(5)
+  repeat {
+    r <- rnorm(30, sample(c(-1, 1), 30, TRUE), 0.3)
+    cu <- EstemPMM:::.residual_cumulants(r)
+    if (abs(cu$gamma3) > 0.3 && abs(cu$gamma3) < 2 * sqrt(6 / 30) &&
+        cu$gamma4 < -0.7) break
+  }
+  expect_equal(pmm_dispatch(r, verbose = FALSE)$method, "PMM3")
+  # The 0.5.0 rule (clear_asymmetry_z = 0) sent such residuals to PMM2
+  expect_equal(pmm_dispatch(r, clear_asymmetry_z = 0, verbose = FALSE)$method,
+               "PMM2")
+})
+
+test_that("clearly skewed residuals still go to PMM2", {
+  set.seed(8)
+  expect_equal(pmm_dispatch(rexp(30) - 1, verbose = FALSE)$method, "PMM2")
+  expect_equal(pmm_dispatch(rgamma(500, 2) - 2, verbose = FALSE)$method, "PMM2")
+})

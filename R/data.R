@@ -47,8 +47,9 @@
 #'   \item \strong{MPG vs Weight} (PMM2, quadratic): residuals have
 #'     gamma3 = 0.8, g2 = 0.83 (Zabolotnii et al., 2025)
 #'   \item \strong{MPG vs Horsepower} (diagnostic, quadratic): residuals are
-#'     nearly symmetric but have positive excess kurtosis, so the current
-#'     \code{pmm_dispatch()} rule does not treat this as a PMM3 platykurtic case.
+#'     nearly symmetric with positive excess kurtosis; \code{pmm_dispatch()}
+#'     recommends PMM3 (n = 392 >= \code{n_leptokurtic}), although the errors
+#'     are heteroscedastic and a pairs bootstrap shows no variance gain.
 #' }
 #'
 #' @source UCI Machine Learning Repository
