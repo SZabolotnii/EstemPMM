@@ -37,6 +37,9 @@
 #' @keywords internal
 .g3_factor <- function(gamma4, gamma6) {
   denom <- 6 + 9 * gamma4 + gamma6
+  # With gamma4, gamma6 from sample moments, denom - gamma4^2 equals
+  # m6/m2^3 - (m4/m2^2)^2 >= 0 (Cauchy-Schwarz), so g3 lies in [0, 1].
+  # g3 = 0 only for a symmetric two-point law, where PMM3 is exact.
   if (is.na(denom) || denom <= 0) return(1.0)
   1 - gamma4^2 / denom
 }

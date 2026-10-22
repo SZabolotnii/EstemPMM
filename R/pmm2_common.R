@@ -50,33 +50,40 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     conv_history <- numeric(max_iter)
   }
 
-  # Main iteration loop
-  for (iter in seq_len(max_iter)) {
-    iterations <- iter
+  p <- length(b_cur)
 
-    # Calculate predicted values
-    y_pred <- as.vector(X %*% b_cur)
-
-    # Calculate Z1 = A*y_pred^2 + B*y_pred + C
+  # Estimating function Z(b) = sum_t Z1_t x_t, Z1 = A*y_pred^2 + B*y_pred + C
+  score <- function(b) {
+    y_pred <- as.vector(X %*% b)
     Z1 <- A*(y_pred^2) + B*y_pred + C
-
-    # Form Z vector for each parameter
-    p <- length(b_cur)
     Z <- numeric(p)
     for (r in 1:p) {
       Z[r] <- sum(Z1 * X[, r])
     }
+    Z
+  }
 
-    # Calculate derivative JZ11 = 2*A*y_pred + B
+  # Jacobian dZ/db = sum_t (2*A*y_pred + B) x_t x_t'
+  jacobian <- function(b) {
+    y_pred <- as.vector(X %*% b)
     JZ11 <- 2 * A * y_pred + B
-
-    # Form Jacobian matrix
     JZs <- matrix(0, p, p)
     for (i in 1:p) {
       for (j in 1:p) {
         JZs[i, j] <- sum(JZ11 * X[, i] * X[, j])
       }
     }
+    JZs
+  }
+
+  stalled <- FALSE
+
+  # Main iteration loop
+  for (iter in seq_len(max_iter)) {
+    iterations <- iter
+
+    Z <- score(b_cur)
+    JZs <- jacobian(b_cur)
 
     # Add regularization if needed
     if (regularize) {
@@ -95,8 +102,38 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
       solve(JZs, Z)
     })
 
-    # Update parameters
+    # Update parameters. The full Newton step is taken whenever it reduces
+    # ||Z||, so a well-behaved fit follows exactly the 0.5.0 trajectory;
+    # otherwise the step is halved (backtracking on the norm of the
+    # estimating function, as in the recursive MA solver).
+    norm_cur <- sqrt(sum(Z^2))
+    if (iter == 1) norm_init <- norm_cur
+    t_step <- 1
     b_new <- b_cur - delta
+    # A step already below tol passes the 0.5.0 convergence test; near the
+    # root ||Z|| sits at rounding level and need not decrease, so it is
+    # taken as is.
+    if (sqrt(sum(delta^2)) >= tol) {
+      repeat {
+        norm_new <- sqrt(sum(score(b_new)^2))
+        if (all(is.finite(b_new)) && is.finite(norm_new) &&
+            norm_new <= (1 - 1e-4 * t_step) * norm_cur) break
+        t_step <- t_step / 2
+        if (t_step < 2^-30) break
+        b_new <- b_cur - t_step * delta
+      }
+    }
+    if (t_step < 2^-30) {
+      if (norm_cur <= 1e-10 * norm_init) {
+        # ||Z|| is already at rounding level: this is the root
+        converged <- TRUE
+      } else {
+        # No step along the Newton direction reduces ||Z||: stop here
+        stalled <- TRUE
+        if (verbose) cat("Line search failed at iteration", iter, "\n")
+      }
+      break
+    }
     diff_par <- sqrt(sum((b_new - b_cur)^2))
 
     # Store convergence history if verbose
@@ -118,9 +155,32 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     }
   }
 
-  # Warning if maximum iterations reached without convergence
-  if (!converged && verbose) {
-    cat("Warning: Algorithm did not converge after", max_iter, "iterations\n")
+  # A stalled line search or a non-finite iterate has no estimate to offer:
+  # return the initial (consistent) estimate, as the PMM3 solver does.
+  if (stalled || !all(is.finite(b_cur))) {
+    warning("PMM2 iteration failed (",
+            if (stalled) "line search stalled" else "non-finite estimate",
+            "); returning the initial estimate.", call. = FALSE)
+    b_cur <- b_init
+    converged <- FALSE
+  } else if (!converged) {
+    warning("PMM2 algorithm did not converge after ", iterations,
+            " iterations.", call. = FALSE)
+  }
+
+  # Root check. At the consistent root the Jacobian
+  # sum_t ((m4 - m2^2) - 2*m3*eps_t) x_t x_t' is positive definite in
+  # expectation; the estimating equation can have other roots where it is
+  # not. In small samples the consistent root can fail this test too, so it
+  # is reported, not acted on.
+  min_eig <- tryCatch(
+    min(eigen(jacobian(b_cur), symmetric = TRUE, only.values = TRUE)$values),
+    error = function(e) NA_real_)
+  root_pd <- is.finite(min_eig) && min_eig > 0
+  if (converged && !root_pd) {
+    warning("PMM2 root has a Jacobian that is not positive definite; it may ",
+            "not be the consistent root. Compare with the OLS fit.",
+            call. = FALSE)
   }
 
   # Calculate final residuals
@@ -141,6 +201,7 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     b = as.numeric(b_cur),
     convergence = converged,
     iterations = iterations,
-    residuals = final_res
+    residuals = final_res,
+    jacobian_min_eigen = min_eig
   )
 }

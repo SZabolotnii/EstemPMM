@@ -60,3 +60,18 @@ test_that("pmm_dispatch respects custom thresholds", {
   result <- pmm_dispatch(r, kurtosis_threshold = -2.0, verbose = FALSE)
   expect_true(result$method %in% c("OLS", "PMM2", "PMM3"))
 })
+
+test_that("g3 from sample residuals always lies in [0, 1]", {
+  # 6 + 9*gamma4 + gamma6 - gamma4^2 = m6/m2^3 - (m4/m2^2)^2 >= 0, so the
+  # band 0 < denom <= gamma4^2 cannot be reached from residuals.
+  set.seed(7)
+  samples <- list(rexp(15), rlnorm(40, 0, 2), runif(30)^5, rt(50, 3),
+                  sample(c(-1, 1), 60, TRUE) + rnorm(60, 0, 1e-3))
+  for (r in samples) {
+    g3 <- pmm_dispatch(r, verbose = FALSE)$g3
+    expect_gte(g3, 0)
+    expect_lte(g3, 1)
+  }
+  # Symmetric two-point law: the boundary, where PMM3 is exact (g3 = 0)
+  expect_equal(pmm_dispatch(rep(c(-1, 1), 50), verbose = FALSE)$g3, 0)
+})
