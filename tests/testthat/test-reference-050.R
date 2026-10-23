@@ -23,13 +23,21 @@ refit <- function(cs) {
   }
 }
 
+# The WTI ARIMA(1,1,1) start comes from stats::arima(method = "CSS-ML"), whose
+# optimiser stops at a platform-dependent point: the AR and MA roots nearly
+# cancel (-0.26 vs 0.29), so the likelihood is flat. The fixture was made on
+# macOS; Linux and Windows differ by 2e-7 (linearised) and 5e-11 (recursive),
+# and changing only the optimiser's reltol moves the fit by 1e-6.
+start_sensitive <- c("wti_arima111_lin", "wti_arima111_rec")
+
 for (nm in setdiff(names(ref$cases), changed)) {
   cs <- ref$cases[[nm]]
   if (!isTRUE(cs$converged)) next
+  tol <- if (nm %in% start_sensitive) 1e-5 else 1e-12
   test_that(paste("0.5.0 estimate reproduced:", nm), {
     fit <- refit(cs)
     expect_true(fit@convergence)
-    expect_equal(unname(fit@coefficients), unname(cs$coef), tolerance = 1e-12)
+    expect_equal(unname(fit@coefficients), unname(cs$coef), tolerance = tol)
   })
 }
 
