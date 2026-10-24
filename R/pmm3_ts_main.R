@@ -12,7 +12,10 @@
 #' @param max_iter Integer: maximum NR iterations (default 100)
 #' @param tol Numeric: convergence tolerance (default 1e-6)
 #' @param adaptive Logical: re-estimate kappa each iteration (default FALSE)
-#' @param step_max Numeric: maximum NR step size (default 5.0)
+#' @param step_max Numeric: maximum NR step (default 5.0). For AR, MA and
+#'   ARMA models it is the root-mean-square change of the fitted values in
+#'   units of the initial residual standard deviation; for ARIMA models it
+#'   bounds the norm of the coefficient step.
 #' @param include.mean Logical: include mean/intercept term (default TRUE)
 #' @param initial Optional initial parameter estimates
 #' @param na.action Function for handling missing values (default na.fail)
@@ -211,7 +214,8 @@ ts_pmm3 <- function(x, order,
 #' @param max_iter Integer: maximum NR iterations (default 100)
 #' @param tol Numeric: convergence tolerance (default 1e-6)
 #' @param adaptive Logical: re-estimate kappa each iteration (default FALSE)
-#' @param step_max Numeric: maximum NR step size (default 5.0)
+#' @param step_max Numeric: maximum NR step (default 5.0); see
+#'   \code{\link{ts_pmm3}}
 #' @param include.mean Logical: include mean term (default TRUE)
 #' @param initial Optional initial parameter estimates
 #' @param na.action Function for handling missing values (default na.fail)

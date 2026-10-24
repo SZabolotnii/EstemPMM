@@ -6,8 +6,10 @@
 #' The score is \eqn{Z = X'(\varepsilon(\kappa - \varepsilon^2))} and the
 #' Jacobian is \eqn{J = X' \mathrm{diag}(3\varepsilon^2 - \kappa) X}.
 #' Each step is limited to \code{step_max} and then halved until the norm of
-#' the score decreases. If the line search stalls away from a root, the OLS
-#' values are returned.
+#' the score, measured in the metric of \eqn{(X^\top X)^{-1}}, decreases.
+#' If the Jacobian is singular, the line search stalls away from a root or
+#' the fitted values move by more than ten residual standard deviations, the
+#' OLS values are returned with a warning.
 #'
 #' @param B_ols     OLS starting values (length P)
 #' @param X         Design matrix (n x P)
@@ -16,11 +18,12 @@
 #' @param adaptive  Re-estimate kappa each iteration? (default FALSE)
 #' @param tol       Convergence tolerance on ||delta||_2 (default 1e-6)
 #' @param max_iter  Maximum NR iterations (default 100)
-#' @param step_max  Maximum step size (default 5.0)
+#' @param step_max  Maximum step, as the root-mean-square change of the
+#'   fitted values in units of the OLS residual SD (default 5.0)
 #'
 #' @return List: B (estimates), converged, iter, kappa, near_gaussian,
-#'   fallback (TRUE when the OLS values were returned: stalled line search,
-#'   divergence or a non-finite iterate)
+#'   fallback (TRUE when the OLS values were returned: singular Jacobian,
+#'   stalled line search, divergence or a non-finite iterate)
 #' @keywords internal
 .pmm3_nr_solver <- function(B_ols, X, Y, kappa,
                              adaptive = FALSE,
@@ -38,13 +41,21 @@
   }
 
   converged <- FALSE
-  stalled   <- FALSE
+  failed    <- NULL
   iter      <- 0L
   norm_init <- NA_real_
+  merit <- .pmm_merit(X)
   score_norm <- function(B, kappa) {
     e <- as.numeric(Y - X %*% B)
-    sqrt(sum(crossprod(X, e * (kappa - e^2))^2))
+    merit(as.numeric(crossprod(X, e * (kappa - e^2))))
   }
+  # Step limit and divergence guard are measured as the root-mean-square
+  # change of the fitted values in units of the OLS residual SD, so that they
+  # do not depend on how the regressors and the response are scaled.
+  n <- length(Y)
+  s_ols <- sqrt(mean(as.numeric(Y - X %*% B_ols)^2))
+  if (!is.finite(s_ols) || s_ols <= 0) s_ols <- 1
+  fit_shift <- function(d) sqrt(sum(as.numeric(X %*% d)^2) / n) / s_ols
 
   for (i in seq_len(max_iter)) {
     iter <- as.integer(i)
@@ -57,7 +68,7 @@
       m4_c  <- mean(eps_c^4)
       m6_c  <- mean(eps_c^6)
       d     <- m4_c - 3 * m2_c^2
-      if (abs(d) > .Machine$double.eps * 1e6) {
+      if (abs(d) > .Machine$double.eps * 1e6 * m2_c^2) {
         kappa <- (m6_c - 3 * m4_c * m2_c) / d
       }
     }
@@ -76,15 +87,20 @@
     # Solve
     delta <- tryCatch(as.numeric(solve(J, Z)),
                       error = function(e) rep(NA_real_, P))
-    if (anyNA(delta)) break
+    if (anyNA(delta)) {
+      failed <- "singular Jacobian"
+      break
+    }
 
     # Step-size limiting
     step_norm <- sqrt(sum(delta^2))
-    if (step_norm > step_max) delta <- delta * step_max / step_norm
+    shift <- fit_shift(delta)
+    if (shift > step_max) delta <- delta * step_max / shift
 
-    # Backtracking on ||Z||: the full step is kept whenever it reduces the
-    # norm of the estimating function, so well-behaved fits are unchanged
-    norm_cur <- sqrt(sum(Z^2))
+    # Backtracking on the merit norm: the full step is kept whenever it
+    # reduces the norm of the estimating function, so well-behaved fits are
+    # unchanged
+    norm_cur <- merit(Z)
     if (i == 1) norm_init <- norm_cur
     t_step <- 1
     B_new <- B - delta
@@ -99,7 +115,8 @@
       }
     }
     if (t_step < 2^-30) {
-      if (norm_cur <= 1e-10 * norm_init) converged <- TRUE else stalled <- TRUE
+      if (norm_cur <= 1e-10 * norm_init) converged <- TRUE
+      else failed <- "line search stalled"
       break
     }
     B <- B_new
@@ -110,11 +127,19 @@
     }
   }
 
-  # Divergence guard: revert to OLS if too far, or if the line search stalled
-  fallback <- stalled || sqrt(sum((B - B_ols)^2)) > 10 || anyNA(B)
+  # Divergence guard: revert to OLS if the fitted values moved by more than
+  # ten residual SDs, or if the iteration failed
+  if (is.null(failed) && anyNA(B)) failed <- "non-finite estimate"
+  if (is.null(failed) && fit_shift(B - B_ols) > 10) failed <- "diverged"
+  fallback <- !is.null(failed)
   if (fallback) {
+    warning("PMM3 iteration failed (", failed,
+            "); returning the OLS estimate.", call. = FALSE)
     B         <- B_ols
     converged <- FALSE
+  } else if (!converged) {
+    warning("PMM3 algorithm did not converge after ", iter, " iterations.",
+            call. = FALSE)
   }
 
   # Root check. At the consistent root X' diag(3 eps^2 - kappa) X / n tends to
@@ -152,13 +177,20 @@
 #' @return List: h (length S, or NULL if F is singular) and g.
 #' @keywords internal
 .pmm_poly_coef <- function(alpha, S) {
-  a <- function(k) if (k == 0) 1 else alpha[k]
+  # The system is solved for the standardised moments alpha_k / s^k,
+  # s = sqrt(alpha_2): on raw moments F spans s^2..s^(2S) and solve() calls
+  # it singular once s is far from 1. Then h_k = h_std_k / s^(k + 1) and g
+  # is scale-free.
+  s <- sqrt(alpha[2])
+  if (!is.finite(s) || s <= 0) return(list(h = NULL, g = NA_real_))
+  alpha_std <- alpha / s^seq_along(alpha)
+  a <- function(k) if (k == 0) 1 else alpha_std[k]
   i <- seq_len(S)
   F <- outer(i, i, Vectorize(function(p, q) a(p + q) - a(p) * a(q)))
   b <- i * vapply(i - 1, a, numeric(1))
   h <- tryCatch(as.numeric(solve(F, b)), error = function(e) NULL)
   if (is.null(h) || any(!is.finite(h))) return(list(h = NULL, g = NA_real_))
-  list(h = h, g = 1 / (alpha[2] * sum(b * h)))
+  list(h = h / s^(i + 1), g = 1 / sum(b * h))
 }
 
 #' Newton solver for the general (asymmetric) degree-3 PMM estimator
@@ -201,6 +233,7 @@
   failed <- NULL
   iter <- 0L
   norm_init <- NA_real_
+  merit <- .pmm_merit(X)
   for (i in seq_len(max_iter)) {
     iter <- i
     e <- as.numeric(Y - X %*% B)
@@ -216,14 +249,14 @@
       failed <- "singular Jacobian"
       break
     }
-    norm_cur <- sqrt(sum(G^2))
+    norm_cur <- merit(G)
     if (i == 1) norm_init <- norm_cur
     step_norm <- sqrt(sum(delta^2))
     t_step <- 1
     B_new <- B + delta
     if (step_norm >= tol) {
       repeat {
-        norm_new <- sqrt(sum(score(B_new, h, alpha)^2))
+        norm_new <- merit(score(B_new, h, alpha))
         if (all(is.finite(B_new)) && is.finite(norm_new) &&
             norm_new <= (1 - 1e-4 * t_step) * norm_cur) break
         t_step <- t_step / 2
@@ -331,7 +364,7 @@
       m4_c  <- mean(eps_c^4)
       m6_c  <- mean(eps_c^6)
       d     <- m4_c - 3 * m2_c^2
-      if (abs(d) > .Machine$double.eps * 1e6) {
+      if (abs(d) > .Machine$double.eps * 1e6 * m2_c^2) {
         kappa <- (m6_c - 3 * m4_c * m2_c) / d
       }
     }

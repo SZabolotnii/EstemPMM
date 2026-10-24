@@ -346,8 +346,15 @@ setMethod("predict", "WPMMfit",
             if (is.null(newdata)) {
               return(fitted(object))
             }
-            tt <- stats::delete.response(stats::terms(attr(object, "model_frame")))
-            X <- stats::model.matrix(tt, stats::model.frame(tt, newdata))
+            # Factor levels and contrasts come from the training data, as in
+            # predict.lm(): a factor in newdata that holds a subset of the
+            # levels, or a character column, otherwise gets its own coding
+            mf <- attr(object, "model_frame")
+            tt <- stats::delete.response(stats::terms(mf))
+            nf <- stats::model.frame(tt, newdata, na.action = stats::na.pass,
+                                     xlev = stats::.getXlevels(stats::terms(mf), mf))
+            X <- stats::model.matrix(tt, nf,
+                                     contrasts.arg = attr(attr(object, "model_matrix"), "contrasts"))
             as.vector(X %*% object@coefficients[colnames(X)])
           })
 

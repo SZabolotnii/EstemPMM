@@ -31,7 +31,10 @@ ts_pmm3(
 
 \item{adaptive}{Logical: re-estimate kappa each iteration (default FALSE)}
 
-\item{step_max}{Numeric: maximum NR step size (default 5.0)}
+\item{step_max}{Numeric: maximum NR step (default 5.0). For AR, MA and
+ARMA models it is the root-mean-square change of the fitted values in
+units of the initial residual standard deviation; for ARIMA models it
+bounds the norm of the coefficient step.}
 
 \item{include.mean}{Logical: include mean/intercept term (default TRUE)}
 

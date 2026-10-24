@@ -19,7 +19,11 @@ test_that("summary reports the asymptotic standard errors from vcov", {
   se <- sqrt(diag(vcov(fit)))
   vf <- pmm2_variance_factor(fit@m2, fit@m3, fit@m4)
   ols_se <- sqrt(diag(fit@m2 * solve(crossprod(cbind(1, x)))))
-  expect_equal(unname(se), unname(sqrt(vf$g) * ols_se))
+  # Slope: sqrt(g2) times the OLS SE. Intercept: plus (1 - g2) m2 / n from
+  # the moments estimated on the OLS residuals
+  expect_equal(unname(se[2]), unname(sqrt(vf$g) * ols_se[2]))
+  expect_equal(unname(se[1]^2),
+               unname(vf$g * ols_se[1]^2 + (1 - vf$g) * fit@m2 / n))
 })
 
 test_that("coef method extracts coefficients", {

@@ -33,8 +33,11 @@ compute_moments_pmm3 <- function(residuals) {
   denom_g3 <- 6 + 9 * gamma4 + gamma6
   g3 <- if (!is.na(denom_g3) && denom_g3 > 0) 1 - gamma4^2 / denom_g3 else 1.0
 
+  # kappa is undefined for mesokurtic residuals (gamma4 = 0); the test is on
+  # gamma4 itself, so that it does not depend on the units of the response
   denom_kappa <- m4 - 3 * m2^2
-  kappa <- if (abs(denom_kappa) > .Machine$double.eps * 1e6) {
+  kappa <- if (is.finite(denom_kappa) &&
+               abs(denom_kappa) > .Machine$double.eps * 1e6 * m2^2) {
     (m6 - 3 * m4 * m2) / denom_kappa
   } else {
     NA_real_

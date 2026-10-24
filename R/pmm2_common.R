@@ -27,16 +27,15 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
   converged <- FALSE
   iterations <- 0
 
-  # Calculate PMM2 polynomial coefficients
-  # Derivation corresponds to equation (10) from the paper:
-  # A = c3 * sigma^3, B = (c4 + 3) * sigma^4 - sigma^4 - 2 c3 * sigma^3 * y,
-  # C = c3 * y^2 * sigma^3 - ((c4 + 3) * sigma^4 - sigma^4) * y - sigma^2 * c3 * sigma^3.
-  # Substituting sigma^2 = m2, m3 = c3 sigma^3, m4 = (c4 + 3) sigma^4 gives the formulas below.
-  if (is.null(poly_terms)) {
-    A <- m3
-    B <- m4 - m2^2 - 2 * m3 * y
-    C <- m3 * y^2 - (m4 - m2^2) * y - m2 * m3
-  } else {
+  # PMM2 polynomial, equation (10) from the paper:
+  # Z1 = A*y_pred^2 + B*y_pred + C with A = m3, B = m4 - m2^2 - 2*m3*y,
+  # C = m3*y^2 - (m4 - m2^2)*y - m2*m3. With eps = y - y_pred this is
+  # m3*eps^2 - (m4 - m2^2)*eps - m2*m3; the score is evaluated in that form,
+  # since the expansion in y_pred cancels terms of order y^2 and loses
+  # precision once y is large relative to its spread. Custom poly_terms keep
+  # the expanded form.
+  residual_form <- is.null(poly_terms)
+  if (!residual_form) {
     A <- poly_terms$A
     B <- poly_terms$B
     C <- poly_terms$C
@@ -55,7 +54,12 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
   # Estimating function Z(b) = sum_t Z1_t x_t, Z1 = A*y_pred^2 + B*y_pred + C
   score <- function(b) {
     y_pred <- as.vector(X %*% b)
-    Z1 <- A*(y_pred^2) + B*y_pred + C
+    Z1 <- if (residual_form) {
+      eps <- y - y_pred
+      m3 * eps^2 - (m4 - m2^2) * eps - m2 * m3
+    } else {
+      A*(y_pred^2) + B*y_pred + C
+    }
     Z <- numeric(p)
     for (r in 1:p) {
       Z[r] <- sum(Z1 * X[, r])
@@ -66,7 +70,11 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
   # Jacobian dZ/db = sum_t (2*A*y_pred + B) x_t x_t'
   jacobian <- function(b) {
     y_pred <- as.vector(X %*% b)
-    JZ11 <- 2 * A * y_pred + B
+    JZ11 <- if (residual_form) {
+      (m4 - m2^2) - 2 * m3 * (y - y_pred)
+    } else {
+      2 * A * y_pred + B
+    }
     JZs <- matrix(0, p, p)
     for (i in 1:p) {
       for (j in 1:p) {
@@ -76,7 +84,14 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     JZs
   }
 
+  # The line search measures Z in the metric of (X'X)^-1, i.e. the norm of
+  # Q'psi for X = QR. The plain norm ||Z|| changes when a regressor is shifted
+  # or rescaled (calendar years as x), and then rejects full Newton steps
+  # that this affine-invariant norm accepts.
+  merit <- .pmm_merit(X)
+
   stalled <- FALSE
+  singular <- FALSE
 
   # Main iteration loop
   for (iter in seq_len(max_iter)) {
@@ -99,23 +114,28 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
         cat("Adding stronger regularization\n")
       }
       diag(JZs) <- diag(JZs) + 1e-4
-      solve(JZs, Z)
+      tryCatch(solve(JZs, Z), error = function(e) NULL)
     })
+    if (is.null(delta) || any(!is.finite(delta))) {
+      singular <- TRUE
+      break
+    }
 
     # Update parameters. The full Newton step is taken whenever it reduces
-    # ||Z||, so a well-behaved fit follows exactly the 0.5.0 trajectory;
-    # otherwise the step is halved (backtracking on the norm of the
-    # estimating function, as in the recursive MA solver).
-    norm_cur <- sqrt(sum(Z^2))
+    # the merit norm, so a well-behaved fit follows exactly the 0.5.0
+    # trajectory; otherwise the step is halved (backtracking, as in the
+    # recursive MA solver).
+    norm_cur <- merit(Z)
     if (iter == 1) norm_init <- norm_cur
     t_step <- 1
     b_new <- b_cur - delta
+    step_full <- sqrt(sum(delta^2))
     # A step already below tol passes the 0.5.0 convergence test; near the
     # root ||Z|| sits at rounding level and need not decrease, so it is
     # taken as is.
-    if (sqrt(sum(delta^2)) >= tol) {
+    if (step_full >= tol) {
       repeat {
-        norm_new <- sqrt(sum(score(b_new)^2))
+        norm_new <- merit(score(b_new))
         if (all(is.finite(b_new)) && is.finite(norm_new) &&
             norm_new <= (1 - 1e-4 * t_step) * norm_cur) break
         t_step <- t_step / 2
@@ -147,8 +167,9 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
 
     b_cur <- b_new
 
-    # Check convergence
-    if (diff_par < tol) {
+    # Check convergence on the full Newton step: a short damped step says
+    # nothing about the distance to the root.
+    if (step_full < tol) {
       converged <- TRUE
       if (verbose) cat("Converged after", iter, "iterations\n")
       break
@@ -157,10 +178,11 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
 
   # A stalled line search or a non-finite iterate has no estimate to offer:
   # return the initial (consistent) estimate, as the PMM3 solver does.
-  fallback <- stalled || !all(is.finite(b_cur))
+  fallback <- stalled || singular || !all(is.finite(b_cur))
   if (fallback) {
     warning("PMM2 iteration failed (",
-            if (stalled) "line search stalled" else "non-finite estimate",
+            if (stalled) "line search stalled"
+            else if (singular) "singular Jacobian" else "non-finite estimate",
             "); returning the initial estimate.", call. = FALSE)
     b_cur <- b_init
     converged <- FALSE
@@ -206,4 +228,16 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     jacobian_min_eigen = min_eig,
     fallback = fallback
   )
+}
+
+# Merit norm for the line searches of the linear-model PMM solvers. For an
+# estimating function Z = X'psi it returns ||R^-T Z|| = ||Q'psi|| with X = QR,
+# which does not change when the columns of X are shifted or rescaled. A
+# rank-deficient X falls back to the plain norm.
+.pmm_merit <- function(X) {
+  qx <- qr(X)
+  if (qx$rank < ncol(X)) return(function(Z) sqrt(sum(Z^2)))
+  R <- qr.R(qx)
+  piv <- qx$pivot
+  function(Z) sqrt(sum(backsolve(R, Z[piv], transpose = TRUE)^2))
 }

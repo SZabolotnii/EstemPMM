@@ -28,7 +28,8 @@ ma_pmm3(
 
 \item{adaptive}{Logical: re-estimate kappa each iteration (default FALSE)}
 
-\item{step_max}{Numeric: maximum NR step size (default 5.0)}
+\item{step_max}{Numeric: maximum NR step (default 5.0); see
+\code{\link{ts_pmm3}}}
 
 \item{include.mean}{Logical: include mean term (default TRUE)}
 

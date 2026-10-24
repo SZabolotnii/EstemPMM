@@ -11,7 +11,9 @@
 #' @param max_iter integer: maximum number of NR iterations (default 100)
 #' @param tol numeric: convergence tolerance (default 1e-6)
 #' @param adaptive logical: re-estimate kappa each iteration (default FALSE)
-#' @param step_max numeric: maximum NR step size (default 5.0)
+#' @param step_max numeric: maximum NR step, measured as the root-mean-square
+#'   change of the fitted values in units of the OLS residual standard
+#'   deviation (default 5.0)
 #' @param na.action function for handling missing values (default na.fail)
 #' @param verbose logical: print progress information (default FALSE)
 #' @param symmetric logical: \code{TRUE} (default) fits the symmetric PMM3
@@ -193,7 +195,9 @@ lm_pmm3 <- function(formula, data,
   attr(ans, "model_frame")  <- mf
   attr(ans, "response")     <- as.numeric(y)
   attr(ans, "data")         <- data
-  attr(ans, "fallback")     <- isTRUE(nr$fallback)
+  # Near-Gaussian residuals leave kappa undefined and the OLS values are
+  # returned without a PMM3 step, so g3 does not apply to them either
+  attr(ans, "fallback")     <- isTRUE(nr$fallback) || isTRUE(nr$near_gaussian)
 
   return(ans)
 }
@@ -423,7 +427,12 @@ setMethod("nobs", "PMM3fit",
 #' errors; see \code{\link{pmm3_variance_matrices}}). Under Gaussian
 #' errors \eqn{g_3 = 1} and the result equals the OLS covariance.
 #' For \code{lm_pmm3(symmetric = FALSE)}, \eqn{g_3} is the general factor
-#' \eqn{1 / (\alpha_2\, b^\top F^{-1} b)}. When the iteration failed and
+#' \eqn{1 / (\alpha_2\, b^\top F^{-1} b)}, and the matrix gains the term
+#' \eqn{(1 - g_3)\sigma^2 n^{-1} a a^\top}, \eqn{a = (X^\top X)^{-1} X^\top 1},
+#' for the moments estimated from the OLS residuals (see
+#' \code{\link{vcov,PMM2fit-method}}); with an intercept only the intercept
+#' variance changes. The symmetric estimator needs no such term. When the
+#' iteration failed and
 #' the OLS estimate was returned, the OLS covariance is returned.
 #'
 #' @param object PMM3fit object
@@ -439,7 +448,8 @@ setMethod("vcov", "PMM3fit",
             if (isTRUE(attr(object, "fallback"))) {
               V <- object@m2 * solve(crossprod(X))
             } else if (methods::.hasSlot(object, "symmetric") && !isTRUE(object@symmetric)) {
-              V <- object@g_coefficient * object@m2 * solve(crossprod(X))
+              V <- object@g_coefficient * object@m2 * solve(crossprod(X)) +
+                .pmm_location_term(X, object@m2, object@g_coefficient)
             } else {
               V <- pmm3_variance_matrices(X, object@m2, object@m4, object@m6)$pmm3
             }

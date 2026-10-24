@@ -5,6 +5,62 @@
 Not on CRAN. CRAN 0.5.0 stays the reference for published work and for
 the JSS manuscript until the next release.
 
+### Fixes from a review of the development version
+
+**Line search independent of the units of the regressors.** The safeguarded
+PMM2 and PMM3 iterations below backtracked on the plain norm of the
+estimating function `X'psi`, which changes when a regressor is shifted or
+rescaled. With an uncentred regressor such as calendar years they rejected
+full Newton steps and stopped without converging: `y ~ year` with 20 years
+and exponential errors converged in 70.7% of 1000 samples, against 99.4%
+now. The merit norm is now `||Q'psi||` for `X = QR`, which does not depend on
+the parametrisation; on centred designs the fits are unchanged (the 0.5.0
+reference fixture is still reproduced to 1e-12).
+
+**Intercept standard error.** `vcov()`, `confint()` and `summary()` of
+`lm_pmm2()` and `lm_pmm3(symmetric = FALSE)` fits gave every coefficient the
+variance `g m2 (X'X)^-1`. Because the polynomial is built from moments of the
+OLS residuals, the intercept has a larger variance: the matrix is now
+`g m2 (X'X)^-1 + (1 - g) m2 / n * a a'` with `a = (X'X)^-1 X'1`, which with an
+intercept changes the intercept entry only. With a centred regressor and
+skewed errors, coverage of the 95% interval for the intercept rose from
+0.78-0.82 to 0.93-0.96 (1000 samples, n = 100 and 400); the slopes are
+unchanged. The symmetric PMM3 estimator needs no such term.
+
+**Fits that do not depend on the units of the response.**
+- PMM2 evaluates its score in terms of the residuals. The expanded form lost
+  precision when the response was far from zero relative to its spread: with
+  an offset of 1e6 (1e7) and n = 80, 13 (37) of 100 fits fell back to OLS;
+  none do now, up to an offset of 1e9.
+- `lm_pmm3(symmetric = FALSE)` solves its normal system on standardised
+  moments. On raw moments it was singular, and the fit was OLS, at a
+  residual SD of 3.7e3 or 7.5e-5 (not at 1.5e3 or 1.5e-4); no fall-back
+  occurs now between 1.5e-8 and 1.5e8.
+- In the symmetric PMM3 solver, `step_max` and the divergence guard are now
+  measured as the change of the fitted values in residual standard
+  deviations rather than as an absolute coefficient distance of 5 and 10,
+  and the mesokurtic test for `kappa` is relative to `m2^2`.
+- The convergence tolerance `tol` is still an absolute bound on the
+  coefficient step, as in 0.5.0.
+
+**Silent failures.**
+- `lm_pmm3()` on near-Gaussian residuals returns the OLS values without a
+  PMM3 step; such fits are now flagged as a fall-back, so `vcov()` no longer
+  scales them by `g3`.
+- The symmetric PMM3 solver now warns and returns the OLS values when the
+  Jacobian is singular (it used to stop and return the current iterate), and
+  warns when it reaches `max_iter`.
+- PMM2 tests convergence on the full Newton step, not on the damped one, so
+  a short backtracked step is no longer taken for convergence.
+- A singular PMM2 Jacobian that stays singular after the stronger ridge now
+  falls back to the initial estimate with a warning instead of an error.
+
+**`predict()` for `lm_wpmm2()`/`lm_wpmm3()` fits** codes factors in
+`newdata` with the levels and contrasts of the training data. A character
+column, or a factor holding only some of the levels, used to get its own
+coding and silently wrong predictions; rows with missing values are now kept
+as `NA`.
+
 ### Safeguarded symmetric PMM3 iteration
 
 The symmetric PMM3 Newton solver behind `lm_pmm3()` and `ar/ma/arma_pmm3()`

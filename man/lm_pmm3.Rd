@@ -27,7 +27,9 @@ lm_pmm3(
 
 \item{adaptive}{logical: re-estimate kappa each iteration (default FALSE)}
 
-\item{step_max}{numeric: maximum NR step size (default 5.0)}
+\item{step_max}{numeric: maximum NR step, measured as the root-mean-square
+change of the fitted values in units of the OLS residual standard
+deviation (default 5.0)}
 
 \item{na.action}{function for handling missing values (default na.fail)}
 

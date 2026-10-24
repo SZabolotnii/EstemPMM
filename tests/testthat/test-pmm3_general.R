@@ -40,8 +40,11 @@ test_that("general PMM3 fit object: slots, vcov and summary", {
   expect_lt(fit@g_coefficient, 1)
 
   X <- cbind(1, x)
+  g <- fit@g_coefficient
+  a <- solve(crossprod(X), colSums(X))
   expect_equal(unname(vcov(fit)),
-               unname(fit@g_coefficient * fit@m2 * solve(crossprod(X))))
+               unname(g * fit@m2 * solve(crossprod(X)) +
+                        (1 - g) * fit@m2 / nrow(X) * tcrossprod(a)))
   expect_output(summary(fit), "general polynomial")
 
   sym <- suppressWarnings(lm_pmm3(y ~ x, data = d))

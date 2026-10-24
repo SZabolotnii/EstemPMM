@@ -745,3 +745,19 @@ pmm2_variance_matrices <- function(X, m2, m3, m4) {
 
   list(ols = V1, pmm2 = V2, c3 = vf$c3, c4 = vf$c4, g = vf$g)
 }
+
+# Covariance term that the plug-in moments add to a PMM regression fit.
+# The polynomial is built from the central moments of the OLS residuals, and
+# the error in alpha_2-hat (which is O(n^-1/2)) shifts the fit along
+# a = (X'X)^-1 X'1, i.e. the intercept. Expanding the estimating equation
+# around the true moments gives
+#   beta-hat - beta = (X'X)^-1 X'u + a (eps-bar - u-bar),  u = psi(eps) / E psi',
+# with Var(u) = g m2, Cov(u, eps) = g m2 and hence
+#   Var = g m2 (X'X)^-1 + (1 - g) m2 / n * a a'.
+# The same holds for every degree S. With an intercept a is its unit vector,
+# so the slopes keep g m2 (X'X)^-1 and the intercept is close to OLS.
+.pmm_location_term <- function(X, m2, g) {
+  X <- as.matrix(X)
+  a <- solve(crossprod(X), colSums(X))
+  (1 - g) * m2 / nrow(X) * tcrossprod(a)
+}

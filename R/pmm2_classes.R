@@ -328,7 +328,7 @@ setMethod("summary", "PMM2fit",
               if (isTRUE(attr(object, "fallback"))) {
                 cat("Coefficients (OLS fall-back; OLS standard errors):\n")
               } else {
-                cat("Coefficients (asymptotic standard errors, g * m2 * (X'X)^-1):\n")
+                cat("Coefficients (asymptotic standard errors, see ?vcov.PMM2fit):\n")
               }
               stats::printCoefmat(tab, P.values = TRUE, has.Pvalue = TRUE)
             }

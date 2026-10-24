@@ -23,6 +23,11 @@ maximization method, s = 3 specialised to symmetric platykurtic
 errors; see \code{\link{pmm3_variance_matrices}}). Under Gaussian
 errors \eqn{g_3 = 1} and the result equals the OLS covariance.
 For \code{lm_pmm3(symmetric = FALSE)}, \eqn{g_3} is the general factor
-\eqn{1 / (\alpha_2\, b^\top F^{-1} b)}. When the iteration failed and
+\eqn{1 / (\alpha_2\, b^\top F^{-1} b)}, and the matrix gains the term
+\eqn{(1 - g_3)\sigma^2 n^{-1} a a^\top}, \eqn{a = (X^\top X)^{-1} X^\top 1},
+for the moments estimated from the OLS residuals (see
+\code{\link{vcov,PMM2fit-method}}); with an intercept only the intercept
+variance changes. The symmetric estimator needs no such term. When the
+iteration failed and
 the OLS estimate was returned, the OLS covariance is returned.
 }

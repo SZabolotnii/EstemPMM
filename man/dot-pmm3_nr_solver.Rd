@@ -30,19 +30,22 @@
 
 \item{max_iter}{Maximum NR iterations (default 100)}
 
-\item{step_max}{Maximum step size (default 5.0)}
+\item{step_max}{Maximum step, as the root-mean-square change of the
+fitted values in units of the OLS residual SD (default 5.0)}
 }
 \value{
 List: B (estimates), converged, iter, kappa, near_gaussian,
-fallback (TRUE when the OLS values were returned: stalled line search,
-divergence or a non-finite iterate)
+fallback (TRUE when the OLS values were returned: singular Jacobian,
+stalled line search, divergence or a non-finite iterate)
 }
 \description{
 Solves the PMM3 score equations using Newton-Raphson iteration.
 The score is \eqn{Z = X'(\varepsilon(\kappa - \varepsilon^2))} and the
 Jacobian is \eqn{J = X' \mathrm{diag}(3\varepsilon^2 - \kappa) X}.
 Each step is limited to \code{step_max} and then halved until the norm of
-the score decreases. If the line search stalls away from a root, the OLS
-values are returned.
+the score, measured in the metric of \eqn{(X^\top X)^{-1}}, decreases.
+If the Jacobian is singular, the line search stalls away from a root or
+the fitted values move by more than ten residual standard deviations, the
+OLS values are returned with a warning.
 }
 \keyword{internal}

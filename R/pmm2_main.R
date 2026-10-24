@@ -240,8 +240,13 @@ setMethod("nobs", "PMM2fit",
 
 #' Variance-covariance matrix for PMM2fit object
 #'
-#' Returns the asymptotic covariance matrix \eqn{\sigma^2 g_2 (X^\top X)^{-1}},
-#' where \eqn{g_2 = 1 - c_3^2 / (2 + c_4)} is the PMM2 variance reduction factor.
+#' Returns the asymptotic covariance matrix
+#' \eqn{\sigma^2 g_2 (X^\top X)^{-1} + (1 - g_2)\sigma^2 n^{-1} a a^\top},
+#' \eqn{a = (X^\top X)^{-1} X^\top 1}, where
+#' \eqn{g_2 = 1 - c_3^2 / (2 + c_4)} is the PMM2 variance reduction factor.
+#' The second term comes from estimating the moments from the OLS residuals:
+#' with an intercept it affects the intercept only, which therefore has
+#' close to the OLS variance, while the slopes keep the factor \eqn{g_2}.
 #' Under Gaussian errors \eqn{g_2 = 1} and the result equals the OLS covariance matrix.
 #' When the PMM2 iteration failed and \code{lm_pmm2} returned the OLS
 #' estimate, the OLS covariance \eqn{\sigma^2 (X^\top X)^{-1}} is returned
@@ -258,7 +263,13 @@ setMethod("vcov", "PMM2fit",
             if (is.null(X))
               stop("model_matrix not found; refit the model with lm_pmm2()")
             vm <- pmm2_variance_matrices(X, object@m2, object@m3, object@m4)
-            V  <- if (isTRUE(attr(object, "fallback"))) vm$ols else vm$pmm2
+            V  <- if (isTRUE(attr(object, "fallback"))) {
+              vm$ols
+            } else if (is.na(vm$g)) {
+              vm$pmm2
+            } else {
+              vm$pmm2 + .pmm_location_term(X, object@m2, vm$g)
+            }
             nms <- names(object@coefficients)
             if (!is.null(nms) && length(nms) == nrow(V)) {
               rownames(V) <- nms
