@@ -114,6 +114,11 @@ as in 0.5.0; the new `g3_threshold`, `n_leptokurtic` and
 `clear_asymmetry_z` follow it. A positional call written for 0.5.0 passed
 its `verbose` value as `g3_threshold`.
 
+**Unused internal solvers removed.** `solve_pmm2()`, `.pmm2_fit()` and
+`.ts_pmm2_fit()` in `R/pmm2_utils.R` had no callers in the package; they
+kept the old unsafeguarded Newton iteration and absolute ridges. None was
+exported.
+
 ### Safeguarded symmetric PMM3 iteration
 
 The symmetric PMM3 Newton solver behind `lm_pmm3()` and `ar/ma/arma_pmm3()`
