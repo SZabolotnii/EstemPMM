@@ -25,7 +25,8 @@
 #' The PMM3 time series algorithm:
 #' 1. Obtains initial estimates via classical methods (OLS/YW for AR, CSS for MA/ARMA/ARIMA)
 #' 2. Computes moments m2, m4, m6 and kappa from initial residuals
-#' 3. Checks symmetry: warns if |gamma3| > 0.3
+#' 3. Checks symmetry: warns if |gamma3| exceeds both 0.3 and
+#'    \eqn{2\sqrt{6/n}}
 #' 4. Applies Newton-Raphson with PMM3 score equations
 #'
 #' PMM3 is beneficial when innovations are symmetric and platykurtic
@@ -69,10 +70,11 @@ ts_pmm3 <- function(x, order,
   }
 
   # Symmetry warning
-  if (abs(mom$gamma3) > 0.3) {
+  skew_bound <- .asymmetry_warning_bound(sum(is.finite(innovations)))
+  if (abs(mom$gamma3) > skew_bound) {
     warning(sprintf(
-      "Innovations appear asymmetric (|gamma3| = %.3f > 0.3). Consider using PMM2 time series functions instead.",
-      abs(mom$gamma3)
+      "Innovations appear asymmetric (|gamma3| = %.3f > %.3f). Consider using PMM2 time series functions instead.",
+      abs(mom$gamma3), skew_bound
     ))
   }
 

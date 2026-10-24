@@ -9,10 +9,10 @@ pmm_dispatch(
   symmetry_threshold = 0.3,
   kurtosis_threshold = -0.7,
   g2_threshold = 0.95,
+  verbose = TRUE,
   g3_threshold = 0.95,
   n_leptokurtic = 100,
-  clear_asymmetry_z = 2,
-  verbose = TRUE
+  clear_asymmetry_z = 2
 )
 }
 \arguments{
@@ -24,6 +24,8 @@ pmm_dispatch(
 
 \item{g2_threshold}{numeric: minimum g2 improvement to justify PMM2 (default 0.95)}
 
+\item{verbose}{logical: print decision reasoning (default TRUE)}
+
 \item{g3_threshold}{numeric: symmetric residuals with g3 below this value
 go to PMM3 once \code{n >= n_leptokurtic} (default 0.95)}
 
@@ -33,8 +35,6 @@ go to PMM3 once \code{n >= n_leptokurtic} (default 0.95)}
 \item{clear_asymmetry_z}{numeric: multiple of \eqn{\sqrt{6/n}} that
 \eqn{|\gamma_3|} must exceed for skewed platykurtic residuals to go to
 PMM2 rather than PMM3 (default 2)}
-
-\item{verbose}{logical: print decision reasoning (default TRUE)}
 }
 \value{
 An object of S3 class \code{"PMMdispatch"}: a list with

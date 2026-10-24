@@ -54,7 +54,9 @@ The PMM3 algorithm works as follows:
 \enumerate{
 \item Fits OLS regression to obtain initial estimates
 \item Computes central moments (m2, m4, m6) from OLS residuals
-\item Checks symmetry: warns if |gamma3| > 0.3 (PMM2 may be more appropriate)
+\item Checks symmetry: warns if |gamma3| exceeds both 0.3 and its sampling
+noise \eqn{2\sqrt{6/n}}, the bound \code{\link{pmm_dispatch}} uses
+(PMM2 may be more appropriate)
 \item Computes moment ratio kappa = (m6 - 3\emph{m4}m2) / (m4 - 3*m2^2)
 \item Iterates Newton-Raphson with score Z = X'(eps*(kappa - eps^2))
 }

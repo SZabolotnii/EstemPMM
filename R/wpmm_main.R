@@ -52,12 +52,17 @@ setClass("WPMMfit",
 # IRLS weights W_i at residuals r, together with d(W_i r_i)/dr_i for the
 # sandwich bread. The derivative holds the window centre, scale and weak
 # moments fixed but keeps the window slope w'(r), which does not vanish by
-# symmetry. Returns NULL when the window carries no mass.
+# symmetry. Returns NULL when the window carries no mass. The guards below
+# are relative to the residual scale s (powers of s for the moments), so that
+# the weights do not depend on the units of the response; for residuals of
+# unit scale they are the gmdhpmm thresholds.
 .wpmm_weights <- function(r, degree, sigma_mult) {
   mu <- stats::median(r)
   s <- stats::mad(r, constant = 1.4826)
-  if (!is.finite(s) || s <= 1e-12) s <- stats::sd(r)
-  if (!is.finite(s) || s <= 1e-12) s <- 1
+  sd_r <- stats::sd(r)
+  if (!is.finite(s) || (is.finite(sd_r) && s <= 1e-12 * sd_r)) s <- sd_r
+  if (!is.finite(s) || s <= 0) s <- 1
+  eps2 <- 1e-12 * s^2
   sw <- sigma_mult * s
   w <- exp(-0.5 * ((r - mu) / sw)^2)
   sw_sum <- sum(w)
@@ -70,9 +75,10 @@ setClass("WPMMfit",
     c3 <- sum(w * rc^3) / sw_sum
     c4 <- sum(w * rc^4) / sw_sum - 3 * c2^2
     denom <- 2 * c2^2 + c4
-    a2 <- if (!is.finite(c2) || c2 <= 1e-12 || !is.finite(denom) || abs(denom) < 1e-12)
+    a2 <- if (!is.finite(c2) || c2 <= eps2 || !is.finite(denom) ||
+              abs(denom) < eps2 * s^2)
             0 else -c3 / denom
-    a2 <- max(min(a2, 0.5 / sqrt(c2 + 1e-12)), -0.5 / sqrt(c2 + 1e-12))
+    a2 <- max(min(a2, 0.5 / sqrt(c2 + eps2)), -0.5 / sqrt(c2 + eps2))
     W <- w * (1 + a2 * rc)
     dpsi <- dw * (1 + a2 * rc) * r + w * a2 * r + W
     moments <- c(c2 = c2, c3 = c3, c4 = c4)
@@ -83,13 +89,13 @@ setClass("WPMMfit",
     m6 <- sum(w * rc^6) / sw_sum
     dk <- m4 - 3 * m2^2
     moments <- c(m2 = m2, m4 = m4, m6 = m6)
-    if (!is.finite(dk) || abs(dk) < 1e-3 * max(m2^2, 1e-12)) {
+    if (!is.finite(dk) || abs(dk) < 1e-3 * max(m2^2, eps2 * s^2)) {
       W <- w
       dpsi <- dw * r + w
       correction <- NA_real_
     } else {
       kappa <- (m6 - 3 * m4 * m2) / dk
-      ak <- max(abs(kappa), 1e-8)
+      ak <- max(abs(kappa), 1e-8 * s^2)
       W <- w * (kappa - rc^2) / ak
       dpsi <- (dw * (kappa - rc^2) - 2 * w * rc) * r / ak + W
       correction <- kappa
@@ -137,6 +143,11 @@ setClass("WPMMfit",
     stop("OLS fit resulted in NA coefficients. Check for multicollinearity.")
   }
   theta <- as.numeric(theta)
+  # The step is relative to the coefficient norm, floored at 1 as in gmdhpmm;
+  # the floor shrinks with the OLS coefficients, otherwise a response in
+  # small units (coefficients of 1e-5) stopped the iteration after one step.
+  step_floor <- min(1, sqrt(sum(theta^2)))
+  if (!(step_floor > 0)) step_floor <- 1
 
   converged <- FALSE
   failure <- NULL
@@ -154,7 +165,7 @@ setClass("WPMMfit",
       break
     }
     theta_new <- as.numeric(theta_new)
-    step <- sqrt(sum((theta_new - theta)^2)) / max(1, sqrt(sum(theta^2)))
+    step <- sqrt(sum((theta_new - theta)^2)) / max(step_floor, sqrt(sum(theta^2)))
     theta <- theta_new
     if (step < tol) {
       converged <- TRUE
@@ -214,7 +225,9 @@ setClass("WPMMfit",
 #'   PMM2/PMM3 and OLS; a narrower one makes it more robust.
 #' @param max_iter maximum number of IRLS iterations (default 50).
 #' @param tol convergence tolerance on the relative change of the
-#'   coefficient vector (default 1e-7).
+#'   coefficient vector (default 1e-7); the change is divided by the larger
+#'   of the coefficient norm and \code{min(1, }norm of the OLS
+#'   coefficients\code{)}.
 #' @param na.action function for handling missing values (default
 #'   \code{na.fail}).
 #'

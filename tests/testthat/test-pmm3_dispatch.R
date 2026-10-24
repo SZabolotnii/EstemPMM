@@ -83,9 +83,16 @@ test_that("symmetric heavy-tailed residuals go to PMM3 only once n >= n_leptokur
   dec <- pmm_dispatch(r_big, verbose = FALSE)
   expect_equal(dec$method, "PMM3")
   expect_lt(dec$g3, 0.95)
-  # Same law below the sample-size threshold: the heavy-tailed branch is closed
-  dec_small <- pmm_dispatch(r_big[1:60], verbose = FALSE)
-  expect_false(dec_small$method == "PMM3" && dec_small$gamma4 > -0.7)
+  # Same law below the sample-size threshold: an exactly symmetric sample of
+  # 60 with g3 < 0.95 goes to OLS, and to PMM3 once n_leptokurtic allows it,
+  # so n is the only thing that closes the branch
+  r_small <- c(r[1:30], -r[1:30])
+  dec_small <- pmm_dispatch(r_small, verbose = FALSE)
+  expect_lt(dec_small$g3, 0.95)
+  expect_gt(dec_small$gamma4, -0.7)
+  expect_equal(dec_small$method, "OLS")
+  expect_equal(pmm_dispatch(r_small, n_leptokurtic = 60, verbose = FALSE)$method,
+               "PMM3")
   # Switched off, as in 0.5.0
   expect_false(pmm_dispatch(r_big, g3_threshold = 0, verbose = FALSE)$method == "PMM3")
 })
@@ -103,6 +110,34 @@ test_that("small-sample platykurtic residuals with noisy skewness go to PMM3", {
   # The 0.5.0 rule (clear_asymmetry_z = 0) sent such residuals to PMM2
   expect_equal(pmm_dispatch(r, clear_asymmetry_z = 0, verbose = FALSE)$method,
                "PMM2")
+})
+
+test_that("lm_pmm3 does not warn about skewness the dispatcher calls noise", {
+  # pmm_lm(auto) selects PMM3 for these residuals; lm_pmm3 used to advise
+  # against PMM3 because |gamma3| > 0.3
+  set.seed(5)
+  repeat {
+    d <- data.frame(x = rnorm(30))
+    d$y <- 1 + d$x + rnorm(30, sample(c(-1, 1), 30, TRUE), 0.3)
+    cu <- EstemPMM:::.residual_cumulants(residuals(lm(y ~ x, d)))
+    if (abs(cu$gamma3) > 0.3 && abs(cu$gamma3) < 2 * sqrt(6 / 30) &&
+        cu$gamma4 < -0.7) break
+  }
+  expect_no_warning(fit <- pmm_lm(y ~ x, d))
+  expect_equal(attr(fit, "dispatch")$method, "PMM3")
+  # Skewness clear of the noise still warns
+  set.seed(6)
+  d2 <- data.frame(x = rnorm(30))
+  d2$y <- 1 + d2$x + rexp(30)
+  expect_warning(lm_pmm3(y ~ x, d2), "appear asymmetric")
+})
+
+test_that("verbose is the fifth argument, as in 0.5.0", {
+  expect_identical(names(formals(pmm_dispatch))[1:5],
+                   c("residuals", "symmetry_threshold", "kurtosis_threshold",
+                     "g2_threshold", "verbose"))
+  set.seed(3)
+  expect_silent(pmm_dispatch(runif(200), 0.3, -0.7, 0.95, FALSE))
 })
 
 test_that("clearly skewed residuals still go to PMM2", {

@@ -57,7 +57,8 @@ The PMM3 time series algorithm:
 \enumerate{
 \item Obtains initial estimates via classical methods (OLS/YW for AR, CSS for MA/ARMA/ARIMA)
 \item Computes moments m2, m4, m6 and kappa from initial residuals
-\item Checks symmetry: warns if |gamma3| > 0.3
+\item Checks symmetry: warns if |gamma3| exceeds both 0.3 and
+\eqn{2\sqrt{6/n}}
 \item Applies Newton-Raphson with PMM3 score equations
 }
 

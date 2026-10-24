@@ -233,62 +233,27 @@ ma_sma_build_design <- function(intercept, residuals, x, q, Q, s, multiplicative
 #' @param tol Convergence tolerance
 #' @param verbose Print diagnostics
 #'
-#' @return List with coefficients, convergence, iterations
+#' @return List with coefficients, convergence, iterations, fallback
+#' @details The equation is solved by \code{\link{pmm2_algorithm}} without
+#'   the ridge, so the MA and SMA fits get the same safeguards as the other
+#'   PMM2 fits: backtracking, a return to the CSS start with a warning when
+#'   the iteration fails, and a convergence test that does not depend on the
+#'   units of the series.
 #' @keywords internal
 ma_solve_pmm2 <- function(b_init, X, Y, m2, m3, m4,
                           max_iter = 50, tol = 1e-6,
                           verbose = FALSE) {
-    b <- as.numeric(b_init)
-    iterations <- 0L
-    converged <- FALSE
-
-    for (iter in seq_len(max_iter)) {
-        iterations <- iter
-
-        # S = X %*% b (predicted values)
-        S <- as.vector(X %*% b)
-
-        # Gradient Z1 (EstemPMM formula)
-        Z1 <- m3 * S^2 +
-            (m4 - m2^2 - 2 * m3 * Y) * S +
-            (m3 * Y^2 - (m4 - m2^2) * Y - m2 * m3)
-
-        # Z = t(X) %*% Z1
-        Z <- as.numeric(t(X) %*% Z1)
-
-        # Jacobian JZ11
-        JZ11 <- 2 * m3 * S + (m4 - m2^2 - 2 * m3 * Y)
-
-        # J = t(X) %*% (X * JZ11)
-        J <- t(X) %*% (X * JZ11)
-
-        # Newton step
-        step <- tryCatch(solve(J, Z), error = function(e) NULL)
-
-        if (is.null(step)) {
-            if (verbose) message("  System is singular at iteration ", iter)
-            break
-        }
-
-        # Update
-        b_new <- b - step
-
-        # Check convergence
-        if (sqrt(sum((b_new - b)^2)) < tol) {
-            b <- b_new
-            converged <- TRUE
-            if (verbose) message("  Converged at iteration ", iter)
-            break
-        }
-
-        b <- b_new
-    }
+    out <- pmm2_algorithm(as.numeric(b_init), X, Y, m2, m3, m4,
+                          max_iter = max_iter, tol = tol,
+                          regularize = FALSE, verbose = verbose)
+    b <- out$b
 
     list(
         coefficients = b[-1], # Remove intercept
         intercept = b[1],
-        convergence = converged,
-        iterations = iterations
+        convergence = out$convergence,
+        iterations = out$iterations,
+        fallback = out$fallback
     )
 }
 

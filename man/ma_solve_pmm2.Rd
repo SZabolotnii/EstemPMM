@@ -36,9 +36,16 @@ ma_solve_pmm2(
 \item{verbose}{Print diagnostics}
 }
 \value{
-List with coefficients, convergence, iterations
+List with coefficients, convergence, iterations, fallback
 }
 \description{
 PMM2 solver (EstemPMM formula)
+}
+\details{
+The equation is solved by \code{\link{pmm2_algorithm}} without
+the ridge, so the MA and SMA fits get the same safeguards as the other
+PMM2 fits: backtracking, a return to the CSS start with a warning when
+the iteration fails, and a convergence test that does not depend on the
+units of the series.
 }
 \keyword{internal}

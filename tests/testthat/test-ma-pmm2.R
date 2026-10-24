@@ -185,3 +185,20 @@ test_that("MA+SMA PMM2 handles different orders correctly", {
     expect_equal(fit$ma_coef[1], theta_ma[1], tolerance = 0.3)
     expect_equal(fit$sma_coef[1], theta_sma[1], tolerance = 0.3)
 })
+
+test_that("MA+SMA PMM2 keeps the CSS start when Newton diverges", {
+    # The undamped Newton iteration used to run off to a squared error of
+    # 19 on this series (MA(1)+SMA(1), n = 60, exponential innovations)
+    set.seed(1060)
+    n <- 60
+    e <- rexp(n) - 1
+    x <- e
+    x[14:n] <- e[14:n] + 0.4 * e[13:(n - 1)] + 0.6 * e[2:(n - 12)] +
+        0.24 * e[1:(n - 13)]
+    expect_warning(
+        fit <- EstemPMM:::estpmm_style_ma_sma(x, q = 1, Q = 1, s = 12,
+                                              include.mean = TRUE),
+        "PMM2 iteration failed")
+    expect_false(fit$convergence)
+    expect_lt(sum((c(fit$ma_coef, fit$sma_coef) - c(0.4, 0.6))^2), 1)
+})

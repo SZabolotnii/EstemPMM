@@ -27,7 +27,9 @@
 #'
 #' 1. Fits OLS regression to obtain initial estimates
 #' 2. Computes central moments (m2, m4, m6) from OLS residuals
-#' 3. Checks symmetry: warns if |gamma3| > 0.3 (PMM2 may be more appropriate)
+#' 3. Checks symmetry: warns if |gamma3| exceeds both 0.3 and its sampling
+#'    noise \eqn{2\sqrt{6/n}}, the bound \code{\link{pmm_dispatch}} uses
+#'    (PMM2 may be more appropriate)
 #' 4. Computes moment ratio kappa = (m6 - 3*m4*m2) / (m4 - 3*m2^2)
 #' 5. Iterates Newton-Raphson with score Z = X'(eps*(kappa - eps^2))
 #'
@@ -144,10 +146,11 @@ lm_pmm3 <- function(formula, data,
   }
 
   # Symmetry warning
-  if (abs(moments$gamma3) > 0.3) {
+  skew_bound <- .asymmetry_warning_bound(length(res_ols))
+  if (abs(moments$gamma3) > skew_bound) {
     warning(sprintf(
-      "Residuals appear asymmetric (|gamma3| = %.3f > 0.3). Consider lm_pmm2() or lm_pmm3(symmetric = FALSE) instead.",
-      abs(moments$gamma3)
+      "Residuals appear asymmetric (|gamma3| = %.3f > %.3f). Consider lm_pmm2() or lm_pmm3(symmetric = FALSE) instead.",
+      abs(moments$gamma3), skew_bound
     ))
   }
 

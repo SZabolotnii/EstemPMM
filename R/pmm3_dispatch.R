@@ -44,6 +44,12 @@
   1 - gamma4^2 / denom
 }
 
+# Skewness that the PMM3 fitters warn about: above 0.3 and clear of its
+# sampling noise, |gamma3| > 2 sqrt(6/n). Below that bound pmm_dispatch()
+# treats the skewness as noise and may itself choose PMM3, so the fitter it
+# calls must not then advise against PMM3.
+.asymmetry_warning_bound <- function(n) max(0.3, 2 * sqrt(6 / n))
+
 #' Automatic PMM method selection
 #'
 #' Analyses OLS residual cumulants to recommend the best estimation method:
@@ -118,10 +124,11 @@ pmm_dispatch <- function(residuals,
                          symmetry_threshold = 0.3,
                          kurtosis_threshold = -0.7,
                          g2_threshold       = 0.95,
+                         verbose            = TRUE,
                          g3_threshold       = 0.95,
                          n_leptokurtic      = 100,
-                         clear_asymmetry_z  = 2,
-                         verbose            = TRUE) {
+                         clear_asymmetry_z  = 2) {
+  # verbose stays fifth, where 0.5.0 had it, so positional calls keep working
 
   cum <- .residual_cumulants(residuals)
   g2  <- .g2_factor(cum$gamma3, cum$gamma4)

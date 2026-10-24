@@ -35,7 +35,9 @@ PMM2/PMM3 and OLS; a narrower one makes it more robust.}
 \item{max_iter}{maximum number of IRLS iterations (default 50).}
 
 \item{tol}{convergence tolerance on the relative change of the
-coefficient vector (default 1e-7).}
+coefficient vector (default 1e-7); the change is divided by the larger
+of the coefficient norm and \code{min(1, }norm of the OLS
+coefficients\code{)}.}
 
 \item{na.action}{function for handling missing values (default
 \code{na.fail}).}

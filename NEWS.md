@@ -85,6 +85,35 @@ one fitter, such as `reg_lambda` of `lm_pmm2()`, failed as "unused argument"
 when the dispatcher selected the other one. Such arguments are now dropped
 with a message; with an explicit `method` they still fail.
 
+**`lm_wpmm2()`/`lm_wpmm3()` in small units.** The IRLS step was divided by
+`max(1, ||theta||)`, so with the response multiplied by 1e-5 the iteration
+stopped after one or two steps and the coefficients were off by 0.22 (in
+units of the unscaled fit). The floor is now `min(1, ||theta_OLS||)`, and the
+guards on the windowed moments are relative to the residual scale; the fits
+are equivariant from 1e-9 to 1e6, and the gmdhpmm reference values are still
+matched.
+
+**MA and SMA terms with `ma_method = "pmm2"`.** `sarima_pmm2(ma_method =
+"pmm2")` and the linearised MA/SMA fitters solved their PMM2 equation by
+undamped Newton steps. They now use the safeguarded PMM2 iteration (without
+the ridge), which returns the CSS start with a warning when it fails. Over
+4800 simulated MA(1), MA(2), SMA(1) and MA(1)+SMA(1) series (n = 60, 200),
+4787 estimates are unchanged (to 7e-13); the others were divergent runs, and
+for MA(1)+SMA(1) with n = 60 and exponential innovations the mean squared
+error fell from 0.137 to 0.030 (worst case 19.3 to 0.43).
+
+**Asymmetry warning of `lm_pmm3()` and the PMM3 time-series fitters.** It
+fired at `|gamma3| > 0.3`, also for residuals whose skewness
+`pmm_dispatch()` treats as sampling noise when it chooses PMM3, so
+`pmm_lm(method = "auto")` could select PMM3 and then warn against it. The
+bound is now the dispatcher's, `max(0.3, 2 sqrt(6/n))`; it is unchanged for
+`n >= 267`.
+
+**`pmm_dispatch()` argument order.** `verbose` is the fifth argument again,
+as in 0.5.0; the new `g3_threshold`, `n_leptokurtic` and
+`clear_asymmetry_z` follow it. A positional call written for 0.5.0 passed
+its `verbose` value as `g3_threshold`.
+
 ### Safeguarded symmetric PMM3 iteration
 
 The symmetric PMM3 Newton solver behind `lm_pmm3()` and `ar/ma/arma_pmm3()`

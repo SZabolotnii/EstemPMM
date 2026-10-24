@@ -142,3 +142,21 @@ test_that("predict(WPMMfit) codes factors with the training levels", {
   expect_length(p, 3)
   expect_true(is.na(p[2]))
 })
+
+test_that("WPMM fits are equivariant to the units of the response", {
+  # The stopping rule divided the step by max(1, ||theta||): at y * 1e-5 it
+  # stopped after one or two IRLS steps (coefficients off by 0.22)
+  set.seed(5)
+  x <- rnorm(200)
+  e2 <- rexp(200) - 1
+  e3 <- rt(200, 3)
+  w2 <- lm_wpmm2(y ~ x, data.frame(x, y = 1 + x + e2))
+  w3 <- lm_wpmm3(y ~ x, data.frame(x, y = 1 + x + e3))
+  for (k in c(1e-9, 1e-5, 1e6)) {
+    w2k <- lm_wpmm2(y ~ x, data.frame(x, y = k * (1 + x + e2)))
+    w3k <- lm_wpmm3(y ~ x, data.frame(x, y = k * (1 + x + e3)))
+    expect_equal(unname(coef(w2k)), k * unname(coef(w2)), tolerance = 1e-8)
+    expect_equal(unname(coef(w3k)), k * unname(coef(w3)), tolerance = 1e-8)
+    expect_equal(w2k@iterations, w2@iterations)
+  }
+})
