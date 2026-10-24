@@ -26,7 +26,8 @@
 
 \item{adaptive}{Re-estimate kappa each iteration? (default FALSE)}
 
-\item{tol}{Convergence tolerance on ||delta||_2 (default 1e-6)}
+\item{tol}{Convergence tolerance on the Newton step, measured like
+\code{step_max} (default 1e-6)}
 
 \item{max_iter}{Maximum NR iterations (default 100)}
 

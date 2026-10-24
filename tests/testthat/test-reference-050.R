@@ -1,9 +1,10 @@
 # Regression guard against EstemPMM 0.5.0 (fixture: dev_scripts/make_reference_050.R).
 # Every case that 0.5.0 reported as converged must be reproduced by the
 # safeguarded PMM2 iteration, which takes the full Newton step whenever it
-# reduces the norm of the estimating function. A case that reaches the same
-# root through one damped step can differ in the last bit, hence the 1e-12
-# tolerance; 23 of the 24 cases checked here are in fact bit-identical.
+# reduces the norm of the estimating function. The score is now evaluated in
+# residual form and the step is measured in residual-SD units, so most cases
+# differ in the last bits (up to 1e-15) and lm_lnorm_heavy_n200_p2 stops one
+# Newton step earlier (6.7e-13), hence the 1e-12 tolerance.
 
 ref <- readRDS(test_path("fixtures", "reference_0.5.0.rds"))
 

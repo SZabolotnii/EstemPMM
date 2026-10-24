@@ -23,7 +23,8 @@ lm_pmm3(
 
 \item{max_iter}{integer: maximum number of NR iterations (default 100)}
 
-\item{tol}{numeric: convergence tolerance (default 1e-6)}
+\item{tol}{numeric: convergence tolerance (default 1e-6), compared with the
+Newton step measured like \code{step_max}}
 
 \item{adaptive}{logical: re-estimate kappa each iteration (default FALSE)}
 

@@ -43,20 +43,32 @@ test_that("PMM3 fits are equivariant to the units of the response", {
   x <- rnorm(200)
   e_skew <- rgamma(200, 2) - 2
   e_flat <- runif(200, -1, 1)
-  # tol is an absolute bound on the coefficient step, so it is scaled too
+  # The default tol is measured in residual-SD units, so it needs no scaling
+  # (an absolute 1e-6 stopped after one step at k = 1e-5)
   for (k in c(1e-5, 1e4)) {
     g1 <- lm_pmm3(y ~ x, data = data.frame(x, y = 1 + x + e_skew), symmetric = FALSE)
     gk <- lm_pmm3(y ~ x, data = data.frame(x, y = k * (1 + x + e_skew)),
-                  symmetric = FALSE, tol = 1e-6 * k)
+                  symmetric = FALSE)
     expect_false(attr(gk, "fallback"))
     expect_equal(unname(coef(gk)), k * unname(coef(g1)), tolerance = 1e-6)
     expect_equal(gk@g_coefficient, g1@g_coefficient, tolerance = 1e-8)
 
     s1 <- lm_pmm3(y ~ x, data = data.frame(x, y = 1 + x + e_flat))
-    sk <- lm_pmm3(y ~ x, data = data.frame(x, y = k * (1 + x + e_flat)),
-                  tol = 1e-6 * k)
+    sk <- lm_pmm3(y ~ x, data = data.frame(x, y = k * (1 + x + e_flat)))
     expect_false(attr(sk, "fallback"))
     expect_equal(unname(coef(sk)), k * unname(coef(s1)), tolerance = 1e-6)
+  }
+})
+
+test_that("PMM2 fits are equivariant to the units of the response", {
+  set.seed(13)
+  x <- rnorm(200)
+  y <- 1 + x + rexp(200) - 1
+  p1 <- lm_pmm2(y ~ x, data = data.frame(x, y))
+  for (k in c(1e-5, 1e4)) {
+    pk <- lm_pmm2(y ~ x, data = data.frame(x, y = k * y))
+    expect_true(pk@convergence)
+    expect_equal(unname(coef(pk)), k * unname(coef(p1)), tolerance = 1e-6)
   }
 })
 

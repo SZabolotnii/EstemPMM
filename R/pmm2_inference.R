@@ -494,20 +494,30 @@ ts_pmm2_inference <- function(object, x = NULL, B = 200, seed = NULL,
     }
   } else {
     # For residual bootstrap
+    # Simulate n_out values of the fitted ARMA recursion driven by resampled
+    # residuals. arima.sim() needs a burn-in of at least p + q values; an AR
+    # part gets 100 more so that the zero start is forgotten. The burn-in is
+    # driven by resampled residuals too, not by arima.sim()'s N(0, 1) default.
+    simulate_arma <- function(ar_coefs, ma_coefs, n_out, pool) {
+      n_burn <- ar_order + ma_order + if (ar_order > 0) 100L else 0L
+      innov <- sample(pool, n_burn + n_out, replace = TRUE)
+      arima.sim(model = list(
+        ar = if (ar_order > 0) ar_coefs else NULL,
+        ma = if (ma_order > 0) ma_coefs else NULL
+      ), n = n_out, innov = innov[n_burn + seq_len(n_out)],
+      n.start = n_burn, start.innov = innov[seq_len(n_burn)])
+    }
+
     # Function to generate new series based on model and bootstrap residuals
     generate_with_residuals <- function(model, residuals) {
       n <- length(model@original_series)
+      pool <- residuals[!is.na(residuals)]
 
       # For ARIMA models, need to differentiate first
       if (model_type == "arima" && d > 0) {
         # Here need more complex logic to restore original series
         # after generating differenced series
         # This is a simplified approach:
-        diff_x <- numeric(n - d)
-
-        # Bootstrap residuals
-        res_b <- sample(residuals[!is.na(residuals)], size = n - d, replace = TRUE)
-
         # Generate differenced series
         if (ar_order > 0) {
           ar_coefs <- model@coefficients[1:ar_order]
@@ -522,10 +532,7 @@ ts_pmm2_inference <- function(object, x = NULL, B = 200, seed = NULL,
         }
 
         # Simplified ARIMA process simulation
-        diff_x <- arima.sim(model = list(
-          ar = if(ar_order > 0) ar_coefs else NULL,
-          ma = if(ma_order > 0) ma_coefs else NULL
-        ), n = n - d, innov = res_b, n.start = max(ar_order, ma_order))
+        diff_x <- simulate_arma(ar_coefs, ma_coefs, n - d, pool)
 
         # Integrate back
         x_b <- diffinv(diff_x, differences = d)
@@ -536,8 +543,6 @@ ts_pmm2_inference <- function(object, x = NULL, B = 200, seed = NULL,
         }
       } else {
         # For AR, MA, ARMA models
-        res_b <- sample(residuals[!is.na(residuals)], size = n, replace = TRUE)
-
         # Extract AR and MA coefficients
         if (ar_order > 0) {
           ar_coefs <- model@coefficients[1:ar_order]
@@ -552,10 +557,7 @@ ts_pmm2_inference <- function(object, x = NULL, B = 200, seed = NULL,
         }
 
         # Simulate ARMA process
-        x_b <- arima.sim(model = list(
-          ar = if(ar_order > 0) ar_coefs else NULL,
-          ma = if(ma_order > 0) ma_coefs else NULL
-        ), n = n, innov = res_b, n.start = max(ar_order, ma_order))
+        x_b <- simulate_arma(ar_coefs, ma_coefs, n, pool)
 
         # Add intercept if needed
         if (include_mean) {

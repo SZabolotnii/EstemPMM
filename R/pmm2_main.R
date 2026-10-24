@@ -8,9 +8,13 @@
 #' @param formula R formula for the model
 #' @param data data.frame containing variables in the formula
 #' @param max_iter integer: maximum number of iterations for the algorithm
-#' @param tol numeric: tolerance for convergence
+#' @param tol numeric: tolerance for convergence, compared with the
+#'   root-mean-square change of the fitted values in a Newton step, in units
+#'   of the OLS residual standard deviation
 #' @param regularize logical: add small value to diagonal for numerical stability
-#' @param reg_lambda numeric: regularization parameter (if regularize=TRUE)
+#' @param reg_lambda numeric: regularization parameter (if regularize=TRUE);
+#'   scaled down with the Jacobian when its mean absolute diagonal element is
+#'   below 1, so that it does not dominate when y is measured in small units
 #' @param na.action function for handling missing values, default is na.fail
 #' @param weights optional weight vector (not yet implemented)
 #' @param verbose logical: whether to print progress information

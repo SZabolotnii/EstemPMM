@@ -9,7 +9,8 @@
 #' @param formula R formula for the model
 #' @param data data.frame containing variables in the formula
 #' @param max_iter integer: maximum number of NR iterations (default 100)
-#' @param tol numeric: convergence tolerance (default 1e-6)
+#' @param tol numeric: convergence tolerance (default 1e-6), compared with the
+#'   Newton step measured like \code{step_max}
 #' @param adaptive logical: re-estimate kappa each iteration (default FALSE)
 #' @param step_max numeric: maximum NR step, measured as the root-mean-square
 #'   change of the fitted values in units of the OLS residual standard

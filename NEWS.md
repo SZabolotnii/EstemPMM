@@ -40,8 +40,20 @@ unchanged. The symmetric PMM3 estimator needs no such term.
   measured as the change of the fitted values in residual standard
   deviations rather than as an absolute coefficient distance of 5 and 10,
   and the mesokurtic test for `kappa` is relative to `m2^2`.
-- The convergence tolerance `tol` is still an absolute bound on the
-  coefficient step, as in 0.5.0.
+- The convergence tolerance `tol` of `lm_pmm2()` and `lm_pmm3()`, and of the
+  time-series fitters that share their solvers, bounds the Newton step
+  measured the same way, as the change of the fitted values in residual
+  standard deviations, instead of the absolute coefficient step. With the
+  response multiplied by 1e-5 the coefficients are themselves below 1e-6 and
+  the iteration used to stop after one step. The 0.5.0 reference fits are
+  reproduced to 1e-12; one of them stops a Newton step earlier, the
+  time-series ones are unchanged.
+- The PMM2 ridge `reg_lambda` (and the stronger one used when the Jacobian
+  is singular) is scaled down with the Jacobian when its mean absolute
+  diagonal element is below 1. With the response multiplied by 1e-5 the
+  fixed ridge of 1e-8 dominated the Jacobian and `lm_pmm2()` reported
+  convergence with a slope of 1.03 instead of 0.96. Where that element is 1
+  or more, as on the 0.5.0 reference fits, the ridge is unchanged.
 
 **Silent failures.**
 - `lm_pmm3()` on near-Gaussian residuals returns the OLS values without a
@@ -60,6 +72,18 @@ unchanged. The symmetric PMM3 estimator needs no such term.
 column, or a factor holding only some of the levels, used to get its own
 coding and silently wrong predictions; rows with missing values are now kept
 as `NA`.
+
+**Residual bootstrap of ARMA and ARIMA fits.** `ts_pmm2_inference(method =
+"residual")` stopped with "burn-in 'n.start' must be as long as 'ar + ma'"
+on every model with both AR and MA terms, because the burn-in was
+`max(p, q)`. It is now `p + q`, plus 100 values when there is an AR part, and
+the burn-in is driven by resampled residuals instead of `arima.sim()`'s
+standard normal default.
+
+**`pmm_lm(method = "auto")` with fitter-specific arguments.** An argument of
+one fitter, such as `reg_lambda` of `lm_pmm2()`, failed as "unused argument"
+when the dispatcher selected the other one. Such arguments are now dropped
+with a message; with an explicit `method` they still fail.
 
 ### Safeguarded symmetric PMM3 iteration
 

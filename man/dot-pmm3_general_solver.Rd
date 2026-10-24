@@ -27,7 +27,9 @@ residuals.}
 \item{adaptive}{re-estimate the moments and \eqn{h} from the current
 residuals at every iteration.}
 
-\item{tol}{convergence tolerance on the Newton step norm.}
+\item{tol}{convergence tolerance on the Newton step, measured as the
+root-mean-square change of the fitted values in units of
+\eqn{\sqrt{\alpha_2}}.}
 
 \item{max_iter}{maximum number of iterations.}
 }

@@ -23,11 +23,15 @@ lm_pmm2(
 
 \item{max_iter}{integer: maximum number of iterations for the algorithm}
 
-\item{tol}{numeric: tolerance for convergence}
+\item{tol}{numeric: tolerance for convergence, compared with the
+root-mean-square change of the fitted values in a Newton step, in units
+of the OLS residual standard deviation}
 
 \item{regularize}{logical: add small value to diagonal for numerical stability}
 
-\item{reg_lambda}{numeric: regularization parameter (if regularize=TRUE)}
+\item{reg_lambda}{numeric: regularization parameter (if regularize=TRUE);
+scaled down with the Jacobian when its mean absolute diagonal element is
+below 1, so that it does not dominate when y is measured in small units}
 
 \item{na.action}{function for handling missing values, default is na.fail}
 

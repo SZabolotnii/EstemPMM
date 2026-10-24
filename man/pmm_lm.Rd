@@ -27,7 +27,9 @@ weak-moment estimators.}
 
 \item{...}{Additional arguments forwarded to the underlying fitter
 (\code{\link{lm_pmm2}}, \code{\link{lm_pmm3}}, \code{\link{lm_wpmm2}}
-or \code{\link{lm_wpmm3}}).}
+or \code{\link{lm_wpmm3}}). With \code{method = "auto"}, named
+arguments the selected fitter does not take (for example
+\code{reg_lambda} when PMM3 is selected) are dropped with a message.}
 }
 \value{
 An S4 object of class \code{\linkS4class{PMM2fit}},

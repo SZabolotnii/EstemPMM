@@ -16,7 +16,8 @@
 #' @param Y         Response vector (length n)
 #' @param kappa     Moment ratio (scalar)
 #' @param adaptive  Re-estimate kappa each iteration? (default FALSE)
-#' @param tol       Convergence tolerance on ||delta||_2 (default 1e-6)
+#' @param tol       Convergence tolerance on the Newton step, measured like
+#'   \code{step_max} (default 1e-6)
 #' @param max_iter  Maximum NR iterations (default 100)
 #' @param step_max  Maximum step, as the root-mean-square change of the
 #'   fitted values in units of the OLS residual SD (default 5.0)
@@ -82,7 +83,7 @@
     J  <- crossprod(X * w, X)
 
     # Regularise if near-singular
-    if (rcond(J) < 1e-12) J <- J + diag(1e-8, P)
+    if (rcond(J) < 1e-12) J <- J + diag(1e-8 * min(1, mean(abs(diag(J)))), P)
 
     # Solve
     delta <- tryCatch(as.numeric(solve(J, Z)),
@@ -92,9 +93,9 @@
       break
     }
 
-    # Step-size limiting
-    step_norm <- sqrt(sum(delta^2))
+    # Step-size limiting; the convergence test uses the same unit-free size
     shift <- fit_shift(delta)
+    step_norm <- shift
     if (shift > step_max) delta <- delta * step_max / shift
 
     # Backtracking on the merit norm: the full step is kept whenever it
@@ -208,7 +209,9 @@
 #'   residuals.
 #' @param adaptive re-estimate the moments and \eqn{h} from the current
 #'   residuals at every iteration.
-#' @param tol      convergence tolerance on the Newton step norm.
+#' @param tol      convergence tolerance on the Newton step, measured as the
+#'   root-mean-square change of the fitted values in units of
+#'   \eqn{\sqrt{\alpha_2}}.
 #' @param max_iter maximum number of iterations.
 #'
 #' @return List: B, converged, iter, h, alpha, jacobian_min_eigen, fallback
@@ -234,6 +237,7 @@
   iter <- 0L
   norm_init <- NA_real_
   merit <- .pmm_merit(X)
+  step_size <- .pmm_step_size(X, sqrt(alpha[2]))
   for (i in seq_len(max_iter)) {
     iter <- i
     e <- as.numeric(Y - X %*% B)
@@ -251,7 +255,7 @@
     }
     norm_cur <- merit(G)
     if (i == 1) norm_init <- norm_cur
-    step_norm <- sqrt(sum(delta^2))
+    step_norm <- step_size(delta)
     t_step <- 1
     B_new <- B + delta
     if (step_norm >= tol) {

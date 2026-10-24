@@ -30,11 +30,13 @@ pmm2_algorithm(
 
 \item{max_iter}{Maximum number of iterations}
 
-\item{tol}{Tolerance for convergence}
+\item{tol}{Tolerance for convergence on the Newton step, measured as the
+root-mean-square change of the fitted values in units of \code{sqrt(m2)}}
 
 \item{regularize}{Whether to add regularization}
 
-\item{reg_lambda}{Regularization parameter}
+\item{reg_lambda}{Regularization parameter, added to the Jacobian diagonal;
+multiplied by the mean absolute diagonal element when that is below 1}
 
 \item{verbose}{Whether to print progress information}
 

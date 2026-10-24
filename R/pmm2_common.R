@@ -8,9 +8,11 @@
 #' @param y Response vector
 #' @param m2,m3,m4 Central moments
 #' @param max_iter Maximum number of iterations
-#' @param tol Tolerance for convergence
+#' @param tol Tolerance for convergence on the Newton step, measured as the
+#'   root-mean-square change of the fitted values in units of \code{sqrt(m2)}
 #' @param regularize Whether to add regularization
-#' @param reg_lambda Regularization parameter
+#' @param reg_lambda Regularization parameter, added to the Jacobian diagonal;
+#'   multiplied by the mean absolute diagonal element when that is below 1
 #' @param verbose Whether to print progress information
 #' @param poly_terms Pre-computed polynomial coefficients (list with elements \code{A}, \code{B}, \code{C});
 #'   allows passing custom values for special scenarios, otherwise they are computed from moments
@@ -89,6 +91,7 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
   # or rescaled (calendar years as x), and then rejects full Newton steps
   # that this affine-invariant norm accepts.
   merit <- .pmm_merit(X)
+  step_size <- .pmm_step_size(X, sqrt(m2))
 
   stalled <- FALSE
   singular <- FALSE
@@ -100,9 +103,12 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     Z <- score(b_cur)
     JZs <- jacobian(b_cur)
 
-    # Add regularization if needed
+    # Add regularization if needed. The ridge is scaled down with the
+    # Jacobian when its diagonal is small (y measured in small units), where
+    # a fixed reg_lambda would dominate it; otherwise it is reg_lambda as in
+    # 0.5.0.
     if (regularize) {
-      diag(JZs) <- diag(JZs) + reg_lambda
+      diag(JZs) <- diag(JZs) + reg_lambda * min(1, mean(abs(diag(JZs))))
     }
 
     # Solve system JZs * delta = Z
@@ -113,7 +119,7 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
         cat("Error solving linear system:", conditionMessage(e), "\n")
         cat("Adding stronger regularization\n")
       }
-      diag(JZs) <- diag(JZs) + 1e-4
+      diag(JZs) <- diag(JZs) + 1e-4 * min(1, mean(abs(diag(JZs))))
       tryCatch(solve(JZs, Z), error = function(e) NULL)
     })
     if (is.null(delta) || any(!is.finite(delta))) {
@@ -129,8 +135,8 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
     if (iter == 1) norm_init <- norm_cur
     t_step <- 1
     b_new <- b_cur - delta
-    step_full <- sqrt(sum(delta^2))
-    # A step already below tol passes the 0.5.0 convergence test; near the
+    step_full <- step_size(delta)
+    # A step already below tol passes the convergence test; near the
     # root ||Z|| sits at rounding level and need not decrease, so it is
     # taken as is.
     if (step_full >= tol) {
@@ -240,4 +246,15 @@ pmm2_algorithm <- function(b_init, X, y, m2, m3, m4,
   R <- qr.R(qx)
   piv <- qx$pivot
   function(Z) sqrt(sum(backsolve(R, Z[piv], transpose = TRUE)^2))
+}
+
+# Size of a coefficient step d as the root-mean-square change of the fitted
+# values X d in units of the residual SD s. The convergence tests compare it
+# with tol, so that tol does not depend on the units of y and of the
+# regressors (an absolute ||d|| < 1e-6 ended the iteration after one step
+# once the coefficients themselves were below 1e-6).
+.pmm_step_size <- function(X, s) {
+  n <- nrow(X)
+  if (!is.finite(s) || s <= 0) s <- 1
+  function(d) sqrt(sum(as.numeric(X %*% d)^2) / n) / s
 }

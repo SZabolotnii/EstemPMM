@@ -30,7 +30,9 @@
 #'   weak-moment estimators.
 #' @param ... Additional arguments forwarded to the underlying fitter
 #'   (\code{\link{lm_pmm2}}, \code{\link{lm_pmm3}}, \code{\link{lm_wpmm2}}
-#'   or \code{\link{lm_wpmm3}}).
+#'   or \code{\link{lm_wpmm3}}). With \code{method = "auto"}, named
+#'   arguments the selected fitter does not take (for example
+#'   \code{reg_lambda} when PMM3 is selected) are dropped with a message.
 #'
 #' @return An S4 object of class \code{\linkS4class{PMM2fit}},
 #'   \code{\linkS4class{PMM3fit}} or \code{\linkS4class{WPMMfit}}, all
@@ -66,12 +68,23 @@ pmm_lm <- function(formula, data,
               "attr(fit, \"dispatch\").")
     }
   }
-  fit <- switch(method,
-    pmm2 = lm_pmm2(formula = formula, data = data, ...),
-    pmm3 = lm_pmm3(formula = formula, data = data, ...),
-    wpmm2 = lm_wpmm2(formula = formula, data = data, ...),
-    wpmm3 = lm_wpmm3(formula = formula, data = data, ...)
-  )
+  fitter <- switch(method, pmm2 = lm_pmm2, pmm3 = lm_pmm3,
+                   wpmm2 = lm_wpmm2, wpmm3 = lm_wpmm3)
+  args <- list(...)
+  if (!is.null(dec) && length(args) > 0) {
+    # With "auto" the caller cannot know which fitter runs, so an argument
+    # of the other fitter (reg_lambda for lm_pmm2, step_max for lm_pmm3)
+    # is dropped with a message instead of failing as unused.
+    unused <- setdiff(names(args), names(formals(fitter)))
+    unused <- unused[nzchar(unused)]
+    if (length(unused) > 0) {
+      message("pmm_lm(method = \"auto\") selected ", method, "; ignoring ",
+              "argument(s) it does not take: ",
+              paste(unused, collapse = ", "), ".")
+      args <- args[setdiff(names(args), unused)]
+    }
+  }
+  fit <- do.call(fitter, c(list(formula = formula, data = data), args))
   # Overwrite the inner call so that predict()/show() see the formula the
   # user actually wrote, not the symbol "formula" forwarded by this wrapper.
   fit@call <- outer_call
